@@ -11,8 +11,10 @@ const ManagementLayout = ({
   return (
     <div className="flex flex-col h-screen justify-between">
       <div className="flex flex-grow">
-        <SideNavbar />
-        <div className="flex-grow">
+        <div className="ml-4 my-4">
+          <SideNavbar />
+        </div>
+        <div className="ml-4 flex-grow">
           <div className="p-2">
             <Header />
           </div>

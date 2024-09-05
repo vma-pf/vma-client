@@ -17,8 +17,10 @@ const SideBarOption = ({
   return (
     <Link href={path}>
       <div
-        className={`pl-2 py-3 flex flex-row items-center justify-start hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-lg ${
-          pathname === path ? "bg-zinc-300 dark:bg-zinc-700" : ""
+        className={`pl-4 py-3 flex flex-row items-center justify-start hover:bg-emerald-50 hover:dark:bg-zinc-700 hover:text-emerald-600 hover:dark:text-emerald-300 ${
+          pathname === path
+            ? "bg-emerald-50 text-emerald-600 dark:text-emerald-300 dark:bg-zinc-800 border-r-4 border-emerald-600 dark:border-emerald-500"
+            : ""
         }`}
       >
         {icon}

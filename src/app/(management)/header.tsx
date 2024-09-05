@@ -12,6 +12,11 @@ const Header = () => {
   const titleMap: { [key: string]: string } = {
     "/dashboard": "Tổng quan",
     "/pig": "Heo",
+    "/medicine": "Thuốc",
+    "/vaccination": "Vacxin",
+    "/camera": "Camera",
+    "/treatment-plan": "Kế hoạch điều trị",
+    "/alert": "Cảnh báo",
   };
 
   const toggleMode = () => setTheme(theme === "light" ? "dark" : "light");
