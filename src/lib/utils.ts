@@ -1,5 +1,11 @@
 import { UseFormSetError, set } from "react-hook-form";
 import { EntityError } from "./http";
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export const handleErrorApi = ({
   error,

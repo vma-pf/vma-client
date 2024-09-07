@@ -8,12 +8,13 @@ import { BsFillCalendarHeartFill } from "react-icons/bs";
 import { HiBellAlert } from "react-icons/hi2";
 import ButtonLogout from "./button-logout";
 import { Button, Divider } from "@nextui-org/react";
+import Image from "next/image";
 
 const SideNavbar = () => {
   return (
     <div className="flex flex-col bg-slate-200 dark:bg-zinc-800 items-center rounded-2xl w-52 h-full">
-      <Link href="/dashboard">
-        <p className="text-2xl font-bold mt-5">VMA-PF</p>
+      <Link className="mt-3" href="/dashboard">
+        <Image src="/assets/vma-logo.png" alt="logo" width={80} height={80} />
       </Link>
       <Divider orientation="horizontal" className="w-4/5 mt-5" />
       <div className="w-full mt-5">

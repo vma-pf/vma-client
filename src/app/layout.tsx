@@ -12,8 +12,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "VMA-PF",
-  description: "VMA-PF",
+  title: "VMA",
+  description: "VMA",
 };
 
 export default function RootLayout({

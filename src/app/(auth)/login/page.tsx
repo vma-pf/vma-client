@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { apiRequest } from "../api-request";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
+import Image from "next/image";
 
 const Login = () => {
   const router = useRouter();
@@ -13,19 +14,28 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const res = await apiRequest.login();
-      await apiRequest.setTokenToCookie(res.payload.data.tokens.accessToken);
+      // const res = await apiRequest.login();
+      const token = "123";
+      // await apiRequest.setTokenToCookie(res.payload.data.tokens.accessToken);
+      await apiRequest.setTokenToCookie(token);
       router.push("/dashboard");
     } catch (error) {
       console.log(error);
     }
   };
   return (
-    <div className="h-screen flex items-center justify-center">
-      <div className="p-10 border-medium rounded-xl ">
-        <p className="mb-4 text-3xl text-center">VMA-PF</p>
-        <p className="mb-4 text-3xl text-center">Đăng nhập</p>
-        <p className="my-4">Đăng nhập vào tài khoản của bạn</p>
+    <div className="bg-gradient-to-r from-indigo-500 from-10% via-sky-500 via-30% to-emerald-500 to-90% h-screen flex items-center justify-center">
+      <div className="bg-white dark:bg-black p-10 rounded-3xl">
+        <Image
+          className="m-auto"
+          src="/assets/vma-logo.png"
+          alt="logo"
+          width={90}
+          height={90}
+        />
+        <p className="my-4 text-lg text-center">
+          Đăng nhập vào tài khoản của bạn
+        </p>
         <Input
           className="w-80 mb-5"
           type="text"
@@ -48,13 +58,13 @@ const Login = () => {
           type={isVisible ? "text" : "password"}
         />
         <Button
-          className="w-full mt-6"
+          className="bg-gradient-to-r from-indigo-500 to-emerald-500 w-full mt-6"
           variant="solid"
-          color="primary"
+          // color="primary"
           onClick={handleLogin}
           size="lg"
         >
-          Đăng nhập
+          <p className="text-white">Đăng nhập</p>
         </Button>
       </div>
     </div>
