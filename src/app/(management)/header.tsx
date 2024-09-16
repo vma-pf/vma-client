@@ -11,11 +11,12 @@ const Header = () => {
 
   const titleMap: { [key: string]: string } = {
     "/dashboard": "Tổng quan",
-    "/pig": "Heo",
-    "/medicine": "Thuốc",
-    "/vaccination": "Vacxin",
+    "/pig": "Quản lý heo",
+    "/herd": "Quản lý đàn heo",
+    "/medicine": "Quản lý thuốc",
+    "/vaccination": "Lịch tiêm phòng",
+    "/treatment": "Kế hoạch điều trị",
     "/camera": "Camera",
-    "/treatment-plan": "Kế hoạch điều trị",
     "/alert": "Cảnh báo",
   };
 

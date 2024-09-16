@@ -18,7 +18,7 @@ const ManagementLayout = ({
           <div className="p-2">
             <Header />
           </div>
-          <div className="h-fit">{children}</div>
+          <div className="ml-2 h-fit">{children}</div>
         </div>
       </div>
       <Footer />
