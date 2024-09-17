@@ -62,19 +62,19 @@ const request = async (
   });
 
   const payload = await response.json();
-  const data = {
-    status: response.status,
-    payload,
-  };
+  // const data = {
+  //   status: response.status,
+  //   payload,
+  // };
 
   if (!response.ok) {
-    throw new HttpError(data);
+    throw new HttpError(payload);
   }
 
   if (response.status === 204) {
     return null;
   }
-  return data;
+  return payload;
 };
 
 const http = {
