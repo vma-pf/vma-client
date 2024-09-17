@@ -38,14 +38,9 @@ const SideNavbar = () => {
       icon: <MdSpaceDashboard size={25} />,
     },
     {
-      path: "/pig",
-      title: "Heo",
-      icon: <GiPig size={25} />,
-    },
-    {
       path: "/herd",
-      title: "Đàn heo",
-      icon: <GiCage size={25} />,
+      title: "Quản lý đàn heo",
+      icon: <GiPig size={25} />,
     },
     {
       path: "/medicine",
@@ -118,22 +113,12 @@ const SideNavbar = () => {
             icon={<MdSpaceDashboard size={25} />}
             open={open}
           />
-          <Accordion defaultExpandedKeys={["1"]}>
-            <AccordionItem key="1" subtitle={open ? "Quản lý đàn heo" : ""}>
-              <SideBarOption
-                path="/pig"
-                title="Heo"
-                icon={<GiPig size={25} />}
-                open={open}
-              />
-              <SideBarOption
-                path="/herd"
-                title="Đàn heo"
-                icon={<GiCage size={25} />}
-                open={open}
-              />
-            </AccordionItem>
-          </Accordion>
+          <SideBarOption
+            path="/herd"
+            title="Quản lý đàn heo"
+            icon={<GiPig size={25} />}
+            open={open}
+          />
           <SideBarOption
             path="/medicine"
             title="Quản lý thuốc"

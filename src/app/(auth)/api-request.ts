@@ -1,17 +1,18 @@
 import http from "@oursrc/lib/http";
 
 export const apiRequest = {
-  login: () =>
+  login: (username: string, password: string) =>
     http.post("auth/login", {
-      username: "duy",
-      password: "123",
+      username: username,
+      password: password,
     }),
 
-  setTokenToCookie: (sessionToken: string) =>
+  setTokenToCookie: (sessionToken: string, refreshToken: string) =>
     http.post(
       "/api/auth",
       {
         sessionToken,
+        refreshToken,
       },
       { baseUrl: "" }
     ),

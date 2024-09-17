@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     {
       status: 200,
       headers: {
-        "Set-Cookie": `sessionToken=; HttpOnly; Secure; SameSite=Lax; Path=/`,
+        "Set-Cookie": `sessionToken=; HttpOnly; Secure; SameSite=Lax; Path=/ , refreshToken=; HttpOnly; Secure; SameSite=Lax; Path=/;`,
       },
     }
   );
