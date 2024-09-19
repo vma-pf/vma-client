@@ -3,11 +3,11 @@ import type { NextRequest } from "next/server";
 
 const privatePaths = [
   "/dashboard",
-  "/pig",
+  "/herd",
   "/medicine",
   "/vaccination",
-  "/treatment-plan",
-  "/camera",
+  "/treatment",
+  "/cage",
   "/alert",
 ];
 const publicPaths = ["/login", "/register"];
@@ -27,11 +27,11 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/dashboard",
-    "/pig",
+    "/herd",
     "/medicine",
     "/vaccination",
-    "/treatment-plan",
-    "/camera",
+    "/treatment",
+    "/cage",
     "/alert",
     "/login",
     "/register",

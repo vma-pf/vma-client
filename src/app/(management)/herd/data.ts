@@ -7,6 +7,11 @@ const columns = [
   { name: "CHIỀU CAO", uid: "height", sortable: true },
   { name: "CHIỀU RỘNG", uid: "width", sortable: true },
   { name: "TÌNH TRẠNG", uid: "status", sortable: true },
+  {
+    name: "NGÀY TIÊM CHỦNG TIẾP THEO",
+    uid: "nextVaccinationDate",
+    sortable: true,
+  },
   { name: "ACTIONS", uid: "actions" },
 ];
 
@@ -26,6 +31,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-10",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
   },
   {
@@ -37,6 +43,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-09",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704d",
   },
   {
@@ -48,6 +55,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-08",
     avatar: "https://i.pravatar.cc/150?u=a04258114e29026702d",
   },
   {
@@ -59,6 +67,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-07",
     avatar: "https://i.pravatar.cc/150?u=a048581f4e29026701d",
   },
   {
@@ -70,6 +79,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-06",
     avatar: "https://i.pravatar.cc/150?u=a092581d4ef9026700d",
   },
   {
@@ -81,6 +91,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-05",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
   },
   {
@@ -92,6 +103,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "sick",
+    nextVaccinationDate: "2021-09-04",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e29027007d",
   },
   {
@@ -103,6 +115,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "dead",
+    nextVaccinationDate: "2021-09-03",
     avatar: "https://i.pravatar.cc/150?u=a042581f4e27027008d",
   },
   {
@@ -114,6 +127,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-02",
     avatar: "https://i.pravatar.cc/150?img=4",
   },
   {
@@ -125,6 +139,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-08-30",
     avatar: "https://i.pravatar.cc/150?img=5",
   },
   {
@@ -136,6 +151,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-08-10",
     avatar: "https://i.pravatar.cc/150?img=8",
   },
   {
@@ -147,6 +163,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-07-10",
     avatar: "https://i.pravatar.cc/150?img=10",
   },
   {
@@ -158,6 +175,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-10",
     avatar: "https://i.pravatar.cc/150?img=12",
   },
   {
@@ -169,6 +187,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-10",
     avatar: "https://i.pravatar.cc/150?img=16",
   },
   {
@@ -180,6 +199,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-10",
     avatar: "https://i.pravatar.cc/150?img=15",
   },
   {
@@ -191,6 +211,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-10",
     avatar: "https://i.pravatar.cc/150?img=20",
   },
   {
@@ -202,6 +223,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-10",
     avatar: "https://i.pravatar.cc/150?img=33",
   },
   {
@@ -213,6 +235,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-10",
     avatar: "https://i.pravatar.cc/150?img=29",
   },
   {
@@ -224,6 +247,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-10",
     avatar: "https://i.pravatar.cc/150?img=50",
   },
   {
@@ -235,6 +259,7 @@ const pigs = [
     height: "1m",
     width: "1m",
     status: "active",
+    nextVaccinationDate: "2021-09-10",
     avatar: "https://i.pravatar.cc/150?img=45",
   },
   // {
