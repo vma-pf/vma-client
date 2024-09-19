@@ -58,9 +58,9 @@ const SideNavbar = () => {
       icon: <BsFillCalendarHeartFill size={25} />,
     },
     {
-      path: "/camera",
-      title: "Camera",
-      icon: <GiCctvCamera size={25} />,
+      path: "/cage",
+      title: "Quản lý chuồng",
+      icon: <GiCage size={25} />,
     },
     {
       path: "/alert",
@@ -142,9 +142,9 @@ const SideNavbar = () => {
             </AccordionItem>
           </Accordion>
           <SideBarOption
-            path="/camera"
-            title="Camera"
-            icon={<GiCctvCamera size={25} />}
+            path="/cage"
+            title="Quản lý chuồng"
+            icon={<GiCage size={25} />}
             open={open}
           />
           <SideBarOption
