@@ -29,7 +29,7 @@ const LoginForm = () => {
       // );
       const token = "123";
       await apiRequest.setTokenToCookie(token, token);
-      router.push("/dashboard");
+      router.push("/farmer/dashboard");
       setIsLoading(false);
     } catch (error) {
       console.log(error);

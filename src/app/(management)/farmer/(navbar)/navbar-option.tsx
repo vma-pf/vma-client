@@ -16,15 +16,19 @@ const SideBarOption = ({
   open: boolean;
 }) => {
   const pathname = usePathname();
+  const filteredPath = pathname
+    .split("/farmer")
+    .filter((x) => x)
+    .toString();
 
   return (
-    <Link href={path}>
+    <Link href={"/farmer" + path}>
       {open ? (
         <div
           className={`py-3 flex flex-row items-center duration-300 ${
             open ? "justify-start pl-4" : "justify-center"
           } hover:bg-emerald-50 hover:dark:bg-zinc-700 hover:text-emerald-500 hover:dark:text-emerald-300 ${
-            pathname === path
+            filteredPath === path
               ? "bg-emerald-50 text-emerald-500 dark:text-emerald-300 dark:bg-zinc-700 border-r-4 border-emerald-500 dark:border-emerald-500"
               : ""
           }`}
@@ -38,7 +42,7 @@ const SideBarOption = ({
             className={`py-3 flex flex-row items-center duration-300 ${
               open ? "justify-start pl-4" : "justify-center"
             } hover:bg-emerald-50 hover:dark:bg-zinc-700 hover:text-emerald-500 hover:dark:text-emerald-300 ${
-              pathname === path
+              filteredPath === path
                 ? "bg-emerald-50 text-emerald-500 dark:text-emerald-300 dark:bg-zinc-700 border-r-4 border-emerald-500 dark:border-emerald-500"
                 : ""
             }`}

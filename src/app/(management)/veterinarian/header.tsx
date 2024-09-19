@@ -14,9 +14,13 @@ import React from "react";
 import { FaBell } from "react-icons/fa6";
 import { HiSun, HiMoon } from "react-icons/hi";
 
-const Header = () => {
+const VetHeader = () => {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const filteredPath = pathname
+    .split("/veterinarian")
+    .filter((x) => x)
+    .toString();
 
   const titleMap: { [key: string]: string } = {
     "/dashboard": "Tổng quan",
@@ -32,9 +36,9 @@ const Header = () => {
   const toggleMode = () => setTheme(theme === "light" ? "dark" : "light");
   return (
     <div className="bg-slate-200 dark:bg-zinc-800 px-4 py-2 rounded-2xl flex justify-between">
-      <p className="font-bold text-4xl">{titleMap[pathname] || ""}</p>
+      <p className="font-bold text-4xl">{titleMap[filteredPath] || ""}</p>
       <div className="flex items-center">
-        <p>Chào, admin</p>
+        <p>Chào, Vet</p>
         <Avatar
           className="mx-2"
           src="https://i.pravatar.cc/150?u=a042581f4e29026024d"
@@ -62,4 +66,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default VetHeader;

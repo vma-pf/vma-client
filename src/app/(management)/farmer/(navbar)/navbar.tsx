@@ -30,7 +30,7 @@ type NavbarItem = {
   icon: any;
 };
 
-const SideNavbar = () => {
+const FarmerNavbar = () => {
   const navbarItems: NavbarItem[] = [
     {
       path: "/dashboard",
@@ -77,6 +77,7 @@ const SideNavbar = () => {
       setIsLoading(true);
       await apiRequest.logoutFromNextClientToNextServer();
       router.push("/login");
+      // router.refresh();
       setIsLoading(false);
     } catch (error) {
       handleErrorApi({ error });
@@ -88,7 +89,7 @@ const SideNavbar = () => {
         open ? "w-56" : "w-20"
       } h-full duration-300`}
     >
-      <Link href="/dashboard">
+      <Link href="/farmer/dashboard">
         <Image
           className="duration-300"
           src="/assets/vma-logo.png"
@@ -196,4 +197,4 @@ const SideNavbar = () => {
   );
 };
 
-export default SideNavbar;
+export default FarmerNavbar;

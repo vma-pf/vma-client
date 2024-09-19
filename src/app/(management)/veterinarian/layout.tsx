@@ -1,9 +1,9 @@
 import React from "react";
-import Header from "./header";
-import Footer from "./footer";
-import SideNavbar from "./(navbar)/navbar";
+import Footer from "@oursrc/app/(management)/footer";
+import VetNavbar from "./(navbar)/navbar";
+import VetHeader from "./header";
 
-const ManagementLayout = ({
+const VetLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -12,11 +12,11 @@ const ManagementLayout = ({
     <div className="flex flex-col h-screen justify-between">
       <div className="flex flex-grow">
         <div className="ml-4 my-4">
-          <SideNavbar />
+          <VetNavbar />
         </div>
         <div className="ml-4 flex-grow">
           <div className="p-2">
-            <Header />
+            <VetHeader />
           </div>
           <div className="ml-2 mr-3 h-fit">{children}</div>
         </div>
@@ -26,4 +26,4 @@ const ManagementLayout = ({
   );
 };
 
-export default ManagementLayout;
+export default VetLayout;

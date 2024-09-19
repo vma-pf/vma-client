@@ -110,8 +110,8 @@ const Cage = () => {
         </Button>
       </div>
       <div className="grid grid-cols-4 gap-5">
-        {cages.map((cage) => (
-          <Card shadow="md">
+        {cages.map((cage, idx) => (
+          <Card key={idx} shadow="md">
             <CardHeader>
               <p className="text-lg m-auto font-semibold">Chuồng {cage.id}</p>
             </CardHeader>
