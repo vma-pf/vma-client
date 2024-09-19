@@ -23,6 +23,15 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        blink: {
+          "0%, 10%, 80%, 100%": { color: "gray" },
+          "20% ,30%, 40%, 60%": { color: "red" },
+        },
+      },
+      animation: {
+        blink: "blink 1s linear infinite",
+      },
     },
   },
   darkMode: ["class"],
