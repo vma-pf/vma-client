@@ -6,6 +6,7 @@ import { apiRequest } from "../api-request";
 import { Button, Input } from "@nextui-org/react";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { useToast } from "@oursrc/hooks/use-toast";
+import { ROLE, decodeToken } from "@oursrc/lib/utils";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -31,13 +32,16 @@ const LoginForm = () => {
       );
       if (res.isSuccess === true) {
         localStorage.setItem("accessToken", res.data?.accessToken);
-        // const token = "123";
-        // await apiRequest.setTokenToCookie(token, token);
+        const role = decodeToken(res.data?.accessToken)?.role?.toLowerCase();
+        if (role === ROLE.VETERINARIAN) {
+          router.push("/veterinarian/dashboard");
+        } else {
+          router.push("/farmer/dashboard");
+        }
         toast({
           variant: "success",
           title: "Đăng nhập thành công",
         });
-        router.push("/farmer/dashboard");
       } else {
         toast({
           variant: "destructive",
