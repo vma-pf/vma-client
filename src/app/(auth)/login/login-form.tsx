@@ -37,7 +37,7 @@ const LoginForm = () => {
           variant: "success",
           title: "Đăng nhập thành công",
         });
-        router.push("/dashboard");
+        router.push("/farmer/dashboard");
       } else {
         toast({
           variant: "destructive",

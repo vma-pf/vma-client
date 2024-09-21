@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("sessionToken")?.value;
   const decodedToken = decodeToken(token as string) || {};
-  const role: string = decodedToken?.role.toLowerCase() || "";
+  const role: string = decodedToken?.role?.toLowerCase() || "";
 
   if (pathname === "/login") {
     return NextResponse.next();

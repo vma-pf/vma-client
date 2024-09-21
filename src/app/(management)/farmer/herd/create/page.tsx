@@ -1,43 +1,66 @@
 "use client";
-import { parseDate } from "@internationalized/date";
-import { Button, DatePicker, DateValue, Input, Textarea } from "@nextui-org/react";
+import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
+import {
+  Button,
+  DatePicker,
+  DateRangePicker,
+  DateValue,
+  Input,
+  Textarea,
+} from "@nextui-org/react";
 import CreateHerdProgressStep from "@oursrc/components/herds/create-herd-progress-step";
 import AttachMedia from "@oursrc/components/ui/attach-media/attach-media";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { apiRequest } from "../api-request";
+import { useToast } from "@oursrc/hooks/use-toast";
 
 const HerdCreate = () => {
-  const [loading, setLoading] = React.useState<boolean|undefined>(false);
-  const [startDate, setStartDate] = React.useState(parseDate(new Date().toJSON().slice(0, 10)));
-  const [expectedEndDate, setExpectedEndDate] = React.useState<DateValue|null>(null);
+  const { toast } = useToast(); 
+  const [loading, setLoading] = React.useState<boolean | undefined>(false);
+  const [date, setDate] = React.useState({
+    start: parseDate(new Date().toJSON().slice(0, 10)),
+    end: parseDate(new Date().toJSON().slice(0, 10)),
+  });
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
-    defaultValues:{
-      herdName: '',
-      breed: '',
-      startDate: '',
-      expectedEndDate: '',
-      description: ''
-    }
-
+    defaultValues: {
+      herdName: "",
+      breed: "",
+      startDate: "",
+      expectedEndDate: "",
+      description: "",
+      totalNumber: 0,
+      date: ""
+    },
   });
 
   const handleSubmitForm = async (data: any) => {
-    setLoading(true)
-    try{
-      data.startDate = startDate
-      data.expectedEndDate = expectedEndDate
-      console.log(data)
+    if(date.end === null){
+    }
+    setLoading(true);
+    try {
+      data.startDate = date.start.toString();
+      data.expectedEndDate = date.end.toString();
+      delete data.date
       const res = await apiRequest.createHerd(data);
-    }catch(error){
-
-    }finally{
-      setLoading(false)
+      if(res && res.isSuccess){
+        toast({
+          variant: "success",
+          title: res.data,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: error.message || "Đăng nhập thất bại",
+      });
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -104,7 +127,7 @@ const HerdCreate = () => {
                 radius="sm"
                 size="lg"
                 label="Giống heo"
-                placeholder="Nhập Giống heo"
+                placeholder="Nhập giống heo"
                 labelPlacement="outside"
                 description="ví dụ: giống A, giống B,..."
                 isRequired
@@ -115,29 +138,32 @@ const HerdCreate = () => {
             </div>
           </div>
           <div className="grid grid-flow-row grid-cols-2 gap-4 mb-5">
-            <DatePicker
-              label="Ngày bắt đầu"
-              radius="sm"
-              size="lg"
-                labelPlacement="outside"
-              isRequired
-              isInvalid={errors.startDate ? true : false}
-              errorMessage="Vui lòng nhập đúng ngày bắt đầu"
-              value={startDate}
-              onChange={setStartDate}
-              
-            />
-            <DatePicker
-              label="Ngày kết thúc"
+            <DateRangePicker
+              label="Ngày bắt đầu - Ngày kết thúc"
               radius="sm"
               size="lg"
               labelPlacement="outside"
               isRequired
-              isInvalid={errors.expectedEndDate ? true : false}
-              errorMessage="Vui lòng nhập đúng ngày kết thúc"
-              value={expectedEndDate}
-              onChange={setExpectedEndDate}
+              isInvalid={errors.date ? true : false}
+              errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
+              minValue={today(getLocalTimeZone())}
+              validationBehavior="native"
+              value={date}
+              onChange={setDate}
             />
+            <Input
+                className="mb-5"
+                type="text"
+                radius="sm"
+                size="lg"
+                label="Số lượng heo"
+                placeholder="Nhập số lượng heo"
+                labelPlacement="outside"
+                isRequired
+                isInvalid={errors.totalNumber ? true : false}
+                errorMessage="Số lượng heo không được để trống"
+                {...register("totalNumber", { required: true })}
+              />
           </div>
           <div className="grid grid-cols-1 mb-5">
             <Textarea
