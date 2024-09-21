@@ -1,5 +1,11 @@
 // const SERVERURL = "https://hsc-sever-0r5m.onrender.com/api/v1"; // Replace with actual API URL
-const SERVERURL = "http://localhost:5000/api/v1"; // Replace with actual API URL
+const SERVERURL = "http://35.198.240.3:10000"; // Replace with actual API URL
+
+type ResponseObject = {
+  isSuccess: boolean;
+  data: any;
+  errorMessage: string | null;
+};
 
 type CustomOptions = RequestInit & {
   baseUrl?: string | undefined;
@@ -61,19 +67,19 @@ const request = async (
     method,
   });
 
-  const payload = await response.json();
+  const payload: ResponseObject = await response.json();
   // const data = {
   //   status: response.status,
   //   payload,
   // };
 
   if (!response.ok) {
-    throw new HttpError(payload);
+    throw new HttpError({ status: response.status, payload });
   }
 
-  if (response.status === 204) {
-    return null;
-  }
+  // if (response.status === 204) {
+  //   return null;
+  // }
   return payload;
 };
 

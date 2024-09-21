@@ -21,14 +21,15 @@ const LoginForm = () => {
   const handleLogin = async (data: any) => {
     try {
       setIsLoading(true);
-      // const res = await apiRequest.login(data.username, data.password);
-      // console.log(res);
-      // await apiRequest.setTokenToCookie(
-      //   res.data.tokens.accessToken,
-      //   res.data.tokens.refreshToken
-      // );
-      const token = "123";
-      await apiRequest.setTokenToCookie(token, token);
+      const res = await apiRequest.login(data.username, data.password);
+      console.log(res);
+      await apiRequest.setTokenToCookie(
+        res.data?.accessToken,
+        res.data?.refreshToken
+      );
+      localStorage.setItem("accessToken", res.data?.accessToken);
+      // const token = "123";
+      // await apiRequest.setTokenToCookie(token, token);
       router.push("/dashboard");
       setIsLoading(false);
     } catch (error) {

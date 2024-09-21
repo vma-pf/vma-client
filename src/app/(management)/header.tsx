@@ -1,5 +1,11 @@
 "use client";
 import {
+  HubConnection,
+  HubConnectionBuilder,
+  LogLevel,
+} from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import {
   Avatar,
   Badge,
   Button,
@@ -10,13 +16,57 @@ import {
 } from "@nextui-org/react";
 import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa6";
 import { HiSun, HiMoon } from "react-icons/hi";
+
+type Message = {
+  user: string;
+  message: string;
+};
 
 const Header = () => {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [connection, setConnection] = useState<HubConnection | null>(null);
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken")?.toString();
+    const connect = new HubConnectionBuilder()
+      .withUrl("http://35.198.240.3:10000/hubs/notification-hub", {
+        // send access token here
+        accessTokenFactory: () => accessToken || "",
+      })
+      .withAutomaticReconnect()
+      .withHubProtocol(
+        new MessagePackHubProtocol({
+          // encoder: encode,
+        })
+      )
+      .configureLogging(LogLevel.Information)
+      .build();
+    setConnection(connect);
+    connect
+      .start()
+      .then(() => {
+        connect.on("ReceiveMessage", (user, message) => {
+          setMessages((prev) => [...prev, { user, message }]);
+        });
+        // connect.invoke("RetrieveMessageHistory");
+      })
+
+      .catch((err) =>
+        console.error("Error while connecting to SignalR Hub:", err)
+      );
+
+    return () => {
+      if (connection) {
+        connection.off("ReceiveMessage");
+      }
+    };
+  }, []);
 
   const titleMap: { [key: string]: string } = {
     "/dashboard": "Tổng quan",
@@ -48,9 +98,12 @@ const Header = () => {
             </Button>
           </DropdownTrigger>
           <DropdownMenu>
-            <DropdownItem key={"1"}>Thông báo 1</DropdownItem>
-            <DropdownItem key={"2"}>Thông báo 2</DropdownItem>
-            <DropdownItem key={"3"}>Thông báo 3</DropdownItem>
+            {messages.map((msg, index) => (
+              <DropdownItem key={index}>
+                <p className="text-sm">User: {msg.user}</p>
+                <p className="text-md font-medium">Message: {msg.message}</p>
+              </DropdownItem>
+            ))}
           </DropdownMenu>
         </Dropdown>
         <Button isIconOnly variant="light" onClick={toggleMode}>
