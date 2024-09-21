@@ -73,9 +73,9 @@ const request = async (
   //   payload,
   // };
 
-  if (!response.ok) {
-    throw new HttpError({ status: response.status, payload });
-  }
+  // if (!response.ok) {
+  //   throw new HttpError({ status: response.status, payload });
+  // }
 
   // if (response.status === 204) {
   //   return null;

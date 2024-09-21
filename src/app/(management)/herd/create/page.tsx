@@ -1,8 +1,14 @@
 "use client";
-import { Button, DatePicker, Input, Textarea } from "@nextui-org/react";
+import {
+  Button,
+  DatePicker,
+  DateValue,
+  Input,
+  Textarea,
+} from "@nextui-org/react";
 import CreateHerdProgressStep from "@oursrc/components/herds/create-herd-progress-step";
 import { title } from "process";
-import React from "react";
+import React, { SetStateAction } from "react";
 import { useForm } from "react-hook-form";
 
 const HeadCreate = () => {
@@ -11,6 +17,8 @@ const HeadCreate = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+  const [date, setDate] = React.useState<DateValue>();
 
   const handleSubmitForm = () => {};
   return (
@@ -66,6 +74,8 @@ const HeadCreate = () => {
               label="Ngày bắt đầu"
               labelPlacement="outside"
               isRequired
+              value={date}
+              onChange={(date) => setDate(date)}
             />
             <DatePicker
               label="Ngày kết thúc"
