@@ -1,39 +1,36 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { ROLE, decodeToken } from "./lib/utils";
 
-const privatePaths = [
-  "/dashboard",
-  "/herd",
-  "/medicine",
-  "/vaccination",
-  "/treatment",
-  "/cage",
-  "/alert",
-];
-const publicPaths = ["/login", "/register"];
+const vetPaths = ["/veterinarian"];
+const farmerPaths = ["/farmer"];
 
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("sessionToken")?.value;
+  const decodedToken = decodeToken(token as string) || {};
+  const role: string = decodedToken?.role.toLowerCase() || "";
 
-  if (privatePaths.includes(pathname) && !token) {
+  if (pathname === "/login") {
+    return NextResponse.next();
+  }
+  if (token) {
+    if (
+      (role === ROLE.VETERINARIAN &&
+        !vetPaths.some((path) => pathname.startsWith(path))) ||
+      (role === ROLE.FARMER &&
+        !farmerPaths.some((path) => pathname.startsWith(path)))
+    ) {
+      return NextResponse.redirect(new URL("/_not-found", request.url));
+    }
+    return NextResponse.next();
+  } else {
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  return NextResponse.next();
 }
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: [
-    "/dashboard",
-    "/herd",
-    "/medicine",
-    "/vaccination",
-    "/treatment",
-    "/cage",
-    "/alert",
-    "/login",
-    "/register",
-  ],
+  matcher: ["/login", "/register", "/veterinarian/:path*", "/farmer/:path*"],
 };
