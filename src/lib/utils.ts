@@ -24,3 +24,15 @@ export const handleErrorApi = ({
     console.log(error);
   }
 };
+
+export const decodeToken = (token: string) => {
+  if (!token) {
+    return;
+  }
+  return JSON.parse(atob(token.split(".")[1]));
+};
+
+export const ROLE = {
+  VETERINARIAN: "veterinarian",
+  FARMER: "farmer",
+};

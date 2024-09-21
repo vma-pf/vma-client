@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { ROLE, decodeToken } from "./lib/utils";
 
 const vetPaths = ["/veterinarian"];
 const farmerPaths = ["/farmer"];
@@ -8,16 +9,17 @@ const farmerPaths = ["/farmer"];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("sessionToken")?.value;
-  const role = "farmer";
+  const decodedToken = decodeToken(token as string) || {};
+  const role: string = decodedToken?.role.toLowerCase() || "";
 
   if (pathname === "/login") {
     return NextResponse.next();
   }
   if (token) {
     if (
-      (role === "veterinarian" &&
+      (role === ROLE.VETERINARIAN &&
         !vetPaths.some((path) => pathname.startsWith(path))) ||
-      (role === "farmer" &&
+      (role === ROLE.FARMER &&
         !farmerPaths.some((path) => pathname.startsWith(path)))
     ) {
       return NextResponse.redirect(new URL("/_not-found", request.url));
