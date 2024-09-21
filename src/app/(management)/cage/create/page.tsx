@@ -1,45 +1,19 @@
 "use client";
-import { parseDate } from "@internationalized/date";
-import { Button, DatePicker, DateValue, Input, Textarea } from "@nextui-org/react";
+import { Button, DatePicker, Input, Textarea } from "@nextui-org/react";
 import CreateHerdProgressStep from "@oursrc/components/herds/create-herd-progress-step";
 import AttachMedia from "@oursrc/components/ui/attach-media/attach-media";
+import { title } from "process";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { apiRequest } from "../api-request";
 
-const HerdCreate = () => {
-  const [loading, setLoading] = React.useState<boolean|undefined>(false);
-  const [startDate, setStartDate] = React.useState(parseDate(new Date().toJSON().slice(0, 10)));
-  const [expectedEndDate, setExpectedEndDate] = React.useState<DateValue|null>(null);
-
+const CageCreate = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
-    defaultValues:{
-      herdName: '',
-      breed: '',
-      startDate: '',
-      expectedEndDate: '',
-      description: ''
-    }
+  } = useForm();
 
-  });
-
-  const handleSubmitForm = async (data: any) => {
-    setLoading(true)
-    try{
-      data.startDate = startDate
-      data.expectedEndDate = expectedEndDate
-      console.log(data)
-      const res = await apiRequest.createHerd(data);
-    }catch(error){
-
-    }finally{
-      setLoading(false)
-    }
-  };
+  const handleSubmitForm = () => {};
   return (
     <div>
       <div className="container mx-auto px-20">
@@ -48,13 +22,13 @@ const HerdCreate = () => {
             {
               title: "Buoc 1",
               status: "done",
-              isCurrentTab: true,
+              isCurrentTab: false,
               route: "/herd/create",
             },
             {
               title: "Buoc 2",
               status: "not_yet",
-              isCurrentTab: false,
+              isCurrentTab: true,
               route: "/cage/create",
             },
             {
@@ -71,14 +45,14 @@ const HerdCreate = () => {
             },
           ]}
         />
-        <div className="mt-12 mb-8">
-          <h1 className="text-3xl">Tạo đàn mới</h1>
+        <div className="mt-12 mb-6">
+          <h1 className="text-3xl">Tạo chuồng mới</h1>
         </div>
         <div className="w-100">
           <AttachMedia size="1/2" />
         </div>
         <div className="mt-12">
-          <h1 className="text-xl">Thông tin đàn</h1>
+          <h1 className="text-xl">Thông tin chuồng</h1>
         </div>
         <form onSubmit={handleSubmit(handleSubmitForm)}>
           <div className="grid grid-flow-row grid-cols-2 gap-4 mt-10">
@@ -88,13 +62,13 @@ const HerdCreate = () => {
                 type="text"
                 radius="sm"
                 size="lg"
-                label="Kí hiệu đàn"
-                placeholder="Nhập kí hiệu đàn"
+                label="Tên chuồng"
+                placeholder="Nhập tên chuồng"
                 labelPlacement="outside"
                 isRequired
-                isInvalid={errors.herdName ? true : false}
-                errorMessage="Kí hiệu đàn không được để trống"
-                {...register("herdName", { required: true })}
+                isInvalid={errors.username ? true : false}
+                errorMessage="Tên chuồng không được để trống"
+                {...register("cageName", { required: true })}
               />
             </div>
             <div className="flex w-full flex-wrap md:flex-nowrap">
@@ -103,29 +77,38 @@ const HerdCreate = () => {
                 type="text"
                 radius="sm"
                 size="lg"
-                label="Giống heo"
-                placeholder="Nhập Giống heo"
+                label="Sức chứa"
+                placeholder="Nhập sức chứa"
                 labelPlacement="outside"
-                description="ví dụ: giống A, giống B,..."
                 isRequired
-                isInvalid={errors.breed ? true : false}
-                errorMessage="Giống heo không được để trống"
-                {...register("breed", { required: true })}
+                isInvalid={errors.username ? true : false}
+                errorMessage="Sức chứa không được để trống"
+                {...register("cageCapacity", { required: true })}
               />
             </div>
+          </div>
+          <div className="grid grid-flow-row grid-cols-1 gap-4">
+            <Input
+              className="mb-5"
+              type="text"
+              radius="sm"
+              size="lg"
+              label="Vị trí"
+              placeholder="Nhập vị trí"
+              labelPlacement="outside"
+              isRequired
+              isInvalid={errors.username ? true : false}
+              errorMessage="Vị trí không được để trống"
+              {...register("cagrPosition", { required: true })}
+            />
           </div>
           <div className="grid grid-flow-row grid-cols-2 gap-4 mb-5">
             <DatePicker
               label="Ngày bắt đầu"
               radius="sm"
               size="lg"
-                labelPlacement="outside"
+              labelPlacement="outside"
               isRequired
-              isInvalid={errors.startDate ? true : false}
-              errorMessage="Vui lòng nhập đúng ngày bắt đầu"
-              value={startDate}
-              onChange={setStartDate}
-              
             />
             <DatePicker
               label="Ngày kết thúc"
@@ -133,10 +116,6 @@ const HerdCreate = () => {
               size="lg"
               labelPlacement="outside"
               isRequired
-              isInvalid={errors.expectedEndDate ? true : false}
-              errorMessage="Vui lòng nhập đúng ngày kết thúc"
-              value={expectedEndDate}
-              onChange={setExpectedEndDate}
             />
           </div>
           <div className="grid grid-cols-1 mb-5">
@@ -149,20 +128,20 @@ const HerdCreate = () => {
               placeholder="Nhập mô tả"
               labelPlacement="outside"
               isRequired
-              isInvalid={errors.description ? true : false}
+              isInvalid={errors.username ? true : false}
               errorMessage="Mô tả không được để trống"
-              {...register("description", { required: true })}
+              {...register("herdType", { required: true })}
             />
           </div>
           <div className="flex justify-end">
             <Button
               className="w-1/6 focus:outline-none text-white bg-green-500 hover:bg-green-400 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 mt-6"
               variant="solid"
-              isLoading={loading}
+              isLoading={false}
               size="lg"
               type="submit"
             >
-              <p className="text-white">Lưu đàn</p>
+              <p className="text-white">Lưu chuồng</p>
             </Button>
           </div>
         </form>
@@ -171,4 +150,4 @@ const HerdCreate = () => {
   );
 };
 
-export default HerdCreate;
+export default CageCreate;
