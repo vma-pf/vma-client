@@ -1,3 +1,4 @@
+"use client";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { getBorderClassNameByHerdStatus, getClassNameByHerdStatus } from "./utils";
@@ -5,26 +6,24 @@ type ProgressStep = {
   title: string;
   status: string;
   isCurrentTab: boolean;
-  route: string;
 };
 const CreateHerdProgressStep = ({ data }: { data: ProgressStep[] }) => {
-  const router = useRouter();
   const convertStatus = (status: string) => {
     switch (status) {
       case "not_yet":
-        return "Chua hoan thanh";
+        return "Chưa hoàn thành";
       case "done":
-        return "Hoan thanh";
+        return "Hoàn thành";
     }
   };
-  const handleStepClick = (route: string) => {
-    router.push(route);
+  const handleStepClick = () => {
+    data = [{title: 'ascs', isCurrentTab: true, status: 'not_yet'}]
   };
   return (
     <div>
       <ol className="grid grid-flow-row grid-cols-5 gap-5 mt-5">
         {data.map((step: ProgressStep, index) => (
-          <li onClick={() => handleStepClick(step.route)}>
+          <li onClick={() => handleStepClick()}>
             <div
               className={`w-full p-4 cursor-pointer ${getClassNameByHerdStatus(
                 step.status,
