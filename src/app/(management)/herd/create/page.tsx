@@ -1,8 +1,14 @@
 "use client";
-import { Button, DatePicker, Input, Textarea } from "@nextui-org/react";
+import {
+  Button,
+  DatePicker,
+  DateValue,
+  Input,
+  Textarea,
+} from "@nextui-org/react";
 import CreateHerdProgressStep from "@oursrc/components/herds/create-herd-progress-step";
 import { title } from "process";
-import React from "react";
+import React, { SetStateAction } from "react";
 import { useForm } from "react-hook-form";
 
 const HeadCreate = () => {
@@ -11,6 +17,8 @@ const HeadCreate = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
+
+  const [date, setDate] = React.useState<DateValue>();
 
   const handleSubmitForm = () => {};
   return (
@@ -66,6 +74,8 @@ const HeadCreate = () => {
               label="Ngày bắt đầu"
               labelPlacement="outside"
               isRequired
+              value={date}
+              onChange={(date) => setDate(date)}
             />
             <DatePicker
               label="Ngày kết thúc"
@@ -93,13 +103,12 @@ const HeadCreate = () => {
             <div></div>
             <div></div>
             <Button
-              className="focus:outline-none text-white bg-green-500 hover:bg-green-400 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 w-full mt-6"
+              // className="focus:outline-none text-white bg-green-500 hover:bg-green-400 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 w-full mt-6"
+              color="primary"
               variant="solid"
-              isLoading={false}
-              size="lg"
               type="submit"
             >
-              <p className="text-white">Xác nhận</p>
+              Xác nhận
             </Button>
           </div>
         </form>

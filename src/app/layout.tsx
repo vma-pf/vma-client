@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import "./globals.css";
 import { NextUIProvider } from "@nextui-org/react";
 import { ThemeProvider } from "@oursrc/components/theme-provider";
+import { Toaster } from "@oursrc/components/ui/toaster";
 
 const roboto = Roboto({
   weight: "400",
@@ -38,6 +39,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Toaster />
           <NextUIProvider>{children}</NextUIProvider>
         </ThemeProvider>
       </body>

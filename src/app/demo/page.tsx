@@ -5,11 +5,12 @@ import {
   HubConnectionBuilder,
   LogLevel,
 } from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { encode, decode } from "@msgpack/msgpack";
 
 type Message = {
-  sender: string;
-  content: string;
-  sentTime: Date;
+  user: string;
+  message: string;
 };
 
 const Demo = () => {
@@ -18,19 +19,28 @@ const Demo = () => {
   const [connection, setConnection] = useState<HubConnection | null>(null);
 
   useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken")?.toString();
     const connect = new HubConnectionBuilder()
-      .withUrl("http://localhost:5000/hub")
+      .withUrl("http://35.198.240.3:10000/hubs/notification-hub", {
+        // send access token here
+        accessTokenFactory: () => accessToken || "",
+      })
       .withAutomaticReconnect()
+      .withHubProtocol(
+        new MessagePackHubProtocol({
+          // encoder: encode,
+        })
+      )
       .configureLogging(LogLevel.Information)
       .build();
     setConnection(connect);
     connect
       .start()
       .then(() => {
-        connect.on("ReceiveMessage", (sender, content, sentTime) => {
-          setMessages((prev) => [...prev, { sender, content, sentTime }]);
+        connect.on("ReceiveMessage", (user, message) => {
+          setMessages((prev) => [...prev, { user, message }]);
         });
-        connect.invoke("RetrieveMessageHistory");
+        // connect.invoke("RetrieveMessageHistory");
       })
 
       .catch((err) =>
@@ -60,12 +70,13 @@ const Demo = () => {
         {messages.map((msg, index) => (
           <div
             key={index}
-            className={`p-2 my-2 rounded ${
-              isMyMessage(msg.sender) ? "bg-blue-200" : "bg-gray-200"
-            }`}
+            // className={`p-2 my-2 rounded ${
+            //   isMyMessage(msg.sender) ? "bg-blue-200" : "bg-gray-200"
+            // }`}
           >
-            <p>{msg.content}</p>
-            <p className="text-xs">{new Date(msg.sentTime).toLocaleString()}</p>
+            <p>user: {msg.user}</p>
+            <p>message: {msg.message}</p>
+            {/* <p className="text-xs">{new Date(msg.sentTime).toLocaleString()}</p> */}
           </div>
         ))}
       </div>

@@ -2,8 +2,8 @@ import http from "@oursrc/lib/http";
 
 export const apiRequest = {
   login: (username: string, password: string) =>
-    http.post("auth/login", {
-      username: username,
+    http.post("api/auth/login", {
+      userName: username,
       password: password,
     }),
 

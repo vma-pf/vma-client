@@ -5,9 +5,11 @@ import { useForm } from "react-hook-form";
 import { apiRequest } from "../api-request";
 import { Button, Input } from "@nextui-org/react";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
+import { useToast } from "@oursrc/hooks/use-toast";
 
 const LoginForm = () => {
   const router = useRouter();
+  const { toast } = useToast();
   const [isVisible, setIsVisible] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const {
@@ -21,18 +23,31 @@ const LoginForm = () => {
   const handleLogin = async (data: any) => {
     try {
       setIsLoading(true);
-      // const res = await apiRequest.login(data.username, data.password);
-      // console.log(res);
-      // await apiRequest.setTokenToCookie(
-      //   res.data.tokens.accessToken,
-      //   res.data.tokens.refreshToken
-      // );
-      const token = "123";
-      await apiRequest.setTokenToCookie(token, token);
-      router.push("/dashboard");
-      setIsLoading(false);
+      const res = await apiRequest.login(data.username, data.password);
+      console.log(res);
+      await apiRequest.setTokenToCookie(
+        res.data?.accessToken,
+        res.data?.refreshToken
+      );
+      if (res.isSuccess === true) {
+        localStorage.setItem("accessToken", res.data?.accessToken);
+        // const token = "123";
+        // await apiRequest.setTokenToCookie(token, token);
+        toast({
+          variant: "success",
+          title: "Đăng nhập thành công",
+        });
+        router.push("/dashboard");
+      } else {
+        toast({
+          variant: "destructive",
+          title: res.errorMessage || "Đăng nhập thất bại",
+        });
+      }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
   return (
