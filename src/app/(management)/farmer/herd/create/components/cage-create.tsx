@@ -1,15 +1,15 @@
 "use client";
 import { Button, DatePicker, Input, Textarea } from "@nextui-org/react";
-import CreateHerdProgressStep from "@oursrc/components/herds/create-herd-progress-step";
 import AttachMedia from "@oursrc/components/ui/attach-media/attach-media";
 import { toast } from "@oursrc/hooks/use-toast";
-import { title } from "process";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { apiRequest } from "../../../cage/api-request";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
+import { useAppDispatch } from "@oursrc/lib/hooks";
 
 const CageCreate = () => {
+  const dispatch = useAppDispatch();
   const [loading, setLoading] = React.useState<boolean | undefined>(false);
   const {
     register,
@@ -18,7 +18,6 @@ const CageCreate = () => {
   } = useForm({
     defaultValues: {
       code: '',
-      position: '',
       capacity: 0,
       description: ''
     }
@@ -33,11 +32,12 @@ const CageCreate = () => {
           variant: "success",
           title: res.data,
         });
+        dispatch(setNextHerdProgressStep())
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: error.message || "Đăng nhập thất bại",
+        title: error.message,
       });
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ const CageCreate = () => {
               />
             </div>
           </div>
-          <div className="grid grid-flow-row grid-cols-1 gap-4">
+          {/* <div className="grid grid-flow-row grid-cols-1 gap-4">
             <Input
               className="mb-5"
               type="text"
@@ -102,7 +102,7 @@ const CageCreate = () => {
               errorMessage="Vị trí không được để trống"
               {...register("position", { required: true })}
             />
-          </div>
+          </div> */}
           <div className="grid grid-cols-1 mb-5">
             <Textarea
               minRows={20}
@@ -122,7 +122,7 @@ const CageCreate = () => {
             <Button
               className="w-1/6 focus:outline-none text-white bg-green-500 hover:bg-green-400 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 mt-6"
               variant="solid"
-              isLoading={false}
+              isLoading={loading}
               size="lg"
               type="submit"
             >

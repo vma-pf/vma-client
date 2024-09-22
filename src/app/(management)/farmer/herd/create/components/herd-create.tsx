@@ -57,7 +57,7 @@ const HerdCreate = () => {
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: error.message || "Đăng nhập thất bại",
+        title: error.message,
       });
     } finally {
       setLoading(false);

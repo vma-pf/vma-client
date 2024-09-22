@@ -10,25 +10,25 @@ const initialState: any = {
   herdProgressSteps: [
     {
       id: 1,
-      title: "Buoc 1",
-      status: "done",
+      title: "Tạo chuồng heo",
+      status: "not_yet",
       isCurrentTab: true,
     },
     {
       id: 2,
-      title: "Buoc 2",
+      title: "Tạo đàn heo",
       status: "not_yet",
       isCurrentTab: false,
     },
     {
       id: 3,
-      title: "Buoc 3",
+      title: "Gắn tag & xếp chuồng",
       status: "not_yet",
       isCurrentTab: false,
     },
     {
       id: 4,
-      title: "Buoc 4",
+      title: "Hoàn thành",
       status: "not_yet",
       isCurrentTab: false,
     },
@@ -55,6 +55,7 @@ export const herdProgressStepSlice = createSlice({
         (x: any) => x.isCurrentTab
       );
       state.herdProgressSteps[index].isCurrentTab = false;
+      state.herdProgressSteps[index].status = 'done';
       state.herdProgressSteps[index + 1].isCurrentTab = true;
     },
   },
