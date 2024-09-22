@@ -9,22 +9,26 @@ export interface IHerdProgressStep {
 const initialState: any = {
   herdProgressSteps: [
     {
-      title: "Buoc 1",
-      status: "done",
+      id: 1,
+      title: "Tạo chuồng heo",
+      status: "not_yet",
       isCurrentTab: true,
     },
     {
-      title: "Buoc 2",
+      id: 2,
+      title: "Tạo đàn heo",
       status: "not_yet",
       isCurrentTab: false,
     },
     {
-      title: "Buoc 3",
+      id: 3,
+      title: "Gắn tag & xếp chuồng",
       status: "not_yet",
       isCurrentTab: false,
     },
     {
-      title: "Buoc 4",
+      id: 4,
+      title: "Hoàn thành",
       status: "not_yet",
       isCurrentTab: false,
     },
@@ -40,12 +44,24 @@ export const herdProgressStepSlice = createSlice({
   name: "herdProgressStepSlice",
   initialState,
   reducers: {
-    setHerdProgressSteps: (state, action: PayloadAction<IHerdProgressStep[]>) => {
+    setHerdProgressSteps: (
+      state,
+      action: PayloadAction<IHerdProgressStep[]>
+    ) => {
       state.herdProgressSteps = action.payload;
+    },
+    setNextHerdProgressStep: (state) => {
+      const index = state.herdProgressSteps.findIndex(
+        (x: any) => x.isCurrentTab
+      );
+      state.herdProgressSteps[index].isCurrentTab = false;
+      state.herdProgressSteps[index].status = 'done';
+      state.herdProgressSteps[index + 1].isCurrentTab = true;
     },
   },
 });
 
-export const { setHerdProgressSteps } = herdProgressStepSlice.actions;
+export const { setHerdProgressSteps, setNextHerdProgressStep } =
+  herdProgressStepSlice.actions;
 
 export const herdProgressStepReducer = herdProgressStepSlice.reducer;
