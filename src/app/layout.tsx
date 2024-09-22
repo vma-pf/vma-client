@@ -4,6 +4,7 @@ import "./globals.css";
 import { NextUIProvider } from "@nextui-org/react";
 import { ThemeProvider } from "@oursrc/components/theme-provider";
 import { Toaster } from "@oursrc/components/ui/toaster";
+import StoreProvider from "./StoreProvider";
 
 const roboto = Roboto({
   weight: "400",
@@ -32,17 +33,19 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Toaster />
-          <NextUIProvider>{children}</NextUIProvider>
-        </ThemeProvider>
-      </body>
+      <StoreProvider>
+        <body>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Toaster />
+            <NextUIProvider>{children}</NextUIProvider>
+          </ThemeProvider>
+        </body>
+      </StoreProvider>
     </html>
   );
 }
