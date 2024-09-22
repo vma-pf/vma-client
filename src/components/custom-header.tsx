@@ -25,15 +25,21 @@ type Message = {
   message: string;
 };
 
-const VetHeader = () => {
+const CustomHeader = ({
+  titleMap,
+  prefix,
+}: {
+  titleMap: { [key: string]: string };
+  prefix: string;
+}) => {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const filteredPath = pathname
-    .split("/veterinarian")
+    .split(prefix)
     .filter((x) => x)
     .toString();
+
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
   const [connection, setConnection] = useState<HubConnection | null>(null);
 
   useEffect(() => {
@@ -72,23 +78,12 @@ const VetHeader = () => {
     };
   }, []);
 
-  const titleMap: { [key: string]: string } = {
-    "/dashboard": "Tổng quan",
-    "/pig": "Quản lý heo",
-    "/herd": "Quản lý đàn heo",
-    "/medicine": "Quản lý thuốc",
-    "/vaccination": "Lịch tiêm phòng",
-    "/treatment": "Kế hoạch điều trị",
-    "/cage": "Quản lý chuồng",
-    "/alert": "Cảnh báo",
-  };
-
   const toggleMode = () => setTheme(theme === "light" ? "dark" : "light");
   return (
     <div className="bg-slate-200 dark:bg-zinc-800 px-4 py-2 rounded-2xl flex justify-between">
       <p className="font-bold text-4xl">{titleMap[filteredPath] || ""}</p>
       <div className="flex items-center">
-        <p>Chào, Vet</p>
+        <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "Farmer"}</p>
         <Avatar
           className="mx-2"
           src="https://i.pravatar.cc/150?u=a042581f4e29026024d"
@@ -119,4 +114,4 @@ const VetHeader = () => {
   );
 };
 
-export default VetHeader;
+export default CustomHeader;

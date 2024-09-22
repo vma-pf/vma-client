@@ -4,25 +4,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
-const SideBarOption = ({
+const NavbarOptions = ({
   path,
+  prefix,
   title,
   icon,
   open,
 }: {
   path: string;
+  prefix: string;
   title: string;
   icon: any;
   open: boolean;
 }) => {
   const pathname = usePathname();
   const filteredPath = pathname
-    .split("/farmer")
+    .split(prefix)
     .filter((x) => x)
     .toString();
 
   return (
-    <Link href={"/farmer" + path}>
+    <Link href={prefix + path}>
       {open ? (
         <div
           className={`py-3 flex flex-row items-center duration-300 ${
@@ -55,4 +57,4 @@ const SideBarOption = ({
   );
 };
 
-export default SideBarOption;
+export default NavbarOptions;

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import CreateHerdProgressStep from "@oursrc/components/herds/create-herd-progress-step";
 import React from "react";
 import HerdCreate from "./components/herd-create";
