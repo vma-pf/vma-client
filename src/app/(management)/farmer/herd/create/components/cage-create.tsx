@@ -1,58 +1,38 @@
 "use client";
-import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
-import { Button, DateRangePicker, Input, Textarea } from "@nextui-org/react";
+import { Button, DatePicker, Input, Textarea } from "@nextui-org/react";
+import CreateHerdProgressStep from "@oursrc/components/herds/create-herd-progress-step";
 import AttachMedia from "@oursrc/components/ui/attach-media/attach-media";
+import { toast } from "@oursrc/hooks/use-toast";
+import { title } from "process";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { apiRequest } from "../../api-request";
-import { useToast } from "@oursrc/hooks/use-toast";
-import { useAppDispatch } from "@oursrc/lib/hooks";
+import { apiRequest } from "../../../cage/api-request";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
 
-const HerdCreate = () => {
-  const dispatch = useAppDispatch();
-  const { toast } = useToast();
+const CageCreate = () => {
   const [loading, setLoading] = React.useState<boolean | undefined>(false);
-  const [date, setDate] = React.useState({
-    start: parseDate(new Date().toJSON().slice(0, 10)),
-    end: parseDate(new Date().toJSON().slice(0, 10)),
-  });
-
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
     defaultValues: {
-      herdName: "",
-      breed: "",
-      startDate: "",
-      expectedEndDate: "",
-      description: "",
-      totalNumber: 0,
-      date: "",
-    },
+      code: '',
+      position: '',
+      capacity: 0,
+      description: ''
+    }
   });
 
   const handleSubmitForm = async (data: any) => {
-    if (date.end === null) {
-      toast({
-        variant: "destructive",
-        title: "Ngày kết thúc không được để trống",
-      });
-    }
     setLoading(true);
     try {
-      data.startDate = date.start.toString();
-      data.expectedEndDate = date.end.toString();
-      delete data.date;
-      const res = await apiRequest.createHerd(data);
+      const res = await apiRequest.createCage(data);
       if (res && res.isSuccess) {
         toast({
           variant: "success",
           title: res.data,
         });
-        dispatch(setNextHerdProgressStep())
       }
     } catch (error: any) {
       toast({
@@ -66,14 +46,14 @@ const HerdCreate = () => {
   return (
     <div>
       <div className="container mx-auto px-20">
-        <div className="mt-12 mb-8">
-          <h1 className="text-3xl">Tạo đàn mới</h1>
+        <div className="mt-12 mb-6">
+          <h1 className="text-3xl">Tạo chuồng mới</h1>
         </div>
         <div className="w-100">
           <AttachMedia size="1/2" />
         </div>
         <div className="mt-12">
-          <h1 className="text-xl">Thông tin đàn</h1>
+          <h1 className="text-xl">Thông tin chuồng</h1>
         </div>
         <form onSubmit={handleSubmit(handleSubmitForm)}>
           <div className="grid grid-flow-row grid-cols-2 gap-4 mt-10">
@@ -83,13 +63,13 @@ const HerdCreate = () => {
                 type="text"
                 radius="sm"
                 size="lg"
-                label="Kí hiệu đàn"
-                placeholder="Nhập kí hiệu đàn"
+                label="Mã chuồng"
+                placeholder="Nhập mã chuồng"
                 labelPlacement="outside"
                 isRequired
-                isInvalid={errors.herdName ? true : false}
-                errorMessage="Kí hiệu đàn không được để trống"
-                {...register("herdName", { required: true })}
+                isInvalid={errors.code ? true : false}
+                errorMessage="Mã chuồng không được để trống"
+                {...register("code", { required: true })}
               />
             </div>
             <div className="flex w-full flex-wrap md:flex-nowrap">
@@ -98,45 +78,29 @@ const HerdCreate = () => {
                 type="text"
                 radius="sm"
                 size="lg"
-                label="Giống heo"
-                placeholder="Nhập giống heo"
+                label="Sức chứa"
+                placeholder="Nhập sức chứa"
                 labelPlacement="outside"
-                description="ví dụ: giống A, giống B,..."
                 isRequired
-                isInvalid={errors.breed ? true : false}
-                errorMessage="Giống heo không được để trống"
-                {...register("breed", { required: true })}
+                isInvalid={errors.capacity ? true : false}
+                errorMessage="Sức chứa không được để trống"
+                {...register("capacity", { required: true })}
               />
             </div>
           </div>
-          <div className="grid grid-flow-row grid-cols-2 gap-4 mb-5">
-            <DateRangePicker
-              label="Ngày bắt đầu - Ngày kết thúc"
-              radius="sm"
-              size="lg"
-              labelPlacement="outside"
-              isRequired
-              isInvalid={errors.date ? true : false}
-              errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
-              minValue={today(getLocalTimeZone())}
-              validationBehavior="native"
-              value={date}
-              onChange={setDate}
-            />
+          <div className="grid grid-flow-row grid-cols-1 gap-4">
             <Input
               className="mb-5"
-              type="number"
-              min={0}
-              max={10000000}
+              type="text"
               radius="sm"
               size="lg"
-              label="Số lượng heo"
-              placeholder="Nhập số lượng heo"
+              label="Vị trí"
+              placeholder="Nhập vị trí"
               labelPlacement="outside"
               isRequired
-              isInvalid={errors.totalNumber ? true : false}
-              errorMessage="Số lượng heo không được để trống"
-              {...register("totalNumber", { required: true })}
+              isInvalid={errors.position ? true : false}
+              errorMessage="Vị trí không được để trống"
+              {...register("position", { required: true })}
             />
           </div>
           <div className="grid grid-cols-1 mb-5">
@@ -158,7 +122,7 @@ const HerdCreate = () => {
             <Button
               className="w-1/6 focus:outline-none text-white bg-green-500 hover:bg-green-400 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 mt-6"
               variant="solid"
-              isLoading={loading}
+              isLoading={false}
               size="lg"
               type="submit"
             >
@@ -171,4 +135,4 @@ const HerdCreate = () => {
   );
 };
 
-export default HerdCreate;
+export default CageCreate;
