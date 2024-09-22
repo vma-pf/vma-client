@@ -1,30 +1,43 @@
-import { useRouter } from "next/navigation";
+"use client";
 import React from "react";
-import { getBorderClassNameByHerdStatus, getClassNameByHerdStatus } from "./utils";
+import {
+  getBorderClassNameByHerdStatus,
+  getClassNameByHerdStatus,
+} from "./utils";
+import { useAppDispatch } from "@oursrc/lib/hooks";
+import { setHerdProgressSteps } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
+import { useHerdProgressSteps } from "@oursrc/lib/store";
 type ProgressStep = {
   title: string;
   status: string;
   isCurrentTab: boolean;
-  route: string;
 };
-const CreateHerdProgressStep = ({ data }: { data: ProgressStep[] }) => {
-  const router = useRouter();
+const CreateHerdProgressStep = () => {
+  const dispatch = useAppDispatch();
+  const [data, setData] = React.useState(useHerdProgressSteps());
+
   const convertStatus = (status: string) => {
     switch (status) {
       case "not_yet":
-        return "Chua hoan thanh";
+        return "Chưa hoàn thành";
       case "done":
-        return "Hoan thanh";
+        return "Hoàn thành";
     }
   };
-  const handleStepClick = (route: string) => {
-    router.push(route);
+  const handleStepClick = (index: number) => {
+    const dataUpdate = data.map((x: ProgressStep) => ({
+      ...x,
+      isCurrentTab: false,
+    }));
+    dataUpdate[index].isCurrentTab = true;
+    setData(dataUpdate);
+    dispatch(setHerdProgressSteps(dataUpdate));
   };
   return (
     <div>
       <ol className="grid grid-flow-row grid-cols-5 gap-5 mt-5">
-        {data.map((step: ProgressStep, index) => (
-          <li onClick={() => handleStepClick(step.route)}>
+        {data.map((step: ProgressStep, index: number) => (
+          <li onClick={() => handleStepClick(index)}>
             <div
               className={`w-full p-4 cursor-pointer ${getClassNameByHerdStatus(
                 step.status,
