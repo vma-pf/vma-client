@@ -2,6 +2,7 @@ import { UseFormSetError, set } from "react-hook-form";
 import { EntityError } from "./http";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { DateValue } from "@nextui-org/react";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,6 +31,10 @@ export const decodeToken = (token: string) => {
     return;
   }
   return JSON.parse(atob(token.split(".")[1]));
+};
+
+export const changeToDate = (date: DateValue) => {
+  return new Date(date.year, date.month - 1, date.day);
 };
 
 export const ROLE = {
