@@ -6,6 +6,7 @@ import PigList from "./components/pig-list";
 import SeasonFilter from "./components/season-filter";
 import { IoIosAlert } from "react-icons/io";
 import { GoDotFill } from "react-icons/go";
+import ButtonCreateHerd from "./components/button-create-herd";
 
 const Herd = () => {
   return (
@@ -21,8 +22,9 @@ const Herd = () => {
             />
             <p className="text-2xl font-bold ml-4">Thông tin đàn heo</p>
           </div>
-          <div>
+          <div className="flex">
             <SeasonFilter />
+            <ButtonCreateHerd />
           </div>
         </div>
         <div className="flex space-x-2 justify-between">
