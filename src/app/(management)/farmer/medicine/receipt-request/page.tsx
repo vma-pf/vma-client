@@ -1,10 +1,8 @@
-"use client";
-import React from "react";
-import MedicineList from "./components/medicine-list";
-import { Image, Tab, Tabs } from "@nextui-org/react";
+"use client"
+import { Tab, Tabs } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
 
-const Medicine = () => {
+const MedicineReceiptRequest = () => {
   const pathname = usePathname();
   return (
     <div>
@@ -30,24 +28,8 @@ const Medicine = () => {
           <Tab key="/farmer/disease-report" href="/farmer/disease-report" title="Từ điển bệnh" />
         </Tabs>
       </div>
-      <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="flex items-center">
-            <Image
-              src="/assets/vma-logo.png"
-              alt="logo"
-              width={50}
-              height={55}
-            />
-            <p className="text-2xl font-bold ml-4">Thông tin kho thuốc</p>
-          </div>
-        </div>
-      </div>
-      <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <MedicineList />
-      </div>
     </div>
   );
 };
 
-export default Medicine;
+export default MedicineReceiptRequest;

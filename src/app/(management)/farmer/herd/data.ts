@@ -1,10 +1,10 @@
 const columns = [
   { name: "ID", uid: "id", sortable: true },
-  { name: "GIỐNG", uid: "breed", sortable: true },
-  { name: "CHUỒNG", uid: "cage", sortable: true },
+  { name: "ĐƠN VỊ", uid: "breed", sortable: true },
+  { name: "THÀNH", uid: "cage", sortable: true },
   { name: "ĐÀN", uid: "herd", sortable: true },
   { name: "CÂN NẶNG", uid: "weight", sortable: true },
-  { name: "CHIỀU CAO", uid: "height", sortable: true },
+  { name: "CHIỀU CAO", uid: "height", sortable: true }, 
   { name: "CHIỀU RỘNG", uid: "width", sortable: true },
   { name: "TÌNH TRẠNG", uid: "status", sortable: true },
   {
