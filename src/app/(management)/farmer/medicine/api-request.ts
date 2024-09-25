@@ -1,7 +1,8 @@
 import http from "@oursrc/lib/http";
 import { CreateMedicineRequest } from "./models/medicine";
+import { ListResponse } from "../herd/api-request";
 
-const endpoint = "api/medicines"
+const endpoint = "api/medicines";
 
 export const apiRequest = {
   createMedicine: (model: CreateMedicineRequest) =>
@@ -11,8 +12,13 @@ export const apiRequest = {
       mainIngredient: model.mainIngredient,
       registerNumber: model.registerNumber,
       netWeight: model.netWeight,
-      usage: model.usage
+      usage: model.usage,
     }),
-  getMedicine: (page: number = 1, perPage: number = 30, search: string = '') => 
-    http.get(endpoint+`?pageIndex=${page}&pageSize=${perPage}`)
+  getMedicine: (page: number, pageSize: number = 30) =>
+    http.get<ListResponse<any>>(endpoint, {
+      params: {
+        page: page?.toString() || "",
+        pageSize: pageSize?.toString() || "",
+      },
+    }),
 };

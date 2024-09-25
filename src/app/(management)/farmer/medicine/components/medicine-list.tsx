@@ -25,13 +25,14 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { columns } from "../data";
+import { columns, statusOptions } from "../data";
 import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
 import { Plus, Search } from "lucide-react";
 import { capitalize } from "@oursrc/components/utils";
 import { apiRequest } from "../api-request";
 import { toast, useToast } from "@oursrc/hooks/use-toast";
 import { Medicine } from "@oursrc/lib/models/medicine";
+import { ListResponse } from "../../herd/api-request";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -62,9 +63,13 @@ type Props = {
   };
 };
 
-export default function MedicineList() {
+export default function MedicineList({
+  data,
+}: {
+  data: ListResponse<Medicine>;
+}) {
   const { toast } = useToast();
-  const [totalPages, setTotalPages] = React.useState(0);
+  const totalPages = data.data.totalPages;
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
     new Set([])
@@ -79,7 +84,7 @@ export default function MedicineList() {
     direction: "ascending",
   });
 
-  const [page, setPage] = React.useState(1);
+  const [page, setPage] = React.useState(data.data.pageIndex);
   const hasSearchFilter = Boolean(filterValue);
 
   const headerColumns = React.useMemo(() => {
@@ -89,7 +94,27 @@ export default function MedicineList() {
       Array.from(visibleColumns).includes(column.uid)
     );
   }, [visibleColumns]);
-  const [data, setData] = React.useState<Medicine[]>([]);
+  const [medicineList, setMedicineList] = React.useState<Medicine[]>([]);
+
+  const filteredItems = React.useMemo(() => {
+    let filteredMedicines: Medicine[] = [...medicineList];
+
+    if (hasSearchFilter) {
+      filteredMedicines = filteredMedicines.filter((medicine) =>
+        medicine.name.toLowerCase().includes(filterValue.toLowerCase())
+      );
+    }
+    if (
+      statusFilter !== "all" &&
+      Array.from(statusFilter).length !== statusOptions.length
+    ) {
+      filteredMedicines = filteredMedicines.filter((medicine) =>
+        Array.from(statusFilter).includes(medicine.name as string)
+      );
+    }
+
+    return filteredMedicines;
+  }, [medicineList, filterValue, statusFilter]);
 
   React.useEffect(() => {
     fetchData();
@@ -98,13 +123,10 @@ export default function MedicineList() {
   const fetchData = async () => {
     try {
       const response = await apiRequest.getMedicine(page, rowsPerPage);
-      console.log(response);
       if (response.isSuccess) {
-        console.log(response.data.data);
-        setData(response.data.data as Medicine[]);
-        setTotalPages(response.data.totalPages);
-        console.log(JSON.stringify(data));
-        console.log(JSON.stringify(totalPages));
+        setMedicineList(response.data.data);
+        setPage(response.data.pageIndex);
+        setRowsPerPage(response.data.pageSize);
       } else {
         throw new Error();
       }
@@ -120,8 +142,8 @@ export default function MedicineList() {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
-    return [...data].slice(start, end);
-  }, [page, rowsPerPage]);
+    return filteredItems.slice(start, end);
+  }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
     return [...items].sort((a: Medicine, b: Medicine) => {
@@ -276,7 +298,7 @@ export default function MedicineList() {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Tổng cộng {data.length} kết quả
+            Tổng cộng {data.data.totalRecords} kết quả
           </span>
           <label className="flex items-center text-default-400 text-small">
             Số hàng mỗi trang:
@@ -298,7 +320,7 @@ export default function MedicineList() {
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
-    data.length,
+    medicineList.length,
     hasSearchFilter,
   ]);
 
@@ -388,7 +410,6 @@ export default function MedicineList() {
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        color={"success"}
         onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
       >
@@ -399,7 +420,7 @@ export default function MedicineList() {
               align={column.uid === "actions" ? "center" : "start"}
               allowsSorting={column.sortable}
             >
-              {column.name}
+              {column.name.toUpperCase()}
             </TableColumn>
           )}
         </TableHeader>

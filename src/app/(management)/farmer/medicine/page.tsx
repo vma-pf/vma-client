@@ -3,9 +3,11 @@ import React from "react";
 import MedicineList from "./components/medicine-list";
 import { Image, Tab, Tabs } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
+import { apiRequest } from "./api-request";
 
-const Medicine = () => {
+const Medicine = async () => {
   const pathname = usePathname();
+  const res = await apiRequest.getMedicine(1, 5);
   return (
     <div>
       <div className="mb-4">
@@ -27,7 +29,11 @@ const Medicine = () => {
             href="/farmer/medicine/receipt-request"
             title="Yêu cầu thêm thuốc"
           />
-          <Tab key="/farmer/disease-report" href="/farmer/disease-report" title="Từ điển bệnh" />
+          <Tab
+            key="/farmer/disease-report"
+            href="/farmer/disease-report"
+            title="Từ điển bệnh"
+          />
         </Tabs>
       </div>
       <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
@@ -44,7 +50,7 @@ const Medicine = () => {
         </div>
       </div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <MedicineList />
+        <MedicineList data={res} />
       </div>
     </div>
   );
