@@ -54,17 +54,17 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 type Props = {
   data: {
-    pageSize: number,
-    pageIndex: number,
-    totalRecords: number,
-    totalPages: number,
-    data: Medicine[]
-  }
-}
+    pageSize: number;
+    pageIndex: number;
+    totalRecords: number;
+    totalPages: number;
+    data: Medicine[];
+  };
+};
 
 export default function MedicineList() {
   const { toast } = useToast();
-  const [data, setData] = React.useState<Medicine[]|null>(null)
+  const [totalPages, setTotalPages] = React.useState(0);
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
     new Set([])
@@ -89,37 +89,38 @@ export default function MedicineList() {
       Array.from(visibleColumns).includes(column.uid)
     );
   }, [visibleColumns]);
+  const [data, setData] = React.useState<Medicine[]>([]);
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     fetchData();
-  },[page, rowsPerPage])
+  }, [page, rowsPerPage]);
 
   const fetchData = async () => {
-    try{
-      const response = await apiRequest.getMedicine(page, rowsPerPage)
+    try {
+      const response = await apiRequest.getMedicine(page, rowsPerPage);
       console.log(response);
-      if(response.isSuccess){
-        setData(response.data)
-        console.log(data);
-        console.log(data);
-      }else{
+      if (response.isSuccess) {
+        console.log(response.data.data);
+        setData(response.data.data as Medicine[]);
+        setTotalPages(response.data.totalPages);
+        console.log(JSON.stringify(data));
+        console.log(JSON.stringify(totalPages));
+      } else {
         throw new Error();
       }
-    }catch(e){
+    } catch (e) {
       toast({
         variant: "destructive",
         title: "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     }
-  }
-
-  const totalPages = data.totalPages;
+  };
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
-    return [...data.data].slice(start, end);
+    return [...data].slice(start, end);
   }, [page, rowsPerPage]);
 
   const sortedItems = React.useMemo(() => {
@@ -134,53 +135,54 @@ export default function MedicineList() {
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [selectedData, setSelectedData] = React.useState<Medicine>();
-  const renderCell = React.useCallback((data: Medicine, columnKey: React.Key) => {
-    const cellValue = data[columnKey as keyof Medicine];
+  const renderCell = React.useCallback(
+    (data: Medicine, columnKey: React.Key) => {
+      const cellValue = data[columnKey as keyof Medicine];
 
-    switch (columnKey) {
-      case "mainIngredient":
-        return (
-          <p className="truncate">{cellValue}</p>
-        )
-      case "usage":
-        return (
-          <Chip
-            className="capitalize"
-            color={statusColorMap[data.usage]}
-            size="sm"
-            variant="flat"
-          >
-            {cellValue}
-          </Chip>
-        );
-      case "actions":
-        return (
-          <div className="relative flex justify-center items-center gap-2">
-            <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <HiDotsVertical className="text-default-300" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  onClick={() => {
-                    setSelectedData(data);
-                    onOpen();
-                  }}
-                >
-                  View
-                </DropdownItem>
-                <DropdownItem>Edit</DropdownItem>
-                <DropdownItem>Delete</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </div>
-        );
-      default:
-        return cellValue;
-    }
-  }, []);
+      switch (columnKey) {
+        case "mainIngredient":
+          return <p className="truncate">{cellValue}</p>;
+        case "usage":
+          return (
+            <Chip
+              className="capitalize"
+              color={statusColorMap[data.usage]}
+              size="sm"
+              variant="flat"
+            >
+              {cellValue}
+            </Chip>
+          );
+        case "actions":
+          return (
+            <div className="relative flex justify-center items-center gap-2">
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button isIconOnly size="sm" variant="light">
+                    <HiDotsVertical className="text-default-300" />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                  <DropdownItem
+                    onClick={() => {
+                      setSelectedData(data);
+                      onOpen();
+                    }}
+                  >
+                    View
+                  </DropdownItem>
+                  <DropdownItem>Edit</DropdownItem>
+                  <DropdownItem>Delete</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+          );
+        default:
+          return cellValue;
+      }
+    },
+    []
+  );
 
   //call api
   const onRowsPerPageChange = React.useCallback(
@@ -190,7 +192,7 @@ export default function MedicineList() {
     },
     []
   );
-//call api
+  //call api
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
       setFilterValue(value);
@@ -274,7 +276,7 @@ export default function MedicineList() {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Tổng cộng {data.data.length} kết quả
+            Tổng cộng {data.length} kết quả
           </span>
           <label className="flex items-center text-default-400 text-small">
             Số hàng mỗi trang:
@@ -296,7 +298,7 @@ export default function MedicineList() {
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
-    data.data.length,
+    data.length,
     hasSearchFilter,
   ]);
 
@@ -375,7 +377,6 @@ export default function MedicineList() {
       )}
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
-        isHeaderSticky
         isStriped
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
@@ -404,7 +405,7 @@ export default function MedicineList() {
         </TableHeader>
         <TableBody emptyContent={"Không có kết quả"} items={sortedItems}>
           {(item) => (
-            <TableRow key={item}>
+            <TableRow key={item.id}>
               {(columnKey) => (
                 <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}
