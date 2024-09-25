@@ -44,7 +44,7 @@ const CustomNavbar = ({
       <div
         className={`flex flex-col py-3 bg-slate-200 dark:bg-zinc-800 items-center rounded-2xl ${
           open ? "w-56" : "w-20"
-        } h-fit duration-300 fixed left-4 top-3`}
+        } h-fit duration-300 fixed left-4 top-3 z-50`}
       >
         <Link href="/veterinarian/dashboard">
           <Image

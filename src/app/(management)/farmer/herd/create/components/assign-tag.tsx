@@ -1,16 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { PiVibrate } from "react-icons/pi";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  useDisclosure,
-} from "@nextui-org/react";
+import { Button, useDisclosure } from "@nextui-org/react";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { useAppDispatch } from "@oursrc/lib/hooks";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";

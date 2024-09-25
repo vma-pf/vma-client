@@ -103,24 +103,26 @@ const AssignInfo = ({
               }
             />
             <p className="text-lg">Danh sách chuồng</p>
-            {cages.map((cage) => (
-              <div
-                className={`border-2 rounded-lg p-2 ${
-                  selectedPig?.cage?.id === cage.id ? "bg-primary" : ""
-                } ${
-                  cage.currentQuantity >= cage.capacity
-                    ? "bg-gray-300 cursor-not-allowed"
-                    : ""
-                }`}
-                key={cage.id}
-                onClick={() => handleSelectCage(cage)}
-              >
-                <p className="text-lg">{cage.name}</p>
-                <p className="text-lg">
-                  Sức chứa: {cage.currentQuantity}/{cage.capacity}
-                </p>
-              </div>
-            ))}
+            <div className="grid grid-cols-2">
+              {cages.map((cage) => (
+                <div
+                  className={`m-2 border-2 rounded-lg p-2 ${
+                    selectedPig?.cage?.id === cage.id ? "bg-primary" : ""
+                  } ${
+                    cage.currentQuantity >= cage.capacity
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : ""
+                  }`}
+                  key={cage.id}
+                  onClick={() => handleSelectCage(cage)}
+                >
+                  <p className="text-lg">{cage.name}</p>
+                  <p className="text-lg">
+                    Sức chứa: {cage.currentQuantity}/{cage.capacity}
+                  </p>
+                </div>
+              ))}
+            </div>
           </ModalBody>
           <ModalFooter>
             <Button color="danger" variant="light" onPress={onClose}>

@@ -25,36 +25,50 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { columns, pigs, statusOptions } from "../data";
+import { columns, statusOptions } from "../data";
 import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
 import { Plus, Search } from "lucide-react";
+import { ListResponse, apiRequest } from "../api-request";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
-  active: "success",
+  normal: "success",
   sick: "warning",
   dead: "danger",
 };
 
 const INITIAL_VISIBLE_COLUMNS = [
-  "id",
-  "name",
   "breed",
-  "cage",
-  "herd",
-  "weight",
-  "height",
-  "status",
-  "nextVaccinationDate",
+  "pigCode",
+  "cageCode",
+  "herdId",
+  "cageId",
+  "vaccinationDate",
+  "healthStatus",
   "actions",
 ];
 
-type Pig = (typeof pigs)[0];
+type Pig = {
+  breed: string;
+  herdId: string;
+  cageId: string;
+  weight: number;
+  height: number;
+  width: number;
+  healthStatus: string | null;
+  lastUpdatedAt: Date;
+  vaccinationDate: Date;
+  pigCode: string;
+  cageCode: string | null;
+  id: string;
+};
 
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export default function PigList() {
+export default function PigList({ data }: { data: ListResponse<Pig> }) {
+  const [pigList, setPigList] = React.useState<Pig[]>(data.data.data);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
     new Set([])
@@ -63,13 +77,13 @@ export default function PigList() {
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(data.data.pageSize);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
-    column: "weight",
+    column: "breed",
     direction: "ascending",
   });
 
-  const [page, setPage] = React.useState(1);
+  const [page, setPage] = React.useState(data.data.pageIndex);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -82,7 +96,7 @@ export default function PigList() {
   }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredPigs = [...pigs];
+    let filteredPigs: Pig[] = [...pigList];
 
     if (hasSearchFilter) {
       filteredPigs = filteredPigs.filter((pig) =>
@@ -94,24 +108,27 @@ export default function PigList() {
       Array.from(statusFilter).length !== statusOptions.length
     ) {
       filteredPigs = filteredPigs.filter((pig) =>
-        Array.from(statusFilter).includes(pig.status)
+        Array.from(statusFilter).includes(pig.healthStatus as string)
       );
     }
 
     return filteredPigs;
-  }, [pigs, filterValue, statusFilter]);
+  }, [pigList, filterValue, statusFilter]);
 
-  const pages = Math.ceil(filteredItems.length / rowsPerPage);
+  const pages = data.data.totalPages;
+  React.useEffect(() => {
+    fetchData();
+  }, [page, rowsPerPage]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
 
     return filteredItems.slice(start, end);
-  }, [page, filteredItems, rowsPerPage]);
+  }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: Pig, b: Pig) => {
+    return [...filteredItems].sort((a: Pig, b: Pig) => {
       const first = a[sortDescriptor.column as keyof Pig] as number;
       const second = b[sortDescriptor.column as keyof Pig] as number;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
@@ -119,6 +136,25 @@ export default function PigList() {
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
   }, [sortDescriptor, items]);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const response: ListResponse<Pig> = await apiRequest.getPigs(
+        page,
+        rowsPerPage
+      );
+      if (response.isSuccess) {
+        setPigList(response.data.data);
+        setPage(response.data?.pageIndex);
+        setRowsPerPage(response.data?.pageSize);
+      }
+    } catch (error) {
+      console.error("Error fetching pig data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [selectedPig, setSelectedPig] = React.useState<Pig>();
@@ -130,7 +166,7 @@ export default function PigList() {
         return (
           <Chip
             className="capitalize"
-            color={statusColorMap[pig.status]}
+            color={statusColorMap[pig.healthStatus as string]}
             size="sm"
             variant="flat"
           >
@@ -166,7 +202,7 @@ export default function PigList() {
           </div>
         );
       default:
-        return cellValue;
+        return cellValue?.toString();
     }
   }, []);
 
@@ -261,7 +297,7 @@ export default function PigList() {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Tổng cộng {pigs.length} kết quả
+            Tổng cộng {data.data.totalRecords} kết quả
           </span>
           <label className="flex items-center text-default-400 text-small">
             Số hàng mỗi trang:
@@ -283,7 +319,7 @@ export default function PigList() {
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
-    pigs.length,
+    pigList.length,
     hasSearchFilter,
   ]);
 
@@ -383,11 +419,15 @@ export default function PigList() {
               align={column.uid === "actions" ? "center" : "start"}
               allowsSorting={column.sortable}
             >
-              {column.name}
+              {column.name.toUpperCase()}
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Không có kết quả"} items={sortedItems}>
+        <TableBody
+          emptyContent={"Không có kết quả"}
+          isLoading={isLoading}
+          items={sortedItems}
+        >
           {(item) => (
             <TableRow key={item.id}>
               {(columnKey) => (
