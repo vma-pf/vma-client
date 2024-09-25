@@ -1,5 +1,4 @@
 const columns = [
-  { name: "ID", uid: "id", sortable: true },
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
   { name: "TÊN", uid: "name", sortable: true },
   { name: "THÀNH PHẦN CHÍNH", uid: "mainIngredient", sortable: true, width: 20 },

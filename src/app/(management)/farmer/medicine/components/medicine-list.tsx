@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableHeader,
@@ -25,10 +25,13 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { columns, medicines } from "../data";
+import { columns } from "../data";
 import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
 import { Plus, Search } from "lucide-react";
 import { capitalize } from "@oursrc/components/utils";
+import { apiRequest } from "../api-request";
+import { toast, useToast } from "@oursrc/hooks/use-toast";
+import { Medicine } from "@oursrc/lib/models/medicine";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -49,18 +52,6 @@ const INITIAL_VISIBLE_COLUMNS = [
   "lastUpdatedBy",
 ];
 
-type Medicine = {
-  id: string,
-  unit: string,
-  mainIngredient: string,
-  quantity: number,
-  registerNumber: number,
-  netWeight: number,
-  usage: string,
-  lastUpdatedAt: string,
-  lastUpdatedBy: string,
-};
-
 type Props = {
   data: {
     pageSize: number,
@@ -72,13 +63,8 @@ type Props = {
 }
 
 export default function MedicineList() {
-  const data = {
-    pageSize: 10,
-    pageIndex: 1,
-    totalRecords: 100,
-    totalPages: 10,
-    data: medicines
-  }
+  const { toast } = useToast();
+  const [data, setData] = React.useState<Medicine[]|null>(null)
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
     new Set([])
@@ -94,7 +80,6 @@ export default function MedicineList() {
   });
 
   const [page, setPage] = React.useState(1);
-
   const hasSearchFilter = Boolean(filterValue);
 
   const headerColumns = React.useMemo(() => {
@@ -105,26 +90,28 @@ export default function MedicineList() {
     );
   }, [visibleColumns]);
 
-  //call api
-  // const filteredItems = React.useMemo(() => {
-  //   let items = [...data.data];
+  React.useEffect(()=>{
+    fetchData();
+  },[page, rowsPerPage])
 
-  //   if (hasSearchFilter) {
-  //     items = items.filter((pig) =>
-  //       pig.breed.toLowerCase().includes(filterValue.toLowerCase())
-  //     );
-  //   }
-  //   if (
-  //     statusFilter !== "all" &&
-  //     Array.from(statusFilter).length !== statusOptions.length
-  //   ) {
-  //     items = items.filter((pig) =>
-  //       Array.from(statusFilter).includes(pig.status)
-  //     );
-  //   }
-
-  //   return items;
-  // }, [pigs, filterValue, statusFilter]);
+  const fetchData = async () => {
+    try{
+      const response = await apiRequest.getMedicine(page, rowsPerPage)
+      console.log(response);
+      if(response.isSuccess){
+        setData(response.data)
+        console.log(data);
+        console.log(data);
+      }else{
+        throw new Error();
+      }
+    }catch(e){
+      toast({
+        variant: "destructive",
+        title: "Lỗi hệ thống. Vui lòng thử lại sau!",
+      });
+    }
+  }
 
   const totalPages = data.totalPages;
 
@@ -417,7 +404,7 @@ export default function MedicineList() {
         </TableHeader>
         <TableBody emptyContent={"Không có kết quả"} items={sortedItems}>
           {(item) => (
-            <TableRow key={item.id}>
+            <TableRow key={item}>
               {(columnKey) => (
                 <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}
