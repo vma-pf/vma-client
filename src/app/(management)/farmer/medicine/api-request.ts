@@ -17,7 +17,7 @@ export const apiRequest = {
   getMedicine: (page: number, pageSize: number = 30) =>
     http.get<ListResponse<any>>(endpoint, {
       params: {
-        page: page?.toString() || "",
+        pageIndex: page?.toString() || "",
         pageSize: pageSize?.toString() || "",
       },
     }),

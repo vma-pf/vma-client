@@ -1,38 +1,37 @@
 "use client";
-import React, { useEffect } from "react";
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
   Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
-  Chip,
-  Pagination,
-  Selection,
   ChipProps,
-  SortDescriptor,
-  useDisclosure,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
   Modal,
+  ModalBody,
   ModalContent,
   ModalHeader,
-  ModalBody,
-  ModalFooter,
+  Pagination,
+  Selection,
+  SortDescriptor,
+  Spinner,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  Tooltip,
+  useDisclosure,
 } from "@nextui-org/react";
-import { columns, statusOptions } from "../data";
-import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
-import { Plus, Search } from "lucide-react";
 import { capitalize } from "@oursrc/components/utils";
-import { apiRequest } from "../api-request";
-import { toast, useToast } from "@oursrc/hooks/use-toast";
+import { useToast } from "@oursrc/hooks/use-toast";
 import { Medicine } from "@oursrc/lib/models/medicine";
-import { ListResponse } from "../../herd/api-request";
+import { DeleteIcon, EditIcon, EyeIcon, PencilIcon, Plus, Search, Trash2Icon, TrashIcon } from "lucide-react";
+import React from "react";
+import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
+import { apiRequest } from "../api-request";
+import { columns, statusOptions } from "../data";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -41,7 +40,6 @@ const statusColorMap: Record<string, ChipProps["color"]> = {
 };
 
 const INITIAL_VISIBLE_COLUMNS = [
-  "id",
   "unit",
   "name",
   "mainIngredient",
@@ -51,25 +49,11 @@ const INITIAL_VISIBLE_COLUMNS = [
   "usage",
   "lastUpdatedAt",
   "lastUpdatedBy",
+  "actions"
 ];
 
-type Props = {
-  data: {
-    pageSize: number;
-    pageIndex: number;
-    totalRecords: number;
-    totalPages: number;
-    data: Medicine[];
-  };
-};
-
-export default function MedicineList({
-  data,
-}: {
-  data: ListResponse<Medicine>;
-}) {
+export default function MedicineList() {
   const { toast } = useToast();
-  const totalPages = data.data.totalPages;
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
     new Set([])
@@ -78,13 +62,15 @@ export default function MedicineList({
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
+  const [totalRecords, setTotalRecords] = React.useState(0);
+  const [totalPages, setTotalPages] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "lastUpdatedAt",
     direction: "ascending",
   });
 
-  const [page, setPage] = React.useState(data.data.pageIndex);
+  const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
 
   const headerColumns = React.useMemo(() => {
@@ -112,25 +98,32 @@ export default function MedicineList({
         Array.from(statusFilter).includes(medicine.name as string)
       );
     }
-
     return filteredMedicines;
   }, [medicineList, filterValue, statusFilter]);
+
+  const [loading, setLoading] = React.useState(false);
+  const loadingState =
+    loading || medicineList?.length === 0 ? "loading" : "idle";
 
   React.useEffect(() => {
     fetchData();
   }, [page, rowsPerPage]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const response = await apiRequest.getMedicine(page, rowsPerPage);
       if (response.isSuccess) {
         setMedicineList(response.data.data);
-        setPage(response.data.pageIndex);
         setRowsPerPage(response.data.pageSize);
+        setTotalPages(response.data.totalPages);
+        setTotalRecords(response.data.totalRecords);
+        setLoading(false);
       } else {
         throw new Error();
       }
     } catch (e) {
+      setLoading(false);
       toast({
         variant: "destructive",
         title: "Lỗi hệ thống. Vui lòng thử lại sau!",
@@ -139,10 +132,7 @@ export default function MedicineList({
   };
 
   const items = React.useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    return filteredItems.slice(start, end);
+    return filteredItems;
   }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
@@ -163,41 +153,46 @@ export default function MedicineList({
 
       switch (columnKey) {
         case "mainIngredient":
-          return <p className="truncate">{cellValue}</p>;
+          return (
+            <Tooltip
+              showArrow={true}
+              content={cellValue}
+              color="primary"
+              delay={1000}
+            >
+              <p className="truncate">{cellValue}</p>
+            </Tooltip>
+          );
         case "usage":
           return (
-            <Chip
-              className="capitalize"
-              color={statusColorMap[data.usage]}
-              size="sm"
-              variant="flat"
+            <Tooltip
+              showArrow={true}
+              content={cellValue}
+              color="primary"
+              delay={1000}
             >
-              {cellValue}
-            </Chip>
+              <p className="truncate">{cellValue}</p>
+            </Tooltip>
           );
         case "actions":
           return (
-            <div className="relative flex justify-center items-center gap-2">
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button isIconOnly size="sm" variant="light">
-                    <HiDotsVertical className="text-default-300" />
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  <DropdownItem
-                    onClick={() => {
-                      setSelectedData(data);
-                      onOpen();
-                    }}
-                  >
-                    View
-                  </DropdownItem>
-                  <DropdownItem>Edit</DropdownItem>
-                  <DropdownItem>Delete</DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </div>
+            <div className="flex justify-end items-center gap-2">
+            <Tooltip content="Chi tiết">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <EyeIcon />
+              </span>
+            </Tooltip>
+            <Tooltip content="Chỉnh sửa">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <EditIcon />
+              </span>
+            </Tooltip>
+            <Tooltip color="danger" content="Xóa">
+              <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                <Trash2Icon />
+              </span>
+            </Tooltip>
+          </div>
           );
         default:
           return cellValue;
@@ -243,37 +238,13 @@ export default function MedicineList({
             onValueChange={onSearchChange}
           />
           <div className="flex gap-3">
-            {/* <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<HiChevronDown className="text-small" />}
-                  variant="flat"
-                >
-                  Tình trạng
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={statusFilter}
-                selectionMode="multiple"
-                onSelectionChange={setStatusFilter}
-              >
-                {statusOptions.map((status: any) => (
-                  <DropdownItem key={status.uid} className="capitalize">
-                    {capitalize(status.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown> */}
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button
                   endContent={<HiChevronDown className="text-small" />}
                   variant="flat"
                 >
-                  Cột
+                  Hiển thị cột
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
@@ -298,7 +269,7 @@ export default function MedicineList({
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Tổng cộng {data.data.totalRecords} kết quả
+            Tổng cộng {totalRecords} kết quả
           </span>
           <label className="flex items-center text-default-400 text-small">
             Số hàng mỗi trang:
@@ -342,22 +313,6 @@ export default function MedicineList({
           onChange={setPage}
         />
         <div className="hidden sm:flex w-[30%] justify-end gap-2">
-          {/* <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onPreviousPage}
-          >
-            Previous
-          </Button>
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onNextPage}
-          >
-            Next
-          </Button> */}
         </div>
       </div>
     );
@@ -399,6 +354,7 @@ export default function MedicineList({
       )}
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
+        layout="fixed"
         isStriped
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
@@ -419,12 +375,18 @@ export default function MedicineList({
               key={column.uid}
               align={column.uid === "actions" ? "center" : "start"}
               allowsSorting={column.sortable}
+              minWidth={50}
             >
               {column.name.toUpperCase()}
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Không có kết quả"} items={sortedItems}>
+        <TableBody
+          emptyContent={"Không có kết quả"}
+          items={sortedItems}
+          loadingContent={<Spinner />}
+          loadingState={loadingState}
+        >
           {(item) => (
             <TableRow key={item.id}>
               {(columnKey) => (

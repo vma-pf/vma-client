@@ -40,6 +40,11 @@ const FarmerLayout = ({
       icon: <GiMedicines size={25} />,
     },
     {
+      path: "/medicine/receipt-request",
+      title: "Quản lý thuốc",
+      icon: <GiMedicines size={25} />,
+    },
+    {
       path: "/vaccination",
       title: "Lịch tiêm phòng",
       icon: <TbVaccine size={25} />,

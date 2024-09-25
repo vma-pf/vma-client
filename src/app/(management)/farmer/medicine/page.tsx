@@ -1,13 +1,10 @@
 "use client";
-import React from "react";
-import MedicineList from "./components/medicine-list";
-import { Image, Tab, Tabs } from "@nextui-org/react";
+import { Tab, Tabs } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
-import { apiRequest } from "./api-request";
+import MedicineList from "./components/medicine-list";
 
-const Medicine = async () => {
+const Medicine = () => {
   const pathname = usePathname();
-  const res = await apiRequest.getMedicine(1, 5);
   return (
     <div>
       <div className="mb-4">
@@ -36,21 +33,8 @@ const Medicine = async () => {
           />
         </Tabs>
       </div>
-      <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <div className="mb-2 flex items-center justify-between">
-          <div className="flex items-center">
-            <Image
-              src="/assets/vma-logo.png"
-              alt="logo"
-              width={50}
-              height={55}
-            />
-            <p className="text-2xl font-bold ml-4">Thông tin kho thuốc</p>
-          </div>
-        </div>
-      </div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <MedicineList data={res} />
+        <MedicineList />
       </div>
     </div>
   );
