@@ -9,6 +9,7 @@ type ResponseObject = {
 
 type CustomOptions = RequestInit & {
   baseUrl?: string | undefined;
+  params?: Record<string, string> | undefined;
 };
 
 type EntityErrorPayload = {
@@ -45,17 +46,24 @@ export class EntityError extends HttpError {
   }
 }
 
-const request = async (
+const request = async <Response>(
   method: "GET" | "POST" | "PUT" | "DELETE",
   url: string,
   options: CustomOptions | undefined
 ): Promise<any> => {
   const body = options?.body ? JSON.stringify(options.body) : undefined;
+  const params = options?.params || undefined;
   const baseHeaders = {
     "Content-Type": "application/json",
   };
   const baseUrl = options?.baseUrl === undefined ? SERVERURL : options.baseUrl;
-  const fullUrl = url.startsWith("/") ? baseUrl + url : baseUrl + "/" + url;
+  let fullUrl = url.startsWith("/") ? baseUrl + url : baseUrl + "/" + url;
+
+  const searchParams = new URLSearchParams(params);
+
+  if (params) {
+    fullUrl += "?" + searchParams.toString();
+  }
 
   const response = await fetch(fullUrl, {
     ...options,
@@ -67,7 +75,7 @@ const request = async (
     method,
   });
 
-  const payload: ResponseObject = await response.json();
+  const payload: Response = await response.json();
   // const data = {
   //   status: response.status,
   //   payload,
@@ -84,17 +92,32 @@ const request = async (
 };
 
 const http = {
-  get: (url: string, options?: Omit<CustomOptions, "body"> | undefined) =>
-    request("GET", url, options),
-  post: (url: string, body: any, options?: Omit<CustomOptions, "body">) =>
-    request("POST", url, { ...options, body }),
-  put: (url: string, body: any, options?: Omit<CustomOptions, "body">) =>
-    request("PUT", url, { ...options, body }),
-  delete: (
+  get<Response>(
+    url: string,
+    options?: Omit<CustomOptions, "body"> | undefined
+  ) {
+    return request<Response>("GET", url, options);
+  },
+  post<Response>(
     url: string,
     body: any,
     options?: Omit<CustomOptions, "body"> | undefined
-  ) => request("DELETE", url, { ...options, body }),
+  ) {
+    return request<Response>("POST", url, { ...options, body });
+  },
+  put<Response>(
+    url: string,
+    body: any,
+    options?: Omit<CustomOptions, "body"> | undefined
+  ) {
+    return request<Response>("PUT", url, { ...options, body });
+  },
+  delete<Response>(
+    url: string,
+    options?: Omit<CustomOptions, "body"> | undefined
+  ) {
+    return request<Response>("DELETE", url, { ...options });
+  },
 };
 
 export default http;

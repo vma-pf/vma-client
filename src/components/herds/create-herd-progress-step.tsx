@@ -7,13 +7,13 @@ import {
 import { useAppDispatch } from "@oursrc/lib/hooks";
 import { setHerdProgressSteps } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
 
-const CreateHerdProgressStep = ({steps}: any) => {
+const CreateHerdProgressStep = ({ steps }: any) => {
   const dispatch = useAppDispatch();
   const [data, setData] = React.useState(steps);
 
   useEffect(() => {
-    setData(steps)
-  })
+    setData(steps);
+  });
 
   const convertStatus = (status: string) => {
     switch (status) {
@@ -37,9 +37,9 @@ const CreateHerdProgressStep = ({steps}: any) => {
   };
   return (
     <div>
-      <ol className="grid grid-flow-row grid-cols-5 gap-5 mt-5">
+      <ol className="grid grid-flow-row grid-cols-4 gap-5 mt-5">
         {data.map((step: any, index: number) => (
-          <li onClick={() => handleStepClick(index)}>
+          <li key={index} onClick={() => handleStepClick(index)}>
             <div
               className={`w-full p-4 cursor-pointer ${getClassNameByHerdStatus(
                 step.status,

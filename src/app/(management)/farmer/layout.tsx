@@ -16,6 +16,7 @@ const FarmerLayout = ({
   const titleMap: { [key: string]: string } = {
     "/dashboard": "Tổng quan",
     "/herd": "Quản lý đàn heo",
+    "/herd/create": "Tạo đàn mới",
     "/medicine": "Quản lý thuốc",
     "/vaccination": "Lịch tiêm phòng",
     "/treatment": "Kế hoạch điều trị",
