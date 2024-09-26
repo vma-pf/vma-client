@@ -5,7 +5,7 @@ type Medicine = {
   mainIngredient: string,
   quantity: number,
   registerNumber: number,
-  netWeight: number,
+  netWeight: string,
   usage: string,
 };
 

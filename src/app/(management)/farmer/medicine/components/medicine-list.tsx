@@ -7,10 +7,6 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Input,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
   Pagination,
   Selection,
   SortDescriptor,
@@ -27,11 +23,12 @@ import {
 import { capitalize } from "@oursrc/components/utils";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { Medicine } from "@oursrc/lib/models/medicine";
-import { DeleteIcon, EditIcon, EyeIcon, PencilIcon, Plus, Search, Trash2Icon, TrashIcon } from "lucide-react";
+import { EditIcon, EyeIcon, Plus, Search, Trash2Icon } from "lucide-react";
 import React from "react";
-import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
+import { HiChevronDown } from "react-icons/hi";
 import { apiRequest } from "../api-request";
-import { columns, statusOptions } from "../data";
+import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "../data";
+import MedicineModal from "../modals/modal-medicine";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -39,21 +36,16 @@ const statusColorMap: Record<string, ChipProps["color"]> = {
   dead: "danger",
 };
 
-const INITIAL_VISIBLE_COLUMNS = [
-  "unit",
-  "name",
-  "mainIngredient",
-  "quantity",
-  "registerNumber",
-  "netWeight",
-  "usage",
-  "lastUpdatedAt",
-  "lastUpdatedBy",
-  "actions"
-];
-
 export default function MedicineList() {
   const { toast } = useToast();
+
+  //Modal field
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const [updateId, setUpdateId] = React.useState<string>("");
+  const [context, setContext] = React.useState<string>("create");
+  const [submitDone, setSubmitDone] = React.useState<boolean>(false);
+
+  //Table field
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
     new Set([])
@@ -64,7 +56,7 @@ export default function MedicineList() {
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(1);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(30);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "lastUpdatedAt",
     direction: "ascending",
@@ -105,10 +97,20 @@ export default function MedicineList() {
   const loadingState =
     loading || medicineList?.length === 0 ? "loading" : "idle";
 
+  //Use Effect
+  React.useEffect(() => {
+    if (submitDone) {
+      onClose();
+      fetchData();
+      setSubmitDone(false);
+    }
+  }, [submitDone]);
+
   React.useEffect(() => {
     fetchData();
   }, [page, rowsPerPage]);
 
+  //API function
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -120,13 +122,42 @@ export default function MedicineList() {
         setTotalRecords(response.data.totalRecords);
         setLoading(false);
       } else {
-        throw new Error();
+        throw new AggregateError(response.errorMessage);
       }
     } catch (e) {
       setLoading(false);
       toast({
         variant: "destructive",
-        title: "Lỗi hệ thống. Vui lòng thử lại sau!",
+        title:
+          e instanceof AggregateError
+            ? e.message
+            : "Lỗi hệ thống. Vui lòng thử lại sau!",
+      });
+    }
+  };
+
+  const onEdit = async(data: Medicine) => {
+    setContext('edit')
+    setUpdateId(data.id)
+    onOpen()
+  };
+
+  const onDelete = async(data: Medicine) => {
+    try {
+      const response = await apiRequest.deleteMedicine(data.id);
+      if (response.isSuccess) {
+        fetchData()
+      } else {
+        throw new AggregateError(response.errorMessage);
+      }
+    } catch (e) {
+      setLoading(false);
+      toast({
+        variant: "destructive",
+        title:
+          e instanceof AggregateError
+            ? e.message
+            : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     }
   };
@@ -144,62 +175,6 @@ export default function MedicineList() {
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
   }, [sortDescriptor, items]);
-
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [selectedData, setSelectedData] = React.useState<Medicine>();
-  const renderCell = React.useCallback(
-    (data: Medicine, columnKey: React.Key) => {
-      const cellValue = data[columnKey as keyof Medicine];
-
-      switch (columnKey) {
-        case "mainIngredient":
-          return (
-            <Tooltip
-              showArrow={true}
-              content={cellValue}
-              color="primary"
-              delay={1000}
-            >
-              <p className="truncate">{cellValue}</p>
-            </Tooltip>
-          );
-        case "usage":
-          return (
-            <Tooltip
-              showArrow={true}
-              content={cellValue}
-              color="primary"
-              delay={1000}
-            >
-              <p className="truncate">{cellValue}</p>
-            </Tooltip>
-          );
-        case "actions":
-          return (
-            <div className="flex justify-end items-center gap-2">
-            <Tooltip content="Chi tiết">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EyeIcon />
-              </span>
-            </Tooltip>
-            <Tooltip content="Chỉnh sửa">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EditIcon />
-              </span>
-            </Tooltip>
-            <Tooltip color="danger" content="Xóa">
-              <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                <Trash2Icon />
-              </span>
-            </Tooltip>
-          </div>
-          );
-        default:
-          return cellValue;
-      }
-    },
-    []
-  );
 
   //call api
   const onRowsPerPageChange = React.useCallback(
@@ -262,7 +237,7 @@ export default function MedicineList() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button color="primary" endContent={<Plus />}>
+            <Button color="primary" endContent={<Plus />} onPress={onOpen}>
               Tạo mới
             </Button>
           </div>
@@ -295,6 +270,52 @@ export default function MedicineList() {
     hasSearchFilter,
   ]);
 
+  const renderCell = React.useCallback(
+    (data: Medicine, columnKey: React.Key) => {
+      const cellValue = data[columnKey as keyof Medicine];
+
+      switch (columnKey) {
+        case "mainIngredient":
+        case "name":
+        case "unit":
+        case "usage":
+          return (
+            <Tooltip
+              showArrow={true}
+              content={cellValue}
+              color="primary"
+              delay={1000}
+            >
+              <p className="truncate">{cellValue}</p>
+            </Tooltip>
+          );
+        case "actions":
+          return (
+            <div className="flex justify-end items-center gap-2">
+              <Tooltip content="Chi tiết">
+                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                  <EyeIcon />
+                </span>
+              </Tooltip>
+              <Tooltip content="Chỉnh sửa">
+                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                  <EditIcon onClick={() => onEdit(data)} />
+                </span>
+              </Tooltip>
+              <Tooltip color="danger" content="Xóa">
+                <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                  <Trash2Icon onClick={() => onDelete(data)} />
+                </span>
+              </Tooltip>
+            </div>
+          );
+        default:
+          return cellValue;
+      }
+    },
+    []
+  );
+
   const bottomContent = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
@@ -312,46 +333,13 @@ export default function MedicineList() {
           total={totalPages}
           onChange={setPage}
         />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2">
-        </div>
+        <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
       </div>
     );
   }, [selectedKeys, items.length, page, totalPages, hasSearchFilter]);
+
   return (
     <div>
-      {isOpen && (
-        <Modal backdrop="opaque" isOpen={isOpen} onOpenChange={onOpenChange}>
-          <ModalContent>
-            {() => (
-              <>
-                <ModalHeader className="flex flex-col gap-1">
-                  Medicine {selectedData?.id}
-                </ModalHeader>
-                <ModalBody>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Nullam pulvinar risus non risus hendrerit venenatis.
-                    Pellentesque sit amet hendrerit risus, sed porttitor quam.
-                  </p>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Nullam pulvinar risus non risus hendrerit venenatis.
-                    Pellentesque sit amet hendrerit risus, sed porttitor quam.
-                  </p>
-                  <p>
-                    Magna exercitation reprehenderit magna aute tempor cupidatat
-                    consequat elit dolor adipisicing. Mollit dolor eiusmod sunt
-                    ex incididunt cillum quis. Velit duis sit officia eiusmod
-                    Lorem aliqua enim laboris do dolor eiusmod. Et mollit
-                    incididunt nisi consectetur esse laborum eiusmod pariatur
-                    proident Lorem eiusmod et. Culpa deserunt nostrud ad veniam.
-                  </p>
-                </ModalBody>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
-      )}
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         layout="fixed"
@@ -362,7 +350,7 @@ export default function MedicineList() {
           wrapper: "max-h-[750px]",
         }}
         selectedKeys={selectedKeys}
-        selectionMode="multiple"
+        // selectionMode="multiple"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
@@ -375,7 +363,6 @@ export default function MedicineList() {
               key={column.uid}
               align={column.uid === "actions" ? "center" : "start"}
               allowsSorting={column.sortable}
-              minWidth={50}
             >
               {column.name.toUpperCase()}
             </TableColumn>
@@ -388,7 +375,7 @@ export default function MedicineList() {
           loadingState={loadingState}
         >
           {(item) => (
-            <TableRow key={item.id}>
+            <TableRow key={item.id} className="h-12">
               {(columnKey) => (
                 <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}
@@ -396,6 +383,14 @@ export default function MedicineList() {
           )}
         </TableBody>
       </Table>
+      <MedicineModal
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+        onClose={onClose}
+        updateId={updateId}
+        context={context}
+        setSubmitDone={setSubmitDone}
+      />
     </div>
   );
 }

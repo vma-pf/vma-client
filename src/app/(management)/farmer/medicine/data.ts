@@ -15,6 +15,19 @@ const columns = [
   { name: "", uid: "actions" },
 ];
 
+const INITIAL_VISIBLE_COLUMNS = [
+  "unit",
+  "name",
+  "mainIngredient",
+  "quantity",
+  "registerNumber",
+  "netWeight",
+  "usage",
+  "lastUpdatedAt",
+  "lastUpdatedBy",
+  "actions"
+];
+
 const statusOptions = [{ name: "Khỏe mạnh", uid: "active" }];
 
 const medicines = [
@@ -44,4 +57,4 @@ const medicines = [
   },
 ];
 
-export { columns, medicines, statusOptions };
+export { columns, medicines, statusOptions, INITIAL_VISIBLE_COLUMNS };
