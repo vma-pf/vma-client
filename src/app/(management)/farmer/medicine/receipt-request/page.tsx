@@ -3,12 +3,12 @@ import { Tab, Tabs, useDisclosure } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
 import RequestMedicineList from "./components/request-medicine-list";
 import React from "react";
-
+// UNUSED PAGE
 const MedicineReceiptRequest = () => {
   const pathname = usePathname();
   return (
     <div>
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <Tabs
           aria-label="Options"
           size="lg"
@@ -27,12 +27,12 @@ const MedicineReceiptRequest = () => {
             href="/farmer/medicine/receipt-request"
             title="Yêu cầu thêm thuốc"
           />
-          <Tab key="/farmer/disease-report" href="/farmer/disease-report" title="Từ điển bệnh" />
+          <Tab key="/farmer/disease-report" title="Từ điển bệnh" />
         </Tabs>
       </div>
       <div>
         <RequestMedicineList />
-      </div>
+      </div> */}
     </div>
   );
 };

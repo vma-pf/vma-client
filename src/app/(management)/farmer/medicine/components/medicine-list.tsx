@@ -286,7 +286,7 @@ export default function MedicineList() {
               color="primary"
               delay={1000}
             >
-              <p className="truncate">{cellValue}</p>
+              <p className="truncate cursor-default">{cellValue}</p>
             </Tooltip>
           );
         case "actions":
