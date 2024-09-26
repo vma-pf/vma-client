@@ -6,8 +6,11 @@ import PigList from "./components/pig-list";
 import SeasonFilter from "./components/season-filter";
 import { IoIosAlert } from "react-icons/io";
 import { GoDotFill } from "react-icons/go";
+import ButtonCreateHerd from "./components/button-create-herd";
+import { apiRequest } from "./api-request";
 
-const Herd = () => {
+const Herd = async () => {
+  const res = await apiRequest.getPigs(1, 5);
   return (
     <div>
       <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
@@ -21,8 +24,9 @@ const Herd = () => {
             />
             <p className="text-2xl font-bold ml-4">Thông tin đàn heo</p>
           </div>
-          <div>
+          <div className="flex">
             <SeasonFilter />
+            <ButtonCreateHerd />
           </div>
         </div>
         <div className="flex space-x-2 justify-between">
@@ -121,7 +125,7 @@ const Herd = () => {
       </div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-2xl font-bold mb-3">Danh sách heo</p>
-        <PigList />
+        <PigList data={res} />
       </div>
     </div>
   );

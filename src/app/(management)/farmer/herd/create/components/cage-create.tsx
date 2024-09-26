@@ -2,38 +2,47 @@
 import { Button, DatePicker, Input, Textarea } from "@nextui-org/react";
 import AttachMedia from "@oursrc/components/ui/attach-media/attach-media";
 import { toast } from "@oursrc/hooks/use-toast";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { apiRequest } from "../../../cage/api-request";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
 import { useAppDispatch } from "@oursrc/lib/hooks";
+import { HiChevronDoubleRight } from "react-icons/hi2";
 
 const CageCreate = () => {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = React.useState<boolean | undefined>(false);
+  const [capacity, setCapacity] = React.useState<string>();
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
-      code: '',
-      capacity: 0,
-      description: ''
-    }
+      code: "",
+      capacity: "",
+      description: "",
+    },
   });
 
+  useEffect(() => {
+    setValue("capacity", capacity || "0");
+  }, []);
+
   const handleSubmitForm = async (data: any) => {
-    setLoading(true);
     try {
-      const res = await apiRequest.createCage(data);
-      if (res && res.isSuccess) {
-        toast({
-          variant: "success",
-          title: res.data,
-        });
-        dispatch(setNextHerdProgressStep())
-      }
+      setLoading(true);
+      console.log(data);
+      // const res = await apiRequest.createCage(data);
+      // if (res && res.isSuccess) {
+      //   toast({
+      //     variant: "success",
+      //     title: res.data,
+      //   });
+      //   dispatch(setNextHerdProgressStep());
+      // }
+      dispatch(setNextHerdProgressStep());
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -43,11 +52,33 @@ const CageCreate = () => {
       setLoading(false);
     }
   };
+
+  const handleNumberChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9]/g, "");
+    if (numericValue[0] === "-" || numericValue[0] === "0") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseInt(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setCapacity(numericValue);
+  };
   return (
     <div>
-      <div className="container mx-auto px-20">
-        <div className="mt-12 mb-6">
-          <h1 className="text-3xl">Tạo chuồng mới</h1>
+      <div className="container mx-auto">
+        <div className="mt-12 mb-6 flex justify-between">
+          <h1 className="text-3xl">
+            Tạo chuồng mới
+            <span className="ml-3 text-base text-gray-400">(Optional)</span>
+          </h1>
+          <Button
+            variant="ghost"
+            color="primary"
+            endContent={<HiChevronDoubleRight size={20} />}
+            onPress={() => dispatch(setNextHerdProgressStep())}
+          >
+            Bỏ qua bước này
+          </Button>
         </div>
         <div className="w-100">
           <AttachMedia size="1/2" />
@@ -84,7 +115,12 @@ const CageCreate = () => {
                 isRequired
                 isInvalid={errors.capacity ? true : false}
                 errorMessage="Sức chứa không được để trống"
-                {...register("capacity", { required: true })}
+                value={capacity || ""}
+                onValueChange={(event) => handleNumberChange(event)}
+                {...register("capacity", {
+                  required: true,
+                  valueAsNumber: true,
+                })}
               />
             </div>
           </div>
@@ -120,8 +156,9 @@ const CageCreate = () => {
           </div>
           <div className="flex justify-end">
             <Button
-              className="w-1/6 focus:outline-none text-white bg-green-500 hover:bg-green-400 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 mt-6"
               variant="solid"
+              color="primary"
+              isDisabled={errors && Object.keys(errors).length > 0}
               isLoading={loading}
               size="lg"
               type="submit"
