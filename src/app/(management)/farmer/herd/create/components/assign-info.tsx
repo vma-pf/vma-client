@@ -34,6 +34,7 @@ const AssignInfo = ({
 }) => {
   const [height, setHeight] = React.useState<string | undefined>();
   const [width, setWidth] = React.useState<string | undefined>();
+  const [weight, setWeight] = React.useState<string | undefined>("10");
 
   const handleHeightChange = (event: string) => {
     let numericValue = event.replace(/[^0-9.]/g, "");
@@ -57,6 +58,17 @@ const AssignInfo = ({
     setWidth(numericValue);
   };
 
+  const handleWeightChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9.]/g, "");
+    if (numericValue[0] === "-" || numericValue[0] === "0") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseFloat(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setWeight(numericValue);
+  };
+
   const handleAssignPig = (pig: Pig) => {
     setUnassignedPigs(unassignedPigs.filter((p) => p.id !== pig.id));
     setAssignedPigs([...assignedPigs, pig]);
@@ -75,10 +87,11 @@ const AssignInfo = ({
   React.useEffect(() => {
     setSelectedPig({
       ...selectedPig,
-      height: Number(height),
-      width: Number(width),
+      height: Number(height) || 0,
+      width: Number(width) || 0,
+      weight: Number(weight) || 0,
     });
-  }, [height, width]);
+  }, [height, width, weight]);
 
   return (
     <div>
@@ -86,7 +99,7 @@ const AssignInfo = ({
         size="2xl"
         isOpen={isOpen}
         onClose={() => {
-          if (selectedPig.cage && height && width) {
+          if (selectedPig.cage && height && width, weight) {
             onClose;
           }
         }}
@@ -112,10 +125,10 @@ const AssignInfo = ({
               placeholder="Nhập cân nặng"
               labelPlacement="outside"
               isRequired
-              value={selectedPig?.weight?.toString() || "0"}
-              onValueChange={(e) =>
-                setSelectedPig({ ...selectedPig, weight: Number(e) })
-              }
+              isInvalid={weight ? false : true}
+              errorMessage="Cân nặng không được để trống"
+              value={weight || ""}
+              onValueChange={(e) => handleWeightChange(e)}
             />
             <div className="mb-5 flex">
               <Input
@@ -151,13 +164,11 @@ const AssignInfo = ({
             <div className="grid grid-cols-2">
               {cages.map((cage) => (
                 <div
-                  className={`m-2 border-2 rounded-lg p-2 ${
-                    selectedPig?.cage?.id === cage.id ? "bg-primary" : ""
-                  } ${
-                    cage.currentQuantity >= cage.capacity
+                  className={`m-2 border-2 rounded-lg p-2 ${selectedPig?.cage?.id === cage.id ? "bg-primary" : ""
+                    } ${cage.currentQuantity >= cage.capacity
                       ? "bg-gray-300 cursor-not-allowed"
                       : ""
-                  }`}
+                    }`}
                   key={cage.id}
                   onClick={() => handleSelectCage(cage)}
                 >
@@ -179,7 +190,7 @@ const AssignInfo = ({
                 handleAssignPig(selectedPig);
                 onClose();
               }}
-              isDisabled={selectedPig?.cage && height && width ? false : true}
+              isDisabled={selectedPig?.cage && height && width && weight ? false : true}
             >
               Done
             </Button>

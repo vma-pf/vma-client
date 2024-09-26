@@ -7,6 +7,7 @@ import {
 import {
   Accordion,
   AccordionItem,
+  Button,
   DateRangePicker,
   Input,
   RangeValue,
@@ -53,6 +54,7 @@ const PreviewInfo = () => {
     setValue,
     formState: { errors },
   } = useForm();
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [capacity, setCapacity] = React.useState<string>();
   const [totalNumber, setTotalNumber] = React.useState<string | undefined>();
   const [date, setDate] = React.useState<RangeValue<CalendarDate>>({
@@ -260,7 +262,7 @@ const PreviewInfo = () => {
                     className="mx-2 my-3 p-2 flex flex-col justify-center items-center border-2 rounded-xl shadow-md cursor-pointer"
                     key={index}
                   >
-                    <HoverCard>
+                    <HoverCard openDelay={100} closeDelay={100}>
                       <HoverCardTrigger asChild>
                         <p className="text-lg font-semibold">{pig.name}</p>
                       </HoverCardTrigger>
@@ -287,7 +289,7 @@ const PreviewInfo = () => {
                     className="mx-2 my-3 p-2 flex flex-col justify-center items-center border-2 rounded-xl shadow-md cursor-pointer"
                     key={index}
                   >
-                    <HoverCard>
+                    <HoverCard openDelay={100} closeDelay={100}>
                       <HoverCardTrigger asChild>
                         <p className="text-lg font-semibold">{pig.name}</p>
                       </HoverCardTrigger>
@@ -314,7 +316,7 @@ const PreviewInfo = () => {
                     className="mx-2 my-3 p-2 flex flex-col justify-center items-center border-2 rounded-xl shadow-md cursor-pointer"
                     key={index}
                   >
-                    <HoverCard>
+                    <HoverCard openDelay={100} closeDelay={100}>
                       <HoverCardTrigger asChild>
                         <p className="text-lg font-semibold">{pig.name}</p>
                       </HoverCardTrigger>
@@ -341,7 +343,7 @@ const PreviewInfo = () => {
                     className="mx-2 my-3 p-2 flex flex-col justify-center items-center border-2 rounded-xl shadow-md cursor-pointer"
                     key={index}
                   >
-                    <HoverCard>
+                    <HoverCard openDelay={100} closeDelay={100}>
                       <HoverCardTrigger asChild>
                         <p className="text-lg font-semibold">{pig.name}</p>
                       </HoverCardTrigger>
@@ -368,7 +370,7 @@ const PreviewInfo = () => {
                     className="mx-2 my-3 p-2 flex flex-col justify-center items-center border-2 rounded-xl shadow-md cursor-pointer"
                     key={index}
                   >
-                    <HoverCard>
+                    <HoverCard openDelay={100} closeDelay={100}>
                       <HoverCardTrigger asChild>
                         <p className="text-lg font-semibold">{pig.name}</p>
                       </HoverCardTrigger>
@@ -395,7 +397,7 @@ const PreviewInfo = () => {
                     className="mx-2 my-3 p-2 flex flex-col justify-center items-center border-2 rounded-xl shadow-md cursor-pointer"
                     key={index}
                   >
-                    <HoverCard>
+                    <HoverCard openDelay={100} closeDelay={100}>
                       <HoverCardTrigger asChild>
                         <p className="text-lg font-semibold">{pig.name}</p>
                       </HoverCardTrigger>
@@ -410,6 +412,16 @@ const PreviewInfo = () => {
             </div>
           </div>
         </div>
+      </div>
+      <div className="flex justify-end">
+        <Button
+          color="primary"
+          variant="solid"
+          isLoading={loading}
+          size="lg"
+        >
+          Hoàn tất
+        </Button>
       </div>
     </div>
   );
