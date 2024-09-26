@@ -9,6 +9,7 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@nextui-org/react";
+import { IoMdPricetags } from "react-icons/io";
 
 const AssignInfo = ({
   isOpen,
@@ -31,6 +32,31 @@ const AssignInfo = ({
   assignedPigs: Pig[];
   cages: Cage[];
 }) => {
+  const [height, setHeight] = React.useState<string | undefined>();
+  const [width, setWidth] = React.useState<string | undefined>();
+
+  const handleHeightChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9.]/g, "");
+    if (numericValue[0] === "-" || numericValue[0] === "0") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseFloat(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setHeight(numericValue);
+  };
+
+  const handleWidthChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9.]/g, "");
+    if (numericValue[0] === "-" || numericValue[0] === "0") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseFloat(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setWidth(numericValue);
+  };
+
   const handleAssignPig = (pig: Pig) => {
     setUnassignedPigs(unassignedPigs.filter((p) => p.id !== pig.id));
     setAssignedPigs([...assignedPigs, pig]);
@@ -42,15 +68,29 @@ const AssignInfo = ({
       if (cage.currentQuantity >= cage.capacity) {
         return;
       }
-      setSelectedPig({ ...selectedPig, cage });
+      setSelectedPig({ ...selectedPig, cage: cage });
     }
   };
+
+  React.useEffect(() => {
+    setSelectedPig({
+      ...selectedPig,
+      height: Number(height),
+      width: Number(width),
+    });
+  }, [height, width]);
+
   return (
     <div>
       <Modal
         size="2xl"
         isOpen={isOpen}
-        onClose={onClose}
+        onClose={() => {
+          if (selectedPig.cage && height && width) {
+            onClose;
+          }
+        }}
+        hideCloseButton
         scrollBehavior="inside"
       >
         <ModalContent>
@@ -58,8 +98,11 @@ const AssignInfo = ({
             <p className="text-2xl">Thông tin heo</p>
           </ModalHeader>
           <ModalBody>
-            <p className="text-lg">{selectedPig?.name}</p>
-            <p className="text-lg">Tag 12345678</p>
+            <p className="text-lg">Mã heo: {selectedPig?.name}</p>
+            <div className="mb-4 flex items-center">
+              <IoMdPricetags className="text-primary" size={30} />
+              <p className="ml-2 text-lg">HE01CA01PI01</p>
+            </div>
             <Input
               className="mb-5"
               type="text"
@@ -69,40 +112,42 @@ const AssignInfo = ({
               placeholder="Nhập cân nặng"
               labelPlacement="outside"
               isRequired
-              value={selectedPig?.weight?.toString() || ""}
+              value={selectedPig?.weight?.toString() || "0"}
               onValueChange={(e) =>
                 setSelectedPig({ ...selectedPig, weight: Number(e) })
               }
             />
-            <Input
-              className="mb-5"
-              type="text"
-              radius="sm"
-              size="lg"
-              label="Chiều cao"
-              placeholder="Nhập chiều cao"
-              labelPlacement="outside"
-              isRequired
-              value={selectedPig?.height?.toString() || ""}
-              onValueChange={(e) =>
-                setSelectedPig({ ...selectedPig, height: Number(e) })
-              }
-            />
-            <Input
-              className="mb-5"
-              type="text"
-              radius="sm"
-              size="lg"
-              label="Chiều rộng"
-              placeholder="Nhập chiều rộng"
-              labelPlacement="outside"
-              isRequired
-              value={selectedPig?.width?.toString() || ""}
-              onValueChange={(e) =>
-                setSelectedPig({ ...selectedPig, width: Number(e) })
-              }
-            />
-            <p className="text-lg">Danh sách chuồng</p>
+            <div className="mb-5 flex">
+              <Input
+                className="w-1/2 mr-2"
+                type="text"
+                radius="sm"
+                size="lg"
+                label="Chiều cao"
+                placeholder="Nhập chiều cao"
+                labelPlacement="outside"
+                isRequired
+                isInvalid={height ? false : true}
+                errorMessage="Chiều cao không được để trống"
+                value={height || ""}
+                onValueChange={(e) => handleHeightChange(e)}
+              />
+              <Input
+                className="w-1/2 ml-2"
+                type="text"
+                radius="sm"
+                size="lg"
+                label="Chiều rộng"
+                placeholder="Nhập chiều rộng"
+                labelPlacement="outside"
+                isRequired
+                isInvalid={width ? false : true}
+                errorMessage="Chiều rộng không được để trống"
+                value={width || ""}
+                onValueChange={(e) => handleWidthChange(e)}
+              />
+            </div>
+            <p className="text-xl font-semibold">Danh sách chuồng</p>
             <div className="grid grid-cols-2">
               {cages.map((cage) => (
                 <div
@@ -131,10 +176,10 @@ const AssignInfo = ({
             <Button
               color="primary"
               onPress={() => {
+                handleAssignPig(selectedPig);
                 onClose();
-                handleAssignPig(selectedPig as Pig);
               }}
-              isDisabled={selectedPig?.cage ? false : true}
+              isDisabled={selectedPig?.cage && height && width ? false : true}
             >
               Done
             </Button>
