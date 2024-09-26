@@ -127,7 +127,7 @@ const AssignTag = () => {
                 <AnimatePresence>
                   {assignedPigs.map((pig, index) => (
                     <motion.div
-                      className="col-span-2 h-24 mx-2 my-3 p-2 flex justify-center items-center border-2 rounded-xl shadow-md cursor-pointer"
+                      className="col-span-2 h-24 mx-2 my-3 p-2 border-2 rounded-xl shadow-md cursor-pointer"
                       key={index}
                       layout
                       initial={{ x: -100, opacity: 0 }}
@@ -135,12 +135,14 @@ const AssignTag = () => {
                       exit={{ x: 100, opacity: 0 }}
                       transition={{ duration: 0.5 }}
                     >
-                      <p className="text-lg font-semibold">{pig.name}</p>
-                      <p className="text-lg font-semibold">{pig.cage?.name}</p>
-                      <p className="text-md">
+                      <div className="flex justify-around items-center">
+                        <p className="text-lg font-semibold">{pig.name}</p>
+                        <p className="text-lg font-semibold">{pig.cage?.name}</p>
+                      </div>
+                      <p className="text-md text-center">
                         {pig.height?.toString()} x {pig.width?.toString()}
                       </p>
-                      <p className="text-md">{pig.weight?.toString()}</p>
+                      <p className="text-md text-center">Cân nặng: {pig.weight?.toString()} kg</p>
                     </motion.div>
                   ))}
                 </AnimatePresence>
