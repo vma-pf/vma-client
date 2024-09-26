@@ -57,10 +57,16 @@ const VaccinationList = ({
           Tên lịch
         </TableColumn>
         <TableColumn allowsSorting className="text-lg">
+          Đàn
+        </TableColumn>
+        <TableColumn allowsSorting className="text-lg">
           Ngày bắt đầu
         </TableColumn>
         <TableColumn allowsSorting className="text-lg">
           Ngày kết thúc (dự kiến)
+        </TableColumn>
+        <TableColumn allowsSorting className="text-lg">
+          Tình trạng
         </TableColumn>
       </TableHeader>
       <TableBody
@@ -70,8 +76,10 @@ const VaccinationList = ({
         {data.map((data: VaccinationData) => (
           <TableRow key={data.id}>
             <TableCell>{data.title}</TableCell>
+            <TableCell>{data.herdId}</TableCell>
             <TableCell>{data.startDate}</TableCell>
             <TableCell>{data.expectedEndDate}</TableCell>
+            <TableCell>{data.status}</TableCell>
           </TableRow>
         ))}
       </TableBody>

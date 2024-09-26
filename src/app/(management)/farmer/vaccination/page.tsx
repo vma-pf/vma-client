@@ -7,108 +7,118 @@ import {
   VaccinationStageProps,
 } from "./components/vaccination";
 import VaccinationStage from "./components/vaccination-stage";
-import { Accordion, AccordionItem } from "@nextui-org/react";
+import { Accordion, AccordionItem, Progress } from "@nextui-org/react";
 
 const vaccinationData: VaccinationData[] = [
   {
     id: "1",
     title: "Lịch xuân",
     description: "Lịch tiêm phòng cho mùa xuân",
-    type: "Cá thể",
+    herdId: "1",
     startDate: "2021-09-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Đã hoàn thành",
   },
   {
     id: "2",
     title: "Lịch hạ",
     description: "Lịch tiêm phòng cho mùa hạ",
-    type: "Nhiều cá thể",
+    herdId: "2",
     startDate: "2022-09-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Chưa hoàn thành",
   },
   {
     id: "3",
     title: "Lịch thu",
     description: "Lịch tiêm phòng cho mùa thu",
-    type: "Cá thể",
+    herdId: "3",
     startDate: "2022-08-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Đã hoàn thành",
   },
   {
     id: "4",
     title: "Lịch đông",
     description: "Lịch tiêm phòng cho mùa đông",
-    type: "Nhiều cá thể",
+    herdId: "4",
     startDate: "2022-07-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Chưa hoàn thành",
   },
   {
     id: "5",
     title: "Lịch mùa",
     description: "Lịch tiêm phòng cho mùa mưa",
-    type: "Cá thể",
+    herdId: "5",
     startDate: "2023-10-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Đã hoàn thành",
   },
   {
     id: "6",
     title: "Lịch nắng",
     description: "Lịch tiêm phòng cho mùa nắng",
-    type: "Nhiều cá thể",
+    herdId: "6",
     startDate: "2023-09-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Chưa hoàn thành",
   },
   {
     id: "7",
     title: "Lịch mưa",
     description: "Lịch tiêm phòng cho mùa mưa",
-    type: "Cá thể",
+    herdId: "7",
     startDate: "2023-08-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Đã hoàn thành",
   },
   {
     id: "8",
     title: "Lịch gió",
     description: "Lịch tiêm phòng cho mùa gió",
-    type: "Nhiều cá thể",
+    herdId: "8",
     startDate: "2023-07-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Chưa hoàn thành",
   },
   {
     id: "9",
     title: "Lịch nắng",
     description: "Lịch tiêm phòng cho mùa nắng",
-    type: "Cá thể",
+    herdId: "9",
     startDate: "2023-05-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Đã hoàn thành",
   },
   {
     id: "10",
     title: "Lịch mưa",
     description: "Lịch tiêm phòng cho mùa mưa",
-    type: "Nhiều cá thể",
+    herdId: "10",
     startDate: "2023-04-10",
     expectedEndDate: "2021-09-10",
     actualEndDate: "2021-09-10",
     note: "Đã tiêm phòng",
+    status: "Chưa hoàn thành",
   },
 ];
 
@@ -254,19 +264,20 @@ const Vaccination = () => {
                   {findVaccination(selectedVaccinationId)?.description}
                 </p>
                 <div className="flex justify-between">
-                  <p className="text-md mt-3">Phân loại:</p>
+                  <p className="text-md mt-3">Đàn:</p>
                   <p className="text-lg mt-3 font-semibold">
-                    {findVaccination(selectedVaccinationId)?.type}
+                    {findVaccination(selectedVaccinationId)?.herdId}
                   </p>
                 </div>
                 <div className="flex justify-between">
-                  <p className="text-md mt-3">Ngày bắt đầu:</p>
+                  <p className="text-md mt-3">Ngày bắt đầu</p>
+                  <p className="text-md mt-3">Ngày kết thúc (dự kiến)</p>
+                </div>
+                <Progress value={50} />
+                <div className="flex justify-between">
                   <p className="text-lg mt-3 font-semibold">
                     {findVaccination(selectedVaccinationId)?.startDate}
                   </p>
-                </div>
-                <div className="flex justify-between">
-                  <p className="text-md mt-3">Ngày kết thúc (dự kiến):</p>
                   <p className="text-lg mt-3 font-semibold">
                     {findVaccination(selectedVaccinationId)?.expectedEndDate}
                   </p>
@@ -281,6 +292,15 @@ const Vaccination = () => {
                   <p className="text-md mt-3">Ghi chú:</p>
                   <p className="text-lg mt-3 font-semibold">
                     {findVaccination(selectedVaccinationId)?.note}
+                  </p>
+                </div>
+                <div className="flex justify-between">
+                  <p className="text-md mt-3">Tình trạng</p>
+                  <p className={`text-lg mt-3 font-semibold ${findVaccination(selectedVaccinationId)?.status === "Đã hoàn thành"
+                    ? "text-green-500"
+                    : "text-red-500"
+                    }`}>
+                    {findVaccination(selectedVaccinationId)?.status}
                   </p>
                 </div>
               </div>
