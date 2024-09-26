@@ -1,6 +1,7 @@
 "use client"
 import { Tab, Tabs } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
+import RequestMedicineList from "./components/request-medicine-list";
 
 const MedicineReceiptRequest = () => {
   const pathname = usePathname();
@@ -27,6 +28,9 @@ const MedicineReceiptRequest = () => {
           />
           <Tab key="/farmer/disease-report" href="/farmer/disease-report" title="Từ điển bệnh" />
         </Tabs>
+      </div>
+      <div>
+        <RequestMedicineList />
       </div>
     </div>
   );
