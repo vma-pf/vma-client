@@ -4,10 +4,11 @@ import AttachMedia from "@oursrc/components/ui/attach-media/attach-media";
 import { toast } from "@oursrc/hooks/use-toast";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { apiRequest } from "../../../cage/api-request";
+import { apiRequest } from "@oursrc/app/(management)/farmer/cage/api-request";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
 import { useAppDispatch } from "@oursrc/lib/hooks";
 import { HiChevronDoubleRight } from "react-icons/hi2";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 
 const CageCreate = () => {
   const dispatch = useAppDispatch();
@@ -33,16 +34,19 @@ const CageCreate = () => {
   const handleSubmitForm = async (data: any) => {
     try {
       setLoading(true);
-      console.log(data);
-      // const res = await apiRequest.createCage(data);
-      // if (res && res.isSuccess) {
-      //   toast({
-      //     variant: "success",
-      //     title: res.data,
-      //   });
-      //   dispatch(setNextHerdProgressStep());
-      // }
-      dispatch(setNextHerdProgressStep());
+      const res: ResponseObjectList<any> = await apiRequest.createCage(data);
+      if (res && res.isSuccess) {
+        toast({
+          variant: "success",
+          title: res.data.toString(),
+        });
+        dispatch(setNextHerdProgressStep());
+      } else {
+        toast({
+          variant: "destructive",
+          title: res.errorMessage || "Có lỗi xảy ra",
+        });
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",

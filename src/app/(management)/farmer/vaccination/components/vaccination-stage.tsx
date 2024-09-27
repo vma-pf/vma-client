@@ -24,6 +24,7 @@ import { CiCalendar, CiClock2 } from "react-icons/ci";
 import { GrStatusGoodSmall } from "react-icons/gr";
 import { PiSubtitlesLight } from "react-icons/pi";
 import Image from "next/image";
+import { dateConverter } from "@oursrc/lib/utils";
 
 const medicineList = [
   {
@@ -104,46 +105,46 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
           Không có lịch trình tiêm phòng
         </p>
       ) : (
-        filterVaccination(filterStatus)?.map((stage) => (
-          <div className="my-4 grid grid-cols-12 p-2 border-2 rounded-xl">
-            <div className="col-span-2 flex items-center justify-center border-r-2">
-              <p className="text-center text-lg p-2">
-                {stage.applyStageTime.toLocaleDateString()}
-              </p>
+        filterVaccination(filterStatus)?.
+          filter((vaccination) => vaccination.applyStageTime >= new Date().toISOString())?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())?.map((stage) => (
+            <div className="my-4 grid grid-cols-12 p-2 border-2 rounded-xl">
+              <div className="col-span-2 flex items-center justify-center border-r-2">
+                <p className="text-center text-lg p-2">
+                  {dateConverter(stage.applyStageTime)}
+                </p>
+              </div>
+              <div className="col-span-2 border-r-2 flex items-center justify-center">
+                <FaClock className="text-lg" />
+                <p className="text-lg p-2">{stage.timeSpan}</p>
+              </div>
+              <div className="col-span-4 border-r-2 mx-3 flex flex-col items-start">
+                <p>Nội dung</p>
+                <p className="text-lg">{stage.title}</p>
+              </div>
+              <div className="col-span-2 border-r-2 mr-3 flex flex-col items-start justify-center">
+                <p>Trạng thái</p>
+                <p
+                  className={`text-lg ${stage.isDone ? "text-green-500" : "text-red-500"
+                    }`}
+                >
+                  {stage.isDone ? "Đã tiêm" : "Chưa tiêm"}
+                </p>
+              </div>
+              <div className="space-x-2">
+                <Button
+                  variant="solid"
+                  color="primary"
+                  endContent={<HiMiniPencilSquare size={20} />}
+                  onPress={() => {
+                    setSelectedVaccination(stage);
+                    onOpen();
+                  }}
+                >
+                  Chi tiết
+                </Button>
+              </div>
             </div>
-            <div className="col-span-2 border-r-2 flex items-center justify-center">
-              <FaClock className="text-lg" />
-              <p className="text-lg p-2">{stage.timeSpan}</p>
-            </div>
-            <div className="col-span-4 border-r-2 mx-3 flex flex-col items-start">
-              <p>Nội dung</p>
-              <p className="text-lg">{stage.title}</p>
-            </div>
-            <div className="col-span-2 border-r-2 mr-3 flex flex-col items-start justify-center">
-              <p>Trạng thái</p>
-              <p
-                className={`text-lg ${
-                  stage.isDone ? "text-green-500" : "text-red-500"
-                }`}
-              >
-                {stage.isDone ? "Đã tiêm" : "Chưa tiêm"}
-              </p>
-            </div>
-            <div className="space-x-2">
-              <Button
-                variant="solid"
-                color="primary"
-                endContent={<HiMiniPencilSquare size={20} />}
-                onPress={() => {
-                  setSelectedVaccination(stage);
-                  onOpen();
-                }}
-              >
-                Chi tiết
-              </Button>
-            </div>
-          </div>
-        ))
+          ))
       )}
       <Modal
         size="3xl"
@@ -174,18 +175,17 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
                       <CiCalendar className="text-5xl" />
                       <p className="text-md font-light">Ngày áp dụng</p>
                       <p className="text-lg">
-                        {selectedVaccination?.applyStageTime.toLocaleDateString()}
+                        {selectedVaccination && dateConverter(selectedVaccination?.applyStageTime)}
                       </p>
                     </div>
                     <div className="col-span-6 flex flex-col items-center">
                       <GrStatusGoodSmall className="text-5xl" />
                       <p className="text-md font-light">Trạng thái</p>
                       <p
-                        className={`text-lg ${
-                          selectedVaccination?.isDone
-                            ? "text-green-500"
-                            : "text-red-500"
-                        }`}
+                        className={`text-lg ${selectedVaccination?.isDone
+                          ? "text-green-500"
+                          : "text-red-500"
+                          }`}
                       >
                         {selectedVaccination?.isDone ? "Đã tiêm" : "Chưa tiêm"}
                       </p>

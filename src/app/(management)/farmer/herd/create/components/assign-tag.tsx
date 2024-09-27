@@ -7,45 +7,49 @@ import { useAppDispatch } from "@oursrc/lib/hooks";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
 import { RiRfidLine } from "react-icons/ri";
 import AssignInfo from "./assign-info";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { apiRequest } from "../../api-request";
 
 export type Pig = {
-  id: number;
-  name: string;
+  code: string;
   cage?: Cage;
+  herdId?: string;
   weight?: number;
   height?: number;
   width?: number;
+  note?: string;
 };
 
 export type Cage = {
   id: string;
-  name: string;
+  code: string;
+  description: string;
   capacity: number;
-  currentQuantity: number;
+  availableQuantity: number;
 };
 
-const pigList: Pig[] = [
-  { id: 1, name: "Heo 001" },
-  { id: 2, name: "Heo 002" },
-  { id: 3, name: "Heo 003" },
-  { id: 4, name: "Heo 004" },
-  { id: 5, name: "Heo 005" },
-  { id: 6, name: "Heo 006" },
-];
+// const pigList: Pig[] = [
+//   { id: 1, name: "Heo 001", pigCode: "HEO001" },
+//   { id: 2, name: "Heo 002", pigCode: "HEO002" },
+//   { id: 3, name: "Heo 003", pigCode: "HEO003" },
+//   { id: 4, name: "Heo 004", pigCode: "HEO004" },
+//   { id: 5, name: "Heo 005", pigCode: "HEO005" },
+//   { id: 6, name: "Heo 006", pigCode: "HEO006" },
+// ];
 
-const cages: Cage[] = [
-  { id: "1", name: "Chuồng 001", capacity: 10, currentQuantity: 0 },
-  { id: "2", name: "Chuồng 002", capacity: 10, currentQuantity: 0 },
-  { id: "3", name: "Chuồng 003", capacity: 10, currentQuantity: 5 },
-  { id: "4", name: "Chuồng 004", capacity: 10, currentQuantity: 0 },
-  { id: "5", name: "Chuồng 005", capacity: 10, currentQuantity: 0 },
-  { id: "6", name: "Chuồng 006", capacity: 10, currentQuantity: 10 },
-];
+// const cages: Cage[] = [
+//   { id: "1", name: "Chuồng 001", capacity: 10, currentQuantity: 0 },
+//   { id: "2", name: "Chuồng 002", capacity: 10, currentQuantity: 0 },
+//   { id: "3", name: "Chuồng 003", capacity: 10, currentQuantity: 5 },
+//   { id: "4", name: "Chuồng 004", capacity: 10, currentQuantity: 0 },
+//   { id: "5", name: "Chuồng 005", capacity: 10, currentQuantity: 0 },
+//   { id: "6", name: "Chuồng 006", capacity: 10, currentQuantity: 10 },
+// ];
 
 const AssignTag = () => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const [unassignedPigs, setUnassignedPigs] = useState<Pig[]>(pigList);
+  const [unassignedPigs, setUnassignedPigs] = useState<Pig[]>([]);
   const [assignedPigs, setAssignedPigs] = useState<Pig[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -55,6 +59,7 @@ const AssignTag = () => {
     try {
       setLoading(true);
       console.log(assignedPigs);
+      localStorage.setItem("assignedPigs", JSON.stringify(assignedPigs));
       dispatch(setNextHerdProgressStep());
     } catch (error: any) {
       toast({
@@ -65,6 +70,39 @@ const AssignTag = () => {
       setLoading(false);
     }
   };
+
+  const fetchHerdInfo = async () => {
+    try {
+      const res: ResponseObject<any> = await apiRequest.getHerdById("31c334fc-308a-40a9-a058-21bc4c4a3da0");
+      if (res && res.isSuccess) {
+        const pigs: Pig[] = [];
+        for (let i = 0; i < res.data.totalNumber; i++) {
+          pigs.push({
+            code: `HEO-${(i + 1).toString().padStart(3, "0")}`,
+            herdId: res.data.id,
+          });
+        }
+        setUnassignedPigs(pigs);
+      } else {
+        toast({
+          variant: "destructive",
+          title: res.errorMessage || "Có lỗi xảy ra",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  React.useEffect(() => {
+    const storedData: Pig[] = JSON.parse(localStorage.getItem("assignedPigs") || "[]");
+    if (storedData.length > 0) {
+      setAssignedPigs(storedData);
+      return;
+    } else {
+      fetchHerdInfo();
+    }
+  }, []);
   return (
     <div className="container mx-auto">
       <div className="mt-12 mb-8">
@@ -106,7 +144,7 @@ const AssignTag = () => {
                     exit={{ x: 100, opacity: 0 }}
                     transition={{ duration: 0.5 }}
                   >
-                    <p className="text-lg font-semibold">{pig.name}</p>
+                    <p className="text-lg font-semibold">{pig.code}</p>
                     <Button
                       className="mt-2"
                       color="primary"
@@ -127,7 +165,7 @@ const AssignTag = () => {
                 <AnimatePresence>
                   {assignedPigs.map((pig, index) => (
                     <motion.div
-                      className="col-span-2 h-24 mx-2 my-3 p-2 border-2 rounded-xl shadow-md cursor-pointer"
+                      className="col-span-2 mx-2 my-3 p-2 border-2 rounded-xl shadow-md cursor-pointer"
                       key={index}
                       layout
                       initial={{ x: -100, opacity: 0 }}
@@ -135,14 +173,24 @@ const AssignTag = () => {
                       exit={{ x: 100, opacity: 0 }}
                       transition={{ duration: 0.5 }}
                     >
-                      <div className="flex justify-around items-center">
-                        <p className="text-lg font-semibold">{pig.name}</p>
-                        <p className="text-lg font-semibold">{pig.cage?.name}</p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-md">Heo</p>
+                        <p className="text-lg font-semibold">{pig.code.slice(-3)}</p>
                       </div>
-                      <p className="text-md text-center">
-                        {pig.height?.toString()} x {pig.width?.toString()}
-                      </p>
-                      <p className="text-md text-center">Cân nặng: {pig.weight?.toString()} kg</p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-md">Chuồng</p>
+                        <p className="text-lg font-semibold">{pig.cage?.code}</p>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <p className="text-md">Kích thước</p>
+                        <p className="text-md">
+                          {pig.height?.toString()} x {pig.width?.toString()}
+                        </p>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <p className="text-md">Cân nặng</p>
+                        <p className="text-md">{pig.weight?.toString()} kg</p>
+                      </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -159,7 +207,6 @@ const AssignTag = () => {
           setAssignedPigs={setAssignedPigs}
           unassignedPigs={unassignedPigs}
           assignedPigs={assignedPigs}
-          cages={cages as Cage[]}
         />
         <div className="flex justify-end">
           <Button

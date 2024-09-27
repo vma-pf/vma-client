@@ -13,6 +13,8 @@ import {
 import React, { useMemo } from "react";
 import { VaccinationData } from "./vaccination";
 
+const statusMapColor = [{ name: "red", value: 0 }, { name: "green", value: 1 }, { name: "blue", value: 2 }, { name: "red", value: 3 }];
+const statusMap = [{ name: "Chưa bắt đầu", value: 0 }, { name: "Đang thực hiện", value: 1 }, { name: "Chưa thực hiện", value: 2 }, { name: "Đã hủy", value: 3 }];
 const VaccinationList = ({
   data,
   setSelectedVaccination,
@@ -79,7 +81,12 @@ const VaccinationList = ({
             <TableCell>{data.herdId}</TableCell>
             <TableCell>{data.startDate}</TableCell>
             <TableCell>{data.expectedEndDate}</TableCell>
-            <TableCell>{data.status}</TableCell>
+            <TableCell>
+              <p className={`text-${statusMapColor.find((status) => status.value === data.status)?.name
+                }-500 text-center`}>
+                {statusMap.find((status) => status.value === data.status)?.name}
+              </p>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

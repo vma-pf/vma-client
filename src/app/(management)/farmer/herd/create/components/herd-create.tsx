@@ -19,10 +19,20 @@ import { apiRequest } from "../../api-request";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { useAppDispatch } from "@oursrc/lib/hooks";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { HerdInfo } from "../../models/herd";
 
 const HerdCreate = () => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm();
   const [loading, setLoading] = React.useState<boolean | undefined>(false);
   const [date, setDate] = React.useState<RangeValue<CalendarDate>>({
     start: parseDate(new Date().toJSON().slice(0, 10)),
@@ -31,23 +41,9 @@ const HerdCreate = () => {
     ),
   });
   const [totalNumber, setTotalNumber] = React.useState<string | undefined>();
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      herdName: "",
-      breed: "",
-      startDate: "",
-      expectedEndDate: "",
-      description: "",
-      totalNumber: "",
-      date: "",
-    },
-  });
+  const code = watch("code");
+  const breed = watch("breed");
+  const description = watch("description");
 
   useEffect(() => {
     setValue("totalNumber", totalNumber || "0");
@@ -58,16 +54,24 @@ const HerdCreate = () => {
   const handleSubmitForm = async (data: any) => {
     try {
       setLoading(true);
+      data.startDate = new Date(data.startDate).toISOString();
+      data.expectedEndDate = new Date(data.expectedEndDate).toISOString();
       delete data.date;
-      // const res = await apiRequest.createHerd(data);
+      // const res: ResponseObject<any> = await apiRequest.createHerd(data);
       // if (res && res.isSuccess) {
       //   toast({
       //     variant: "success",
-      //     title: res.data,
+      //     title: res.data.toString(),
       //   });
       //   dispatch(setNextHerdProgressStep());
+      // } else {
+      //   toast({
+      //     variant: "destructive",
+      //     title: res.errorMessage || "Có lỗi xảy ra",
+      //   });
       // }
       console.log(data);
+      localStorage.setItem("herdData", JSON.stringify(data));
       dispatch(setNextHerdProgressStep());
     } catch (error: any) {
       toast({
@@ -96,6 +100,20 @@ const HerdCreate = () => {
       end: event.end,
     });
   };
+
+  React.useEffect(() => {
+    const storedData: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "null");
+    if (storedData) {
+      setTotalNumber(storedData.totalNumber.toString());
+      setDate({
+        start: parseDate(storedData.startDate.slice(0, 10)),
+        end: parseDate(storedData.expectedEndDate.slice(0, 10)),
+      });
+      setValue("code", storedData.code);
+      setValue("breed", storedData.breed);
+      setValue("description", storedData.description);
+    }
+  }, []);
   return (
     <div>
       <div className="container mx-auto">
@@ -120,9 +138,10 @@ const HerdCreate = () => {
                 placeholder="Nhập kí hiệu đàn"
                 labelPlacement="outside"
                 isRequired
-                isInvalid={errors.herdName ? true : false}
+                value={code || ""}
+                isInvalid={errors.code ? true : false}
                 errorMessage="Kí hiệu đàn không được để trống"
-                {...register("herdName", { required: true })}
+                {...register("code", { required: true })}
               />
             </div>
             <div className="flex w-full flex-wrap md:flex-nowrap">
@@ -136,6 +155,7 @@ const HerdCreate = () => {
                 labelPlacement="outside"
                 description="ví dụ: giống A, giống B,..."
                 isRequired
+                value={breed || ""}
                 isInvalid={errors.breed ? true : false}
                 errorMessage="Giống heo không được để trống"
                 {...register("breed", { required: true })}
@@ -187,6 +207,7 @@ const HerdCreate = () => {
               placeholder="Nhập mô tả"
               labelPlacement="outside"
               isRequired
+              value={description || ""}
               isInvalid={errors.description ? true : false}
               errorMessage="Mô tả không được để trống"
               {...register("description", { required: true })}

@@ -37,6 +37,37 @@ export const changeToDate = (date: DateValue) => {
   return new Date(date.year, date.month - 1, date.day);
 };
 
+export const dateTimeConverter = (dateTimeString: string): string => {
+  if (!dateTimeString) {
+    return "";
+  }
+  const date = new Date(dateTimeString);
+  const year = date.getUTCFullYear();
+  const month = ("0" + (date.getUTCMonth() + 1)).slice(-2); // Months are 0-based in JavaScript
+  const day = ("0" + date.getUTCDate()).slice(-2);
+  const hours = ("0" + date.getUTCHours()).slice(-2);
+  const minutes = ("0" + date.getUTCMinutes()).slice(-2);
+  const seconds = ("0" + date.getUTCSeconds()).slice(-2);
+
+  if (hours === "00" && minutes === "00" && seconds === "00") {
+    return `${day}-${month}-${year}`;
+  } else {
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+  }
+}
+
+export const dateConverter = (date: string): string => {
+  if (!date) {
+    return "";
+  }
+  const dateObj = new Date(date);
+  const year = dateObj.getFullYear();
+  const month = ("0" + (dateObj.getMonth() + 1)).slice(-2);
+  const day = ("0" + dateObj.getDate()).slice(-2);
+
+  return `${day}-${month}-${year}`;
+};
+
 export const ROLE = {
   VETERINARIAN: "veterinarian",
   FARMER: "farmer",

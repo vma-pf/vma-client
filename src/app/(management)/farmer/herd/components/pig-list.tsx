@@ -24,11 +24,13 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Spinner,
 } from "@nextui-org/react";
 import { columns, statusOptions } from "../data";
 import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
 import { Plus, Search } from "lucide-react";
-import { ListResponse, apiRequest } from "../api-request";
+import { apiRequest } from "../api-request";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   normal: "success",
@@ -66,8 +68,8 @@ const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export default function PigList({ data }: { data: ListResponse<Pig> }) {
-  const [pigList, setPigList] = React.useState<Pig[]>(data.data.data);
+export default function PigList() {
+  const [pigList, setPigList] = React.useState<Pig[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
@@ -77,13 +79,15 @@ export default function PigList({ data }: { data: ListResponse<Pig> }) {
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
-  const [rowsPerPage, setRowsPerPage] = React.useState(data.data.pageSize);
+  const [totalRecords, setTotalRecords] = React.useState(0);
+  const [pages, setPages] = React.useState(1);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "breed",
     direction: "ascending",
   });
 
-  const [page, setPage] = React.useState(data.data.pageIndex);
+  const [page, setPage] = React.useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -115,7 +119,6 @@ export default function PigList({ data }: { data: ListResponse<Pig> }) {
     return filteredPigs;
   }, [pigList, filterValue, statusFilter]);
 
-  const pages = data.data.totalPages;
   React.useEffect(() => {
     fetchData();
   }, [page, rowsPerPage]);
@@ -140,13 +143,15 @@ export default function PigList({ data }: { data: ListResponse<Pig> }) {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response: ListResponse<Pig> = await apiRequest.getPigs(
+      const response: ResponseObjectList<Pig> = await apiRequest.getPigs(
         page,
         rowsPerPage
       );
       if (response.isSuccess) {
         setPigList(response.data.data);
+        setTotalRecords(response.data.totalRecords);
         setPage(response.data?.pageIndex);
+        setPages(response.data?.totalPages);
         setRowsPerPage(response.data?.pageSize);
       }
     } catch (error) {
@@ -173,8 +178,8 @@ export default function PigList({ data }: { data: ListResponse<Pig> }) {
             {cellValue === "active"
               ? "Khỏe mạnh"
               : cellValue === "sick"
-              ? "Bệnh"
-              : "Chết"}
+                ? "Bệnh"
+                : "Chết"}
           </Chip>
         );
       case "actions":
@@ -297,7 +302,7 @@ export default function PigList({ data }: { data: ListResponse<Pig> }) {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Tổng cộng {data.data.totalRecords} kết quả
+            Tổng cộng {totalRecords} kết quả
           </span>
           <label className="flex items-center text-default-400 text-small">
             Số hàng mỗi trang:
@@ -425,7 +430,8 @@ export default function PigList({ data }: { data: ListResponse<Pig> }) {
         </TableHeader>
         <TableBody
           emptyContent={"Không có kết quả"}
-          isLoading={isLoading}
+          loadingState={isLoading || !pigList.length ? "loading" : "idle"}
+          loadingContent={<Spinner />}
           items={sortedItems}
         >
           {(item) => (

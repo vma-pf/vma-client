@@ -10,6 +10,9 @@ import {
   ModalHeader,
 } from "@nextui-org/react";
 import { IoMdPricetags } from "react-icons/io";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { useToast } from "@oursrc/hooks/use-toast";
+import { apiRequest } from "../../api-request";
 
 const AssignInfo = ({
   isOpen,
@@ -20,7 +23,6 @@ const AssignInfo = ({
   setAssignedPigs,
   unassignedPigs,
   assignedPigs,
-  cages,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -30,11 +32,12 @@ const AssignInfo = ({
   setAssignedPigs: React.Dispatch<React.SetStateAction<Pig[]>>;
   unassignedPigs: Pig[];
   assignedPigs: Pig[];
-  cages: Cage[];
 }) => {
+  const { toast } = useToast();
+  const [cages, setCages] = React.useState<Cage[]>([]);
   const [height, setHeight] = React.useState<string | undefined>();
   const [width, setWidth] = React.useState<string | undefined>();
-  const [weight, setWeight] = React.useState<string | undefined>("10");
+  const [weight, setWeight] = React.useState<string | undefined>();
 
   const handleHeightChange = (event: string) => {
     let numericValue = event.replace(/[^0-9.]/g, "");
@@ -70,17 +73,42 @@ const AssignInfo = ({
   };
 
   const handleAssignPig = (pig: Pig) => {
-    setUnassignedPigs(unassignedPigs.filter((p) => p.id !== pig.id));
+    setUnassignedPigs(unassignedPigs.filter((p) => p.code !== pig.code));
     setAssignedPigs([...assignedPigs, pig]);
+    setHeight(undefined);
+    setWidth(undefined);
+    setWeight(undefined);
   };
   const handleSelectCage = (cage: Cage) => {
     if (selectedPig.cage?.id === cage.id) {
       setSelectedPig({ ...selectedPig, cage: undefined });
     } else {
-      if (cage.currentQuantity >= cage.capacity) {
+      if (cage.availableQuantity >= cage.capacity) {
         return;
       }
       setSelectedPig({ ...selectedPig, cage: cage });
+    }
+  };
+
+  const generateTag = () => {
+    const caCode = selectedPig?.cage?.id === undefined ? "0" : selectedPig.cage?.id.slice(-3);
+    const tag = "HE" + selectedPig?.herdId?.slice(-3) + "-CA" + caCode + "-PI" + selectedPig?.code?.slice(-3);
+    return tag;
+  };
+
+  const getCages = async () => {
+    try {
+      const res: ResponseObjectList<Cage> = await apiRequest.getCages(1, 500);
+      if (res && res.isSuccess) {
+        setCages(res.data.data);
+      } else {
+        toast({
+          variant: "destructive",
+          title: res.errorMessage || "Có lỗi xảy ra",
+        });
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -93,13 +121,17 @@ const AssignInfo = ({
     });
   }, [height, width, weight]);
 
+  React.useEffect(() => {
+    getCages();
+  }, []);
+
   return (
     <div>
       <Modal
         size="2xl"
         isOpen={isOpen}
         onClose={() => {
-          if (selectedPig.cage && height && width, weight) {
+          if (selectedPig.cage?.id && height && width, weight) {
             onClose;
           }
         }}
@@ -111,10 +143,10 @@ const AssignInfo = ({
             <p className="text-2xl">Thông tin heo</p>
           </ModalHeader>
           <ModalBody>
-            <p className="text-lg">Mã heo: {selectedPig?.name}</p>
+            <p className="text-lg">Mã heo: {selectedPig?.code}</p>
             <div className="mb-4 flex items-center">
               <IoMdPricetags className="text-primary" size={30} />
-              <p className="ml-2 text-lg">HE01CA01PI01</p>
+              <p className="ml-2 text-lg">{generateTag()}</p>
             </div>
             <Input
               className="mb-5"
@@ -165,16 +197,16 @@ const AssignInfo = ({
               {cages.map((cage) => (
                 <div
                   className={`m-2 border-2 rounded-lg p-2 ${selectedPig?.cage?.id === cage.id ? "bg-primary" : ""
-                    } ${cage.currentQuantity >= cage.capacity
+                    } ${cage.availableQuantity >= cage.capacity
                       ? "bg-gray-300 cursor-not-allowed"
                       : ""
                     }`}
                   key={cage.id}
                   onClick={() => handleSelectCage(cage)}
                 >
-                  <p className="text-lg">{cage.name}</p>
+                  <p className="text-lg">Chuồng: {cage.code}</p>
                   <p className="text-lg">
-                    Sức chứa: {cage.currentQuantity}/{cage.capacity}
+                    Sức chứa: {cage.availableQuantity}/{cage.capacity}
                   </p>
                 </div>
               ))}
@@ -190,7 +222,7 @@ const AssignInfo = ({
                 handleAssignPig(selectedPig);
                 onClose();
               }}
-              isDisabled={selectedPig?.cage && height && width && weight ? false : true}
+              isDisabled={selectedPig?.cage?.id && height && width && weight ? false : true}
             >
               Done
             </Button>

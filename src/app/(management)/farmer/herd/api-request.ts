@@ -1,28 +1,28 @@
 import http from "@oursrc/lib/http";
 import { CreateHerdRequest } from "./models/herd";
-
-export type ListResponse<T> = {
-  isSuccess: boolean;
-  data: {
-    pageSize: number;
-    pageIndex: number;
-    totalRecords: number;
-    totalPages: number;
-    data: T[];
-  };
-  errorMessage: string | null;
-};
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 
 export const apiRequest = {
-  createHerd: (model: CreateHerdRequest) =>
-    http.post("api/herds", {
-      breed: model.breed,
-      totalNumber: model.totalNumber,
-      startDate: model.startDate,
-      expectedEndDate: model.expectedEndDate,
+  getHerd: (pageIndex: number, pageSize: number) =>
+    http.get<ResponseObjectList<any>>(`api/herds`, {
+      params: {
+        pageIndex: pageIndex?.toString() || "",
+        pageSize: pageSize?.toString() || "",
+      },
     }),
+  getHerdById: (id: string) =>
+    http.get<ResponseObjectList<any>>(`api/herds/${id}`),
+  createHerd: (model: CreateHerdRequest) =>
+    http.post<ResponseObjectList<any>>("api/herds", model),
   getPigs: (pageIndex: number, pageSize: number) =>
-    http.get<ListResponse<any>>(`api/pigs`, {
+    http.get<ResponseObjectList<any>>(`api/pigs`, {
+      params: {
+        pageIndex: pageIndex?.toString() || "",
+        pageSize: pageSize?.toString() || "",
+      },
+    }),
+  getCages: (pageIndex: number, pageSize: number) =>
+    http.get<ResponseObjectList<any>>(`api/cages`, {
       params: {
         pageIndex: pageIndex?.toString() || "",
         pageSize: pageSize?.toString() || "",

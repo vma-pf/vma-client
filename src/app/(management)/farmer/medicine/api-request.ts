@@ -3,13 +3,13 @@ import {
   CreateMedicineRequest,
   UpdateMedicineRequest,
 } from "./models/medicine";
-import { ListResponse } from "../herd/api-request";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 
 const endpoint = "api/medicines";
 
 export const apiRequest = {
   getMedicine: (page: number, pageSize: number = 30) =>
-    http.get<ListResponse<any>>(endpoint, {
+    http.get<ResponseObjectList<any>>(endpoint, {
       params: {
         pageIndex: page?.toString() || "",
         pageSize: pageSize?.toString() || "",

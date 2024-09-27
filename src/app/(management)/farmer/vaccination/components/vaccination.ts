@@ -7,13 +7,17 @@ export type VaccinationData = {
   expectedEndDate: string;
   actualEndDate: string;
   note: string;
-  status: "Đã hoàn thành" | "Chưa hoàn thành";
+  status: number;
+  vaccinationStages: VaccinationStageProps[];
 };
 
 export type VaccinationStageProps = {
-  id: string;
+  vaccinationPlanId: string;
   title: string;
-  applyStageTime: Date;
+  applyStageTime: string;
   timeSpan: string;
   isDone: boolean;
+  vaccinationToDos: [
+    { description: string; }
+  ]
 };
