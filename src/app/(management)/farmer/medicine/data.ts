@@ -28,7 +28,7 @@ const INITIAL_VISIBLE_COLUMNS = [
   "actions"
 ];
 
-const statusOptions = [{ name: "Khỏe mạnh", uid: "active" }];
+const statusOptions = [{ name: "", uid: "" }];
 
 const medicines = [
   {
