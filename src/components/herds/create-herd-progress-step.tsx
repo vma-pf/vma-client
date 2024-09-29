@@ -34,6 +34,8 @@ const CreateHerdProgressStep = ({ steps }: any) => {
     dataUpdate[index].isCurrentTab = true;
     setData(dataUpdate);
     dispatch(setHerdProgressSteps(dataUpdate));
+    // save to local storage
+    localStorage.setItem("herdProgressSteps", JSON.stringify(dataUpdate));
   };
   return (
     <div>

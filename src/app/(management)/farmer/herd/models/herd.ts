@@ -14,6 +14,26 @@ type UpdateHerdRequest = {
   startDate: Date;
 };
 
+type Pig = {
+  id?: string;
+  code?: string;
+  gender: string;
+  cage?: Cage;
+  herdId?: string;
+  weight?: number;
+  height?: number;
+  width?: number;
+  note?: string;
+};
+
+type Cage = {
+  id: string;
+  code: string;
+  description: string;
+  capacity: number;
+  availableQuantity: number;
+};
+
 type HerdInfo = {
   id: string;
   code: string;
@@ -27,4 +47,4 @@ type HerdInfo = {
   status: number;
 };
 
-export type { CreateHerdRequest, UpdateHerdRequest, HerdInfo };
+export type { CreateHerdRequest, UpdateHerdRequest, HerdInfo, Pig, Cage };

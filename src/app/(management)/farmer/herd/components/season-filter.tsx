@@ -12,6 +12,7 @@ import { HiChevronDown } from "react-icons/hi";
 import { HerdInfo } from "../models/herd";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { apiRequest } from "../api-request";
+import { useToast } from "@oursrc/hooks/use-toast";
 
 const items = [
   {
@@ -59,6 +60,7 @@ const items = [
 const SeasonFilter = ({ setSelectedHerd }: {
   setSelectedHerd: React.Dispatch<React.SetStateAction<HerdInfo | undefined>>;
 }) => {
+  const { toast } = useToast();
   const [herds, setHerds] = React.useState<HerdInfo[]>([]);
   const [selectedKeys, setSelectedKeys] = React.useState<SharedSelection>(
     new Set(["Chọn vụ nuôi"])
@@ -82,9 +84,18 @@ const SeasonFilter = ({ setSelectedHerd }: {
         if (response.data.data.filter((herd) => herd.id === selectedValue).length === 0) {
           setSelectedKeys(new Set([response.data.data[0].id]));
         }
+      } else {
+        toast({
+          variant: "destructive",
+          title: response.errorMessage || "Có lỗi xảy ra",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+      toast({
+        variant: "destructive",
+        title: error.message || "Có lỗi xảy ra",
+      });
     }
   }
   return (

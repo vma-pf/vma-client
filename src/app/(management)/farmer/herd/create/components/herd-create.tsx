@@ -19,7 +19,7 @@ import { apiRequest } from "../../api-request";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { useAppDispatch } from "@oursrc/lib/hooks";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
-import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { HerdInfo } from "../../models/herd";
 
 const HerdCreate = () => {
@@ -40,13 +40,11 @@ const HerdCreate = () => {
       new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)
     ),
   });
-  const [totalNumber, setTotalNumber] = React.useState<string | undefined>();
   const code = watch("code");
   const breed = watch("breed");
   const description = watch("description");
 
   useEffect(() => {
-    setValue("totalNumber", totalNumber || "0");
     setValue("startDate", date.start.toString() || "");
     setValue("expectedEndDate", date.end.toString() || "");
   }, []);
@@ -57,22 +55,23 @@ const HerdCreate = () => {
       data.startDate = new Date(data.startDate).toISOString();
       data.expectedEndDate = new Date(data.expectedEndDate).toISOString();
       delete data.date;
-      // const res: ResponseObject<any> = await apiRequest.createHerd(data);
-      // if (res && res.isSuccess) {
-      //   toast({
-      //     variant: "success",
-      //     title: res.data.toString(),
-      //   });
-      //   dispatch(setNextHerdProgressStep());
-      // } else {
-      //   toast({
-      //     variant: "destructive",
-      //     title: res.errorMessage || "Có lỗi xảy ra",
-      //   });
-      // }
-      console.log(data);
-      localStorage.setItem("herdData", JSON.stringify(data));
-      dispatch(setNextHerdProgressStep());
+      const res: ResponseObject<any> = await apiRequest.createHerd(data);
+      if (res && res.isSuccess) {
+        toast({
+          variant: "success",
+          title: "Tạo đàn thành công",
+        });
+        localStorage.setItem("herdData", JSON.stringify({
+          ...data,
+          id: res.data
+        }));
+        dispatch(setNextHerdProgressStep());
+      } else {
+        toast({
+          variant: "destructive",
+          title: res.errorMessage || "Có lỗi xảy ra",
+        });
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -81,17 +80,6 @@ const HerdCreate = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleNumberChange = (event: string) => {
-    let numericValue = event.replace(/[^0-9]/g, "");
-    if (numericValue[0] === "-" || numericValue[0] === "0") {
-      numericValue = numericValue.slice(1);
-    }
-    if (parseInt(numericValue) > 10000) {
-      numericValue = "10000";
-    }
-    setTotalNumber(numericValue);
   };
 
   const handleDateChange = (event: RangeValue<CalendarDate>) => {
@@ -104,7 +92,6 @@ const HerdCreate = () => {
   React.useEffect(() => {
     const storedData: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "null");
     if (storedData) {
-      setTotalNumber(storedData.totalNumber.toString());
       setDate({
         start: parseDate(storedData.startDate.slice(0, 10)),
         end: parseDate(storedData.expectedEndDate.slice(0, 10)),
@@ -162,41 +149,21 @@ const HerdCreate = () => {
               />
             </div>
           </div>
-          <div className="grid grid-flow-row grid-cols-2 gap-4 mb-5">
-            <DateRangePicker
-              label="Ngày bắt đầu - Ngày kết thúc (dự kiến)"
-              radius="sm"
-              size="lg"
-              labelPlacement="outside"
-              isRequired
-              isInvalid={date.end <= date.start ? true : false}
-              errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
-              minValue={today(getLocalTimeZone())}
-              validationBehavior="native"
-              value={date || ""}
-              onChange={(event) => {
-                handleDateChange(event);
-              }}
-            />
-            <Input
-              className="mb-5"
-              type="text"
-              radius="sm"
-              size="lg"
-              label="Số lượng heo"
-              placeholder="Nhập số lượng heo"
-              labelPlacement="outside"
-              isRequired
-              isInvalid={errors.totalNumber ? true : false}
-              errorMessage="Số lượng heo không được để trống"
-              value={totalNumber || ""}
-              onValueChange={(event) => handleNumberChange(event)}
-              {...register("totalNumber", {
-                required: true,
-                valueAsNumber: true,
-              })}
-            />
-          </div>
+          <DateRangePicker
+            label="Ngày bắt đầu - Ngày kết thúc (dự kiến)"
+            radius="sm"
+            size="lg"
+            labelPlacement="outside"
+            isRequired
+            isInvalid={date.end <= date.start ? true : false}
+            errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
+            minValue={today(getLocalTimeZone())}
+            validationBehavior="native"
+            value={date || ""}
+            onChange={(event) => {
+              handleDateChange(event);
+            }}
+          />
           <div className="grid grid-cols-1 mb-5">
             <Textarea
               minRows={20}

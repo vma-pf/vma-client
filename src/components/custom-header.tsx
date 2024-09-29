@@ -19,11 +19,39 @@ import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa6";
 import { HiSun, HiMoon } from "react-icons/hi";
+import { LuDot } from "react-icons/lu";
 
 type Message = {
-  user: string;
-  message: string;
+  senderName: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  isRead: boolean;
 };
+
+const messageList: Message[] = [
+  {
+    senderName: "Admin",
+    title: "Notification 1",
+    content: "Content 1",
+    createdAt: new Date().toISOString(),
+    isRead: false,
+  },
+  {
+    senderName: "Admin",
+    title: "Notification 2",
+    content: "Content 2",
+    createdAt: new Date("2024-09-27T00:00:00.000Z").toISOString(),
+    isRead: false,
+  },
+  {
+    senderName: "Admin",
+    title: "Notification 3",
+    content: "Content 3",
+    createdAt: new Date("2024-09-27T00:00:00.000Z").toISOString(),
+    isRead: false,
+  },
+];
 
 const CustomHeader = ({
   titleMap,
@@ -41,6 +69,24 @@ const CustomHeader = ({
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [connection, setConnection] = useState<HubConnection | null>(null);
+
+  const checkTime = (msg: Message) => {
+    const diffTime = new Date().getTime() - new Date(msg.createdAt).getTime();
+    const minutes = Math.floor(diffTime / (1000 * 60));
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    const timeAgo = minutes < 60
+      ? `${minutes} phút trước`
+      : hours < 24
+        ? `${hours} giờ trước`
+        : days < 7
+          ? `${days} ngày trước`
+          : days < 30
+            ? `${days} tuần trước`
+            : `${days} tháng trước`;
+    return timeAgo;
+  }
 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken")?.toString();
@@ -61,8 +107,10 @@ const CustomHeader = ({
     connect
       .start()
       .then(() => {
-        connect.on("ReceiveMessage", (user, message) => {
-          setMessages((prev) => [...prev, { user, message }]);
+        connect.on("ReceiveMessage", (message) => {
+          const newMessages = [...messages];
+          newMessages.push(message);
+          setMessages(newMessages);
         });
         // connect.invoke("RetrieveMessageHistory");
       })
@@ -88,19 +136,36 @@ const CustomHeader = ({
           className="mx-2"
           src="https://i.pravatar.cc/150?u=a042581f4e29026024d"
         />
-        <Dropdown placement="bottom-end">
+        <Dropdown placement="bottom-end" className="w-fit">
           <DropdownTrigger>
             <Button isIconOnly variant="light">
-              <Badge content="5" size="sm" color="primary" shape="circle">
+              <Badge content={
+                messageList.filter((msg) => !msg.isRead).length
+              } size="sm" color="primary" shape="circle">
                 <FaBell className="text-2xl text-yellow-400" />
               </Badge>
             </Button>
           </DropdownTrigger>
           <DropdownMenu>
-            {messages.map((msg, index) => (
+            {messageList.map((msg, index) => (
               <DropdownItem key={index}>
-                <p className="text-sm">User: {msg.user}</p>
-                <p className="text-md font-medium">Message: {msg.message}</p>
+                {msg.isRead ? (
+                  <div>
+                    <p className="text-lg font-semibold">{msg.title}</p>
+                    <p className="text-md">Message: {msg.content}</p>
+                    {/* display period from now to msg.createdAt */}
+                    <p className="text-sm text-gray-400">{checkTime(msg)}</p>
+                  </div>
+                ) : (
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="text-lg font-semibold">{msg.title}</p>
+                      <p className="text-md">Message: {msg.content}</p>
+                      <p className="text-sm text-gray-400">{checkTime(msg)}</p>
+                    </div>
+                    <LuDot size={50} className="text-primary" />
+                  </div>
+                )}
               </DropdownItem>
             ))}
           </DropdownMenu>

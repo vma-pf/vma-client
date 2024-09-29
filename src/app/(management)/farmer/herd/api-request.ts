@@ -1,6 +1,6 @@
 import http from "@oursrc/lib/http";
-import { CreateHerdRequest } from "./models/herd";
-import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { CreateHerdRequest, Pig } from "./models/herd";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 
 export const apiRequest = {
   getHerd: (pageIndex: number, pageSize: number) =>
@@ -28,4 +28,8 @@ export const apiRequest = {
         pageSize: pageSize?.toString() || "",
       },
     }),
+  assignPigToCage: (pig: any) =>
+    http.post<ResponseObject<any>>("api/pigs", pig),
+  createCheckUpPlan: (model: string[]) =>
+    http.post<ResponseObject<any>>("api/checkup-plans", model),
 };

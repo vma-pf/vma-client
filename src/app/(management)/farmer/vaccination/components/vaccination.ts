@@ -12,6 +12,7 @@ export type VaccinationData = {
 };
 
 export type VaccinationStageProps = {
+  id: string;
   vaccinationPlanId: string;
   title: string;
   applyStageTime: string;
