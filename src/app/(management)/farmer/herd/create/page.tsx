@@ -7,6 +7,7 @@ import CageCreate from "./components/cage-create";
 import AssignTag from "./components/assign-tag";
 import PreviewInfo from "./components/preview-info";
 import { motion } from "framer-motion";
+import CheckUpPlan from "./components/checkup-plan";
 
 const CreateHerdProgress = () => {
   const storedHerdProgressSteps = useHerdProgressSteps();
@@ -15,7 +16,12 @@ const CreateHerdProgress = () => {
   );
 
   useEffect(() => {
-    setHerdProgressSteps(storedHerdProgressSteps);
+    const storedStep = localStorage.getItem("herdProgressSteps");
+    if (storedStep) {
+      setHerdProgressSteps(JSON.parse(storedStep));
+    } else {
+      setHerdProgressSteps(storedHerdProgressSteps);
+    }
   }, [storedHerdProgressSteps]);
 
   const getComponent = () => {
@@ -27,7 +33,7 @@ const CreateHerdProgress = () => {
       case 3:
         return <AssignTag />;
       case 4:
-        return <PreviewInfo />;
+        return <CheckUpPlan />;
     }
   };
   return (

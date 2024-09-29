@@ -25,43 +25,55 @@ import { GrStatusGoodSmall } from "react-icons/gr";
 import { PiSubtitlesLight } from "react-icons/pi";
 import Image from "next/image";
 import { dateConverter } from "@oursrc/lib/utils";
+import { apiRequest } from "../api-request";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { toast } from "@oursrc/hooks/use-toast";
 
-const medicineList = [
-  {
-    name: "Thuốc 1",
-    description: "Thuốc 1 mô tả",
-    dosage: 1,
-    note: "Sáng",
-  },
-  {
-    name: "Thuốc 2",
-    description: "Thuốc 2 mô tả",
-    dosage: 2,
-    note: "Trưa",
-  },
-  {
-    name: "Thuốc 3",
-    description: "Thuốc 3 mô tả",
-    dosage: 3,
-    note: "Chiều",
-  },
-  {
-    name: "Thuốc 4",
-    description: "Thuốc 4 mô tả",
-    dosage: 4,
-    note: "Tối",
-  },
-  {
-    name: "Thuốc 5",
-    description: "Thuốc 5 mô tả",
-    dosage: 5,
-    note: "Sáng",
-  },
-];
+// const medicineList = [
+//   {
+//     name: "Thuốc 1",
+//     description: "Thuốc 1 mô tả",
+//     dosage: 1,
+//     note: "Sáng",
+//   },
+//   {
+//     name: "Thuốc 2",
+//     description: "Thuốc 2 mô tả",
+//     dosage: 2,
+//     note: "Trưa",
+//   },
+//   {
+//     name: "Thuốc 3",
+//     description: "Thuốc 3 mô tả",
+//     dosage: 3,
+//     note: "Chiều",
+//   },
+//   {
+//     name: "Thuốc 4",
+//     description: "Thuốc 4 mô tả",
+//     dosage: 4,
+//     note: "Tối",
+//   },
+//   {
+//     name: "Thuốc 5",
+//     description: "Thuốc 5 mô tả",
+//     dosage: 5,
+//     note: "Sáng",
+//   },
+// ];
+type MedicineListProps = {
+  status: number;
+  medicineName: string;
+  quantity: number;
+  id: string;
+}
+
+const statusMap = [{ status: 0, value: "Đang chờ" }, { status: 1, value: "Đã yêu cầu" }, { status: 2, value: "Chấp nhận" }, { status: 3, value: "Từ chối" }];
 
 const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
   const [filterStatus, setFilterStatus] = React.useState("not-done");
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [medicineList, setMedicineList] = React.useState<MedicineListProps[]>([]);
   const [selectedVaccination, setSelectedVaccination] =
     React.useState<VaccinationStageProps>();
 
@@ -74,6 +86,21 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
       return data.filter((vaccination) => vaccination.isDone === false);
     }
   };
+
+  const getMedicineInStage = async (id: string) => {
+    try {
+      const res: ResponseObject<any> = await apiRequest.getMedicineInStage(id);
+      if (res && res.isSuccess) {
+        setMedicineList(res.data.medicine);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: error.message || "Có lỗi xảy ra",
+      });
+    }
+  }
+
   return (
     <div>
       <div className="mt-5 mb-3 flex justify-between items-center">
@@ -137,6 +164,7 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
                   endContent={<HiMiniPencilSquare size={20} />}
                   onPress={() => {
                     setSelectedVaccination(stage);
+                    getMedicineInStage(stage.id);
                     onOpen();
                   }}
                 >
@@ -193,8 +221,8 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
                   </div>
                   <p className="text-lg mt-3">Danh sách thuốc cần tiêm</p>
                   <div className="grid grid-cols-2">
-                    {selectedVaccination &&
-                      medicineList.map((vaccine) => (
+                    {medicineList?.length > 0 ? (
+                      medicineList?.map((medicine) => (
                         <div className="m-2 p-4 border-2 rounded-xl">
                           <div className="grid grid-cols-12">
                             <Image
@@ -206,21 +234,24 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
                             />
                             <div className="my-auto col-span-8">
                               <p className="text-lg font-bold">
-                                {vaccine.name}
+                                {medicine.medicineName}
                               </p>
                               <p className="text-md font-light">
-                                {vaccine.description}
+                                {statusMap.find((status) => status.status === medicine.status)?.value}
                               </p>
                             </div>
                             <p className="my-auto col-span-2 mx-2 text-md font-semibold text-right">
-                              X{vaccine.dosage}
+                              X{medicine.quantity}
                             </p>
                           </div>
                           <Divider className="mt-3" orientation="horizontal" />
                           <p className="text-md font-light">Lưu ý:</p>
-                          <p className="text-md font-light">{vaccine.note}</p>
+                          <p className="text-md font-light"></p>
                         </div>
-                      ))}
+                      ))
+                    ) : (
+                      <p className="text-lg text-center">Không có thuốc cần tiêm</p>
+                    )}
                   </div>
                 </div>
               </ModalBody>

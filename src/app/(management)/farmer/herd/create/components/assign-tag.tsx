@@ -1,32 +1,20 @@
 "use client";
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Button, useDisclosure } from "@nextui-org/react";
+import { Button, Skeleton, useDisclosure } from "@nextui-org/react";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { useAppDispatch } from "@oursrc/lib/hooks";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
 import { RiRfidLine } from "react-icons/ri";
 import AssignInfo from "./assign-info";
-import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { apiRequest } from "../../api-request";
-
-export type Pig = {
-  code: string;
-  cage?: Cage;
-  herdId?: string;
-  weight?: number;
-  height?: number;
-  width?: number;
-  note?: string;
-};
-
-export type Cage = {
-  id: string;
-  code: string;
-  description: string;
-  capacity: number;
-  availableQuantity: number;
-};
+import { Cage, HerdInfo, Pig } from "../../models/herd";
+import { GiPig } from "react-icons/gi";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
+import { FaWeightHanging } from "react-icons/fa6";
+import { CiLineHeight } from "react-icons/ci";
+import { AiOutlineColumnWidth } from "react-icons/ai";
 
 // const pigList: Pig[] = [
 //   { id: 1, name: "Heo 001", pigCode: "HEO001" },
@@ -49,17 +37,14 @@ export type Cage = {
 const AssignTag = () => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const [unassignedPigs, setUnassignedPigs] = useState<Pig[]>([]);
   const [assignedPigs, setAssignedPigs] = useState<Pig[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = React.useState<boolean>(false);
-  const [selectedPig, setSelectedPig] = React.useState<Pig>();
+  const [cages, setCages] = React.useState<Cage[]>([]);
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      console.log(assignedPigs);
-      localStorage.setItem("assignedPigs", JSON.stringify(assignedPigs));
       dispatch(setNextHerdProgressStep());
     } catch (error: any) {
       toast({
@@ -71,18 +56,12 @@ const AssignTag = () => {
     }
   };
 
-  const fetchHerdInfo = async () => {
+  const getCages = async () => {
     try {
-      const res: ResponseObject<any> = await apiRequest.getHerdById("31c334fc-308a-40a9-a058-21bc4c4a3da0");
+      setLoading(true);
+      const res: ResponseObjectList<Cage> = await apiRequest.getCages(1, 500);
       if (res && res.isSuccess) {
-        const pigs: Pig[] = [];
-        for (let i = 0; i < res.data.totalNumber; i++) {
-          pigs.push({
-            code: `HEO-${(i + 1).toString().padStart(3, "0")}`,
-            herdId: res.data.id,
-          });
-        }
-        setUnassignedPigs(pigs);
+        setCages(res.data.data);
       } else {
         toast({
           variant: "destructive",
@@ -91,17 +70,24 @@ const AssignTag = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  React.useEffect(() => {
+    if (assignedPigs.length > 0) {
+      localStorage.setItem("assignedPigs", JSON.stringify(assignedPigs));
+      getCages();
+    }
+  }, [assignedPigs]);
 
   React.useEffect(() => {
     const storedData: Pig[] = JSON.parse(localStorage.getItem("assignedPigs") || "[]");
     if (storedData.length > 0) {
       setAssignedPigs(storedData);
-      return;
-    } else {
-      fetchHerdInfo();
     }
+    getCages();
   }, []);
   return (
     <div className="container mx-auto">
@@ -122,13 +108,13 @@ const AssignTag = () => {
               repeatDelay: 2,
             }}
           >
-            <RiRfidLine className="mx-auto text-primary" size={150} />
+            <RiRfidLine className="mx-auto text-primary" size={150} onClick={onOpen} />
           </motion.div>
           <p className="text-center text-lg mt-4">
             Quét tag bằng thiết bị RFID để gắn tag cho heo
           </p>
         </div>
-        <div className="p-3 mx-4 mt-3 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+        {/* <div className="p-3 mx-4 mt-3 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
           <p className="text-2xl font-bold">Danh sách heo</p>
           <div className="grid grid-cols-2">
             <div className="px-3 border-r-1">
@@ -175,7 +161,7 @@ const AssignTag = () => {
                     >
                       <div className="flex justify-between items-center">
                         <p className="text-md">Heo</p>
-                        <p className="text-lg font-semibold">{pig.code.slice(-3)}</p>
+                        <p className="text-lg font-semibold">{pig.code?.slice(-3)}</p>
                       </div>
                       <div className="flex justify-between items-center">
                         <p className="text-md">Chuồng</p>
@@ -197,16 +183,78 @@ const AssignTag = () => {
               </div>
             </div>
           </div>
+        </div> */}
+        <div className="mt-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+          <p className="text-3xl font-bold text-center mb-5">Danh sách heo</p>
+          {!loading ? (
+            <div className="m-3 grid grid-cols-3">
+              {assignedPigs.length > 0 ? cages.map((cage, idx) => (
+                <div key={idx} className="m-2 col-span-1 border-2 rounded-lg">
+                  <p className="text-center text-xl font-semibold">Chuồng: {cage.code}</p>
+                  <div className="flex justify-center items-center">
+                    <p className="text-center mr-2 text-lg">Sức chứa: {cage.availableQuantity} / {cage.capacity}</p>
+                    <GiPig size={30} className="text-primary" />
+                  </div>
+                  <div className="grid grid-cols-2">
+                    {assignedPigs
+                      .filter((pig) => pig.cage?.id === cage.id)
+                      .map((pig: Pig, index) => (
+                        <motion.div
+                          className="col-span-1 mx-2 my-2 p-2 border-2 rounded-xl shadow-md cursor-pointer"
+                          key={index}
+                          layout
+                          initial={{ x: -100, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          exit={{ x: 100, opacity: 0 }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <HoverCard openDelay={100} closeDelay={100}>
+                            <HoverCardTrigger asChild>
+                              <div className="">
+                                <p className="overflow-auto break-all">Mã: {pig.code}</p>
+                                <p className="text-lg font-semibold overflow-auto">Giới tính: {pig.gender === "Male" ? "Đực" : "Cái"}</p>
+                              </div>
+                            </HoverCardTrigger>
+                            <HoverCardContent>
+                              <div className="flex items-center">
+                                <FaWeightHanging size={20} className="text-primary" />
+                                <p className="text-lg ml-2">Cân nặng: {pig.weight} kg</p>
+                              </div>
+                              <div className="flex items-center">
+                                <CiLineHeight size={20} className="text-primary" />
+                                <p className="text-lg ml-2">Chiều cao: {pig.height} cm</p>
+                              </div>
+                              <div className="flex items-center">
+                                <AiOutlineColumnWidth size={20} className="text-primary" />
+                                <p className="text-lg ml-2">Chiều rộng: {pig.width} cm</p>
+                              </div>
+                            </HoverCardContent>
+                          </HoverCard>
+                        </motion.div>
+                      ))}
+                  </div>
+                </div>
+              )) : <div className="col-span-3 text-center text-lg">Chưa có heo nào được xếp</div>}
+            </div>
+          ) : (
+            <div className="grid grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="m-2 col-span-1 border-2 rounded-lg"
+                >
+                  <Skeleton className="rounded-lg">
+                    <div className="h-24 rounded-lg bg-default-300"></div>
+                  </Skeleton>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <AssignInfo
           isOpen={isOpen}
           onClose={onClose}
-          selectedPig={selectedPig as Pig}
-          setSelectedPig={setSelectedPig}
-          setUnassignedPigs={setUnassignedPigs}
           setAssignedPigs={setAssignedPigs}
-          unassignedPigs={unassignedPigs}
-          assignedPigs={assignedPigs}
         />
         <div className="flex justify-end">
           <Button
@@ -214,7 +262,7 @@ const AssignTag = () => {
             variant="solid"
             isLoading={loading}
             size="lg"
-            isDisabled={unassignedPigs.length > 0}
+            isDisabled={assignedPigs.length <= 0}
             type="submit"
             onPress={handleSubmit}
           >
