@@ -1,13 +1,13 @@
 import http from "@oursrc/lib/http";
 
 import { Cage } from "../models/cage";
-import { ListResponse } from "../models/common-response";
+import { ResponseObject } from "../models/response-object";
 
 const endpoint = "api/cages";
 
 export const cageService = {
   getCages: (page: number, pageSize: number = 30) =>
-    http.get<ListResponse<Cage>>(endpoint, {
+    http.get<ResponseObject<Cage>>(endpoint, {
       params: {
         pageIndex: page?.toString() || "",
         pageSize: pageSize?.toString() || "",
