@@ -214,8 +214,6 @@ const SelectedPigsList = ({ pigList = [] }: any) => {
   return (
     <div>
       <Table
-        layout="fixed"
-        isStriped
         color="success"
         bottomContent={bottomContent}
         bottomContentPlacement="outside"

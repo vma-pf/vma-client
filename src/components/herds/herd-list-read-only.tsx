@@ -1,7 +1,6 @@
 "use client";
 import {
   Button,
-  ChipProps,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -17,24 +16,23 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip
+  Tooltip,
 } from "@nextui-org/react";
 import { capitalize } from "@oursrc/components/utils";
 import { useToast } from "@oursrc/hooks/use-toast";
-import { Cage } from "@oursrc/lib/models/cage";
-import { cageService } from "@oursrc/lib/services/cageService";
+import { Herd } from "@oursrc/lib/models/herd";
+import { herdService } from "@oursrc/lib/services/herdService";
 import { Search } from "lucide-react";
 import React from "react";
 import { HiChevronDown } from "react-icons/hi";
-import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "./models/cage-table-data";
+import {
+  columns,
+  INITIAL_VISIBLE_COLUMNS,
+  statusOptions,
+} from "./models/herd-table-data";
+import { formatDate } from "@oursrc/lib/utils/datetime-utils";
 
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  active: "success",
-  sick: "warning",
-  dead: "danger",
-};
-
-export default function CageListReadOnly({setSelected}: any) {
+const HerdListReadOnly = ({ setSelected }: any) => {
   const { toast } = useToast();
 
   //Table field
@@ -64,15 +62,17 @@ export default function CageListReadOnly({setSelected}: any) {
       Array.from(visibleColumns).includes(column.uid)
     );
   }, [visibleColumns]);
-  const [cageList, setCageList] = React.useState<Cage[]>([]);
+  const [herdList, setHerdList] = React.useState<Herd[]>([]);
 
   const [loading, setLoading] = React.useState(false);
-  const loadingState = loading || cageList?.length === 0 ? "loading" : "idle";
+  const loadingState = loading || herdList?.length === 0 ? "loading" : "idle";
 
   //Use Effect
   React.useEffect(() => {
-    setSelected(cageList.filter(x => Array.from(selectedKeys).includes(x.id)))
-  },[selectedKeys])
+    setSelected(
+      herdList.filter((x) => Array.from(selectedKeys).includes(x.id))
+    );
+  }, [selectedKeys]);
 
   React.useEffect(() => {
     fetchData();
@@ -82,9 +82,14 @@ export default function CageListReadOnly({setSelected}: any) {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await cageService.getCages(page, rowsPerPage);
+      const response = await herdService.getHerds(page, rowsPerPage);
       if (response.isSuccess) {
-        setCageList(response.data.data);
+        const formatResponse = response.data.data.map((x: any) => ({
+          ...x,
+          startDate: formatDate(x.startDate),
+          expectedEndDate: formatDate(x.expectedEndDate),
+        }));
+        setHerdList(formatResponse);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
@@ -105,7 +110,7 @@ export default function CageListReadOnly({setSelected}: any) {
   };
 
   const filteredItems = React.useMemo(() => {
-    let cloneFilteredItems: Cage[] = [...cageList];
+    let cloneFilteredItems: Herd[] = [...herdList];
 
     if (hasSearchFilter) {
       cloneFilteredItems = cloneFilteredItems.filter((item) =>
@@ -121,16 +126,16 @@ export default function CageListReadOnly({setSelected}: any) {
       );
     }
     return cloneFilteredItems;
-  }, [cageList, filterValue, statusFilter]);
+  }, [herdList, filterValue, statusFilter]);
 
   const items = React.useMemo(() => {
     return filteredItems;
   }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: Cage, b: Cage) => {
-      const first = a[sortDescriptor.column as keyof Cage] as number;
-      const second = b[sortDescriptor.column as keyof Cage] as number;
+    return [...items].sort((a: Herd, b: Herd) => {
+      const first = a[sortDescriptor.column as keyof Herd] as number;
+      const second = b[sortDescriptor.column as keyof Herd] as number;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -227,52 +232,49 @@ export default function CageListReadOnly({setSelected}: any) {
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
-    cageList.length,
+    herdList.length,
     hasSearchFilter,
   ]);
 
-  const renderCell = React.useCallback(
-    (data: Cage, columnKey: React.Key) => {
-      const cellValue = data[columnKey as keyof Cage];
+  const renderCell = React.useCallback((data: Herd, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof Herd];
 
-      switch (columnKey) {
-        case "description":
-          return (
-            <Tooltip
-              showArrow={true}
-              content={cellValue}
-              color="primary"
-              delay={1000}
-            >
-              <p className="truncate">{cellValue}</p>
-            </Tooltip>
-          );
-        // case "actions":
-        //   return (
-        //     <div className="flex justify-end items-center gap-2">
-        //       <Tooltip content="Chi tiết">
-        //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-        //           <EyeIcon />
-        //         </span>
-        //       </Tooltip>
-        //       <Tooltip content="Chỉnh sửa">
-        //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-        //           <EditIcon onClick={() => onEdit(data)} />
-        //         </span>
-        //       </Tooltip>
-        //       <Tooltip color="danger" content="Xóa">
-        //         <span className="text-lg text-danger cursor-pointer active:opacity-50">
-        //           <Trash2Icon onClick={() => onDelete(data)} />
-        //         </span>
-        //       </Tooltip>
-        //     </div>
-        //   );
-        default:
-          return cellValue;
-      }
-    },
-    []
-  );
+    switch (columnKey) {
+      case "description":
+        return (
+          <Tooltip
+            showArrow={true}
+            content={cellValue}
+            color="primary"
+            delay={1000}
+          >
+            <p className="truncate">{cellValue}</p>
+          </Tooltip>
+        );
+      // case "actions":
+      //   return (
+      //     <div className="flex justify-end items-center gap-2">
+      //       <Tooltip content="Chi tiết">
+      //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+      //           <EyeIcon />
+      //         </span>
+      //       </Tooltip>
+      //       <Tooltip content="Chỉnh sửa">
+      //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+      //           <EditIcon onClick={() => onEdit(data)} />
+      //         </span>
+      //       </Tooltip>
+      //       <Tooltip color="danger" content="Xóa">
+      //         <span className="text-lg text-danger cursor-pointer active:opacity-50">
+      //           <Trash2Icon onClick={() => onDelete(data)} />
+      //         </span>
+      //       </Tooltip>
+      //     </div>
+      //   );
+      default:
+        return cellValue;
+    }
+  }, []);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -307,7 +309,7 @@ export default function CageListReadOnly({setSelected}: any) {
           wrapper: "min-h-[500px]",
         }}
         selectedKeys={selectedKeys}
-        selectionMode="multiple"
+        selectionMode="single"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
@@ -342,4 +344,5 @@ export default function CageListReadOnly({setSelected}: any) {
       </Table>
     </div>
   );
-}
+};
+export default HerdListReadOnly;
