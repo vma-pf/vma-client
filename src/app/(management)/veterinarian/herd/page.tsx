@@ -1,9 +1,9 @@
 import { Divider } from "@nextui-org/react";
 import Image from "next/image";
 import React from "react";
-import Chart from "./components/chart";
-import PigList from "./components/pig-list";
-import SeasonFilter from "./components/season-filter";
+import Chart from "./_components/chart";
+import PigList from "./_components/pig-list";
+import SeasonFilter from "./_components/season-filter";
 import { IoIosAlert } from "react-icons/io";
 import { GoDotFill } from "react-icons/go";
 
@@ -13,12 +13,7 @@ const Herd = () => {
       <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center">
-            <Image
-              src="/assets/vma-logo.png"
-              alt="logo"
-              width={50}
-              height={50}
-            />
+            <Image src="/assets/vma-logo.png" alt="logo" width={50} height={50} />
             <p className="text-2xl font-bold ml-4">Thông tin đàn heo</p>
           </div>
           <div>
@@ -54,9 +49,7 @@ const Herd = () => {
             <Divider orientation="horizontal" />
             <div className="flex justify-between items-center">
               <p className="my-2">Trạng thái:</p>
-              <p className="my-2 p-1 font-semibold bg-primary rounded-md">
-                Đang nuôi
-              </p>
+              <p className="my-2 p-1 font-semibold bg-primary rounded-md">Đang nuôi</p>
             </div>
             <Divider orientation="horizontal" />
             <div className="flex justify-between items-center">

@@ -1,15 +1,15 @@
-'use client';
+"use client";
 import { Divider } from "@nextui-org/react";
 import Image from "next/image";
 import React from "react";
-import Chart from "./components/chart";
-import PigList from "./components/pig-list";
-import SeasonFilter from "./components/season-filter";
+import Chart from "./_components/chart";
+import PigList from "./_components/pig-list";
+import SeasonFilter from "./_components/season-filter";
 import { IoIosAlert } from "react-icons/io";
 import { GoDotFill } from "react-icons/go";
-import ButtonCreateHerd from "./components/button-create-herd";
-import { HerdInfo } from "./models/herd";
+import ButtonCreateHerd from "./_components/button-create-herd";
 import { dateConverter } from "@oursrc/lib/utils";
+import { HerdInfo } from "@oursrc/lib/models/herd";
 
 const Herd = () => {
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
@@ -18,12 +18,7 @@ const Herd = () => {
       <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center">
-            <Image
-              src="/assets/vma-logo.png"
-              alt="logo"
-              width={50}
-              height={50}
-            />
+            <Image src="/assets/vma-logo.png" alt="logo" width={50} height={50} />
             <p className="text-2xl font-bold ml-4">Thông tin đàn heo</p>
           </div>
           <div className="flex">
@@ -35,9 +30,7 @@ const Herd = () => {
           <div className="border-2 px-2 w-full">
             <div className="flex justify-between items-center">
               <p className="my-2">Tên đàn:</p>
-              <p className="my-2 font-semibold">{
-                selectedHerd?.code
-              }</p>
+              <p className="my-2 font-semibold">{selectedHerd?.code}</p>
             </div>
             <Divider orientation="horizontal" />
             <div className="flex justify-between items-center">
@@ -52,18 +45,17 @@ const Herd = () => {
             <Divider orientation="horizontal" />
             <div className="flex justify-between items-center">
               <p className="my-2">Ngày tạo đàn:</p>
-              <p className="my-2 font-semibold">{dateConverter(selectedHerd?.startDate ?? '')}</p>
+              <p className="my-2 font-semibold">{dateConverter(selectedHerd?.startDate ?? "")}</p>
             </div>
             <Divider orientation="horizontal" />
             <div className="flex justify-between items-center">
               <p className="my-2">Ngày kết thúc nuôi (dự kiến):</p>
-              <p className="my-2 font-semibold">{dateConverter(selectedHerd?.expectedEndDate ?? '')}</p>
+              <p className="my-2 font-semibold">{dateConverter(selectedHerd?.expectedEndDate ?? "")}</p>
             </div>
             <Divider orientation="horizontal" />
             <div className="flex justify-between items-center">
               <p className="my-2">Trạng thái:</p>
-              <p className={`my-2 p-1 font-semibold rounded-md ${selectedHerd?.status === 1 ? "text-success-500" : "text-danger-500"
-                }`}>
+              <p className={`my-2 p-1 font-semibold rounded-md ${selectedHerd?.status === 1 ? "text-success-500" : "text-danger-500"}`}>
                 {selectedHerd?.status === 1 ? "Đang nuôi" : "Đã kết thúc"}
               </p>
             </div>
