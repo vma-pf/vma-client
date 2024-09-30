@@ -79,7 +79,7 @@ export const parseToWeekday = (date: string): string => {
 };
 
 export const dateArrayConverter = (dates: string[]): string[] => {
-  return dates.map((date) => dateConverter(date));
+  return dates.map((date) => new Date(date).toISOString());
 };
 
 export const ROLE = {

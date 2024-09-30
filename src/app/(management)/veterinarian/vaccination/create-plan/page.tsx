@@ -1,4 +1,4 @@
-import FirstVaccinationStep from "./components/first-vaccination-step";
+import FirstVaccinationStep from "./_components/first-vaccination-step";
 
 const CreatePlan = () => {
   return (

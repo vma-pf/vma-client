@@ -2,11 +2,11 @@
 import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { apiRequest } from "../api-request";
 import { Button, Input } from "@nextui-org/react";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { ROLE, decodeToken } from "@oursrc/lib/utils";
+import { authService } from "@oursrc/lib/services/authService";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -24,12 +24,9 @@ const LoginForm = () => {
   const handleLogin = async (data: any) => {
     try {
       setIsLoading(true);
-      const res = await apiRequest.login(data.username, data.password);
+      const res = await authService.login(data.username, data.password);
       console.log(res);
-      await apiRequest.setTokenToCookie(
-        res.data?.accessToken,
-        res.data?.refreshToken
-      );
+      await authService.setTokenToCookie(res.data?.accessToken, res.data?.refreshToken);
       if (res.isSuccess === true) {
         localStorage.setItem("accessToken", res.data?.accessToken);
         const role = decodeToken(res.data?.accessToken)?.role?.toLowerCase();
@@ -72,24 +69,14 @@ const LoginForm = () => {
         type={isVisible ? "text" : "password"}
         endContent={
           <Button isIconOnly variant="light" onClick={toggleVisibility}>
-            {isVisible ? (
-              <FaEye className="text-2xl text-default-400 pointer-events-none" />
-            ) : (
-              <FaEyeSlash className="text-2xl text-default-400 pointer-events-none" />
-            )}
+            {isVisible ? <FaEye className="text-2xl text-default-400 pointer-events-none" /> : <FaEyeSlash className="text-2xl text-default-400 pointer-events-none" />}
           </Button>
         }
         isInvalid={errors.password ? true : false}
         errorMessage="Mật khẩu không được để trống"
         {...register("password", { required: true })}
       />
-      <Button
-        className="bg-gradient-to-r from-indigo-500 to-emerald-500 w-full mt-6"
-        variant="solid"
-        isLoading={isLoading}
-        size="lg"
-        type="submit"
-      >
+      <Button className="bg-gradient-to-r from-indigo-500 to-emerald-500 w-full mt-6" variant="solid" isLoading={isLoading} size="lg" type="submit">
         <p className="text-white">Đăng nhập</p>
       </Button>
     </form>

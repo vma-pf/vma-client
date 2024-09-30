@@ -1,18 +1,15 @@
 "use client";
 import React from "react";
-import VaccinationList from "./components/vaccination-list";
+import VaccinationList from "./_components/vaccination-list";
 import { FaRegCalendarPlus } from "react-icons/fa6";
-import {
-  VaccinationData,
-  VaccinationStageProps,
-} from "./components/vaccination";
-import VaccinationStage from "./components/vaccination-stage";
+import { VaccinationData, VaccinationStageProps } from "../../../../lib/models/vaccination";
+import VaccinationStage from "./_components/vaccination-stage";
 import { Accordion, AccordionItem, Progress } from "@nextui-org/react";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
-import { apiRequest } from "./api-request";
 import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
+import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 
-const vaccinationList: VaccinationData[] = [
+const vaccinationList: any[] = [
   {
     id: "1",
     title: "Lịch xuân",
@@ -291,18 +288,21 @@ const herd = {
   ],
 };
 
-const statusMap = [{ name: "Chưa bắt đầu", value: 0 }, { name: "Đang diễn ra", value: 1 }, { name: "Đã hoàn thành", value: 2 }, { name: "Đã hủy", value: 3 }];
+const statusMap = [
+  { name: "Chưa bắt đầu", value: 0 },
+  { name: "Đang diễn ra", value: 1 },
+  { name: "Đã hoàn thành", value: 2 },
+  { name: "Đã hủy", value: 3 },
+];
 
 const Vaccination = () => {
-  const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(
-    new Set<string>()
-  );
+  const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(new Set<string>());
   const [vaccinationData, setVaccinationData] = React.useState<VaccinationData>();
 
   const findVaccination = async () => {
     try {
-      const vaccinationId = "4b75d78c-7c38-4447-9fe7-ebbcaff55faf"
-      const res: ResponseObject<any> = await apiRequest.getVaccinationPlan(vaccinationId);
+      const vaccinationId = "4b75d78c-7c38-4447-9fe7-ebbcaff55faf";
+      const res: ResponseObject<any> = await vaccinationService.getVaccinationPlan(vaccinationId);
       if (res && res.isSuccess) {
         setVaccinationData(res.data);
       } else {
@@ -327,10 +327,7 @@ const Vaccination = () => {
     <div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-xl mb-3">Trước tiên, hãy chọn lịch tiêm phòng</p>
-        <VaccinationList
-          data={vaccinationList}
-          setSelectedVaccination={setSelectedVaccinationId}
-        />
+        <VaccinationList data={vaccinationList} setSelectedVaccination={setSelectedVaccinationId} />
       </div>
       <div className="mb-3 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <div className="flex flex-shrink gap-5">
@@ -340,18 +337,12 @@ const Vaccination = () => {
               <div>
                 <div className="mby-2 flex items-center">
                   <FaRegCalendarPlus className="my-auto mr-4 text-3xl" />
-                  <p className="my-auto text-2xl font-bold mt-3">
-                    {vaccinationData.title}
-                  </p>
+                  <p className="my-auto text-2xl font-bold mt-3">{vaccinationData.title}</p>
                 </div>
-                <p className="text-lg mt-3">
-                  {vaccinationData.description}
-                </p>
+                <p className="text-lg mt-3">{vaccinationData.description}</p>
                 <div className="flex justify-between">
                   <p className="text-md mt-3">Đàn:</p>
-                  <p className="text-lg mt-3 font-semibold">
-                    {vaccinationData.herdId}
-                  </p>
+                  <p className="text-lg mt-3 font-semibold">{vaccinationData.herdId}</p>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-md mt-3">Ngày bắt đầu</p>
@@ -359,43 +350,36 @@ const Vaccination = () => {
                 </div>
                 <Progress value={50} />
                 <div className="flex justify-between">
-                  <p className="text-lg mt-3 font-semibold">
-                    {dateConverter(vaccinationData.startDate)}
-                  </p>
-                  <p className="text-lg mt-3 font-semibold">
-                    {dateConverter(vaccinationData.expectedEndDate)}
-                  </p>
+                  <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.startDate)}</p>
+                  <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.expectedEndDate)}</p>
                 </div>
                 {vaccinationData.actualEndDate && (
                   <div className="flex justify-between">
                     <p className="text-md mt-3">Ngày kết thúc (thực tế):</p>
-                    <p className="text-lg mt-3 font-semibold">
-                      {vaccinationData.actualEndDate}
-                    </p>
+                    <p className="text-lg mt-3 font-semibold">{vaccinationData.actualEndDate}</p>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <p className="text-md mt-3">Ghi chú:</p>
-                  <p className="text-lg mt-3 font-semibold">
-                    {vaccinationData.note ? vaccinationData.note : "Không có"}
-                  </p>
+                  <p className="text-lg mt-3 font-semibold">{vaccinationData.note ? vaccinationData.note : "Không có"}</p>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-md mt-3">Tình trạng</p>
-                  <p className={`text-lg mt-3 font-semibold ${statusMap.find((status) => status.value === vaccinationData.status)?.value === 1
-                    ? "text-green-500"
-                    : statusMap.find((status) => status.value === vaccinationData.status)?.value === 2
-                      ? "text-blue-500"
-                      : "text-red-500"
-                    }`}>
+                  <p
+                    className={`text-lg mt-3 font-semibold ${
+                      statusMap.find((status) => status.value === vaccinationData.status)?.value === 1
+                        ? "text-green-500"
+                        : statusMap.find((status) => status.value === vaccinationData.status)?.value === 2
+                        ? "text-blue-500"
+                        : "text-red-500"
+                    }`}
+                  >
                     {statusMap.find((status) => status.value === vaccinationData.status)?.name}
                   </p>
                 </div>
               </div>
             ) : (
-              <p className="text-center text-lg mt-3">
-                Chưa chọn lịch tiêm phòng
-              </p>
+              <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>
             )}
           </div>
           <div className="p-3 border-2 rounded-2xl w-1/2">
@@ -434,17 +418,11 @@ const Vaccination = () => {
                 </div>
               </div>
             ) : (
-              <p className="text-center text-lg mt-3">
-                Chưa chọn lịch tiêm phòng
-              </p>
+              <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>
             )}
           </div>
         </div>
-        <div>
-          {vaccinationData && (
-            <VaccinationStage data={vaccinationData.vaccinationStages} />
-          )}
-        </div>
+        <div>{vaccinationData && <VaccinationStage data={vaccinationData.vaccinationStages} />}</div>
       </div>
     </div>
   );
