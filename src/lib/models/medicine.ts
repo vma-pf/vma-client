@@ -27,10 +27,10 @@ type UpdateMedicineRequest = {
   usage: string
 };
 
-type MedicineResponse = {
-  isSuccess: boolean,
-  data: any,
-  errorMessage: string
-}
+// type MedicineResponse = {
+//   isSuccess: boolean,
+//   data: any,
+//   errorMessage: string
+// }
 
-export type { CreateMedicineRequest, UpdateMedicineRequest, MedicineResponse, Medicine }
+export type { CreateMedicineRequest, UpdateMedicineRequest, Medicine }

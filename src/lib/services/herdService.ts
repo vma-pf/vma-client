@@ -1,16 +1,19 @@
-import http from "../http";
-import { Herd } from "../models/herd";
-import { ResponseObject } from "../models/response-object";
+import http from "@oursrc/lib/http";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { CreateHerdRequest } from "@oursrc/lib/models/herd";
 
 const endpoint = "api/herds";
 
 export const herdService = {
-  getHerds: (page: number, pageSize: number = 30) =>
-    http.get<ResponseObject<Herd>>(endpoint, {
-      params: {
-        pageIndex: page?.toString() || "",
-        pageSize: pageSize?.toString() || "",
-      },
-    }),
-  getHerdId: (id: string) => http.get(endpoint + `/${id}`),
+    getHerd: (pageIndex: number, pageSize: number) =>
+        http.get<ResponseObjectList<any>>(endpoint, {
+            params: {
+                pageIndex: pageIndex?.toString() || "",
+                pageSize: pageSize?.toString() || "",
+            },
+        }),
+    getHerdById: (id: string) =>
+        http.get<ResponseObjectList<any>>(endpoint + `/${id}`),
+    createHerd: (model: CreateHerdRequest) =>
+        http.post<ResponseObjectList<any>>(endpoint, model),
 };

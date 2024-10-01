@@ -68,6 +68,20 @@ export const dateConverter = (date: string): string => {
   return `${day}-${month}-${year}`;
 };
 
+export const parseToWeekday = (date: string): string => {
+  if (!date) {
+    return "";
+  }
+  const dateObj = new Date(date);
+  const weekday = dateObj.toLocaleDateString("vi-VN", { weekday: "long" });
+
+  return weekday;
+};
+
+export const dateArrayConverter = (dates: string[]): string[] => {
+  return dates.map((date) => new Date(date).toISOString());
+};
+
 export const ROLE = {
   VETERINARIAN: "veterinarian",
   FARMER: "farmer",
