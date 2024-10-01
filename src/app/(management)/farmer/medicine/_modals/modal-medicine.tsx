@@ -1,8 +1,8 @@
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Button, Divider, Input, Spinner, Textarea } from "@nextui-org/react";
+import { toast } from "@oursrc/hooks/use-toast";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@oursrc/hooks/use-toast";
 import { CreateMedicineRequest, Medicine, UpdateMedicineRequest } from "@oursrc/lib/models/medicine";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 const ModalMedicine = ({ isOpen, onOpenChange, updateId, context, setSubmitDone }: any) => {
@@ -73,7 +73,7 @@ const ModalMedicine = ({ isOpen, onOpenChange, updateId, context, setSubmitDone 
       if (response && response.isSuccess) {
         toast({
           variant: "success",
-          title: response.data,
+          title: context === "create" ? 'Tạo thuốc thành công': 'Cập nhật thành công',
         });
         setSubmitDone(true);
       } else {
@@ -89,12 +89,29 @@ const ModalMedicine = ({ isOpen, onOpenChange, updateId, context, setSubmitDone 
     }
   };
 
+  const onClearForm = () => {
+    reset({
+      name: "",
+      mainIngredient: "",
+      registerNumber: 0,
+      netWeight: "",
+      usage: "",
+      unit: "",
+    });
+  };
+
   return (
     <div>
       {loading ? (
         <Spinner />
       ) : (
-        <Modal backdrop="opaque" isOpen={isOpen} size="4xl" onOpenChange={onOpenChange}>
+        <Modal
+          backdrop="opaque"
+          isOpen={isOpen}
+          size="4xl"
+          onOpenChange={onOpenChange}
+          onClose={() => onClearForm()}
+        >
           <ModalContent>
             {isOpen && (
               <>
@@ -113,7 +130,6 @@ const ModalMedicine = ({ isOpen, onOpenChange, updateId, context, setSubmitDone 
                         label="Tên thuốc"
                         placeholder="Nhập tên thuốc"
                         labelPlacement="outside"
-                        defaultValue="ascsa"
                         isRequired
                         isInvalid={errors.name ? true : false}
                         errorMessage="Tên thuốc không được để trống"

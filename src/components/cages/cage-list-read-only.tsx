@@ -1,7 +1,6 @@
 "use client";
 import {
   Button,
-  ChipProps,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -244,7 +243,7 @@ export default function CageListReadOnly({setSelected}: any) {
               color="primary"
               delay={1000}
             >
-              <p className="truncate">{cellValue}</p>
+              <p className="truncate cursor-default">{cellValue}</p>
             </Tooltip>
           );
         // case "actions":
