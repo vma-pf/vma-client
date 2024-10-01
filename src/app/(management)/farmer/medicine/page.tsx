@@ -1,9 +1,10 @@
 "use client";
 import { Tab, Tabs } from "@nextui-org/react";
-import MedicineList from "./components/medicine-list";
-import RequestMedicineList from "./receipt-request/components/request-medicine-list";
+import MedicineList from "./_components/medicine-list";
+import RequestMedicineList from "./receipt-request/_components/request-medicine-list";
 
 const Medicine = () => {
+  const pathname = usePathname();
   return (
     <div>
       <div className="container mx-auto mb-4">

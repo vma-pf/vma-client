@@ -28,7 +28,7 @@ const initialState: any = {
     },
     {
       id: 4,
-      title: "Hoàn thành",
+      title: "Kế hoạch kiểm tra sức khỏe",
       status: "not_yet",
       isCurrentTab: false,
     },
@@ -57,6 +57,11 @@ export const herdProgressStepSlice = createSlice({
       state.herdProgressSteps[index].isCurrentTab = false;
       state.herdProgressSteps[index].status = 'done';
       state.herdProgressSteps[index + 1].isCurrentTab = true;
+      // save to local storage
+      localStorage.setItem(
+        "herdProgressSteps",
+        JSON.stringify(state.herdProgressSteps)
+      );
     },
   },
 });

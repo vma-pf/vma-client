@@ -1,21 +1,25 @@
 "use client";
 import CreateHerdProgressStep from "@oursrc/components/herds/create-herd-progress-step";
 import React, { useEffect } from "react";
-import HerdCreate from "./components/herd-create";
+import HerdCreate from "./_components/herd-create";
 import { useHerdProgressSteps } from "@oursrc/lib/store";
-import CageCreate from "./components/cage-create";
-import AssignTag from "./components/assign-tag";
-import PreviewInfo from "./components/preview-info";
+import CageCreate from "./_components/cage-create";
+import AssignTag from "./_components/assign-tag";
+import PreviewInfo from "./_components/preview-info";
 import { motion } from "framer-motion";
+import CheckUpPlan from "./_components/checkup-plan";
 
 const CreateHerdProgress = () => {
   const storedHerdProgressSteps = useHerdProgressSteps();
-  const [herdProgressSteps, setHerdProgressSteps] = React.useState(
-    useHerdProgressSteps()
-  );
+  const [herdProgressSteps, setHerdProgressSteps] = React.useState(useHerdProgressSteps());
 
   useEffect(() => {
-    setHerdProgressSteps(storedHerdProgressSteps);
+    const storedStep = localStorage.getItem("herdProgressSteps");
+    if (storedStep) {
+      setHerdProgressSteps(JSON.parse(storedStep));
+    } else {
+      setHerdProgressSteps(storedHerdProgressSteps);
+    }
   }, [storedHerdProgressSteps]);
 
   const getComponent = () => {
@@ -27,7 +31,7 @@ const CreateHerdProgress = () => {
       case 3:
         return <AssignTag />;
       case 4:
-        return <PreviewInfo />;
+        return <CheckUpPlan />;
     }
   };
   return (
