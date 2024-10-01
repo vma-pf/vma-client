@@ -6,15 +6,14 @@ import {
   ModalHeader,
 } from "@nextui-org/modal";
 import { Button, Divider, Input, Spinner, Textarea } from "@nextui-org/react";
+import { toast } from "@oursrc/hooks/use-toast";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { apiRequest } from "../api-request";
 import {
   CreateMedicineRequest,
   UpdateMedicineRequest,
 } from "../models/medicine";
-import { apiRequest } from "../api-request";
-import { toast } from "@oursrc/hooks/use-toast";
-import { Medicine } from "@oursrc/lib/models/medicine";
 const ModalMedicine = ({
   isOpen,
   onOpenChange,
@@ -94,10 +93,11 @@ const ModalMedicine = ({
         context === "create"
           ? await apiRequest.createMedicine(data)
           : await apiRequest.updateMedicine(updateId, data);
+          console.log(response);
       if (response && response.isSuccess) {
         toast({
           variant: "success",
-          title: response.data,
+          title: context === "create" ? 'Tạo thuốc thành công': 'Cập nhật thành công',
         });
         setSubmitDone(true);
       } else {
@@ -116,6 +116,17 @@ const ModalMedicine = ({
     }
   };
 
+  const onClearForm = () => {
+    reset({
+      name: "",
+      mainIngredient: "",
+      registerNumber: 0,
+      netWeight: "",
+      usage: "",
+      unit: "",
+    });
+  };
+
   return (
     <div>
       {loading ? (
@@ -126,6 +137,7 @@ const ModalMedicine = ({
           isOpen={isOpen}
           size="4xl"
           onOpenChange={onOpenChange}
+          onClose={() => onClearForm()}
         >
           <ModalContent>
             {isOpen && (
@@ -145,7 +157,6 @@ const ModalMedicine = ({
                         label="Tên thuốc"
                         placeholder="Nhập tên thuốc"
                         labelPlacement="outside"
-                        defaultValue="ascsa"
                         isRequired
                         isInvalid={errors.name ? true : false}
                         errorMessage="Tên thuốc không được để trống"

@@ -1,7 +1,6 @@
 "use client";
 import {
   Button,
-  ChipProps,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -18,10 +17,10 @@ import {
   TableHeader,
   TableRow,
   Tooltip,
-  useDisclosure,
+  useDisclosure
 } from "@nextui-org/react";
 import { capitalize } from "@oursrc/components/utils";
-import { useToast } from "@oursrc/hooks/use-toast";
+import { toast } from "@oursrc/hooks/use-toast";
 import { Medicine } from "@oursrc/lib/models/medicine";
 import { EditIcon, EyeIcon, Plus, Search, Trash2Icon } from "lucide-react";
 import React from "react";
@@ -30,14 +29,7 @@ import { apiRequest } from "../api-request";
 import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "../data";
 import MedicineModal from "../modals/modal-medicine";
 
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  active: "success",
-  sick: "warning",
-  dead: "danger",
-};
-
 export default function MedicineList() {
-  const { toast } = useToast();
 
   //Modal field
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
@@ -147,6 +139,10 @@ export default function MedicineList() {
       const response = await apiRequest.deleteMedicine(data.id);
       if (response.isSuccess) {
         fetchData()
+        toast({
+          variant: "success",
+          title: 'Xóa thuốc thành công',
+        });
       } else {
         throw new AggregateError(response.errorMessage);
       }
@@ -292,11 +288,11 @@ export default function MedicineList() {
         case "actions":
           return (
             <div className="flex justify-end items-center gap-2">
-              <Tooltip content="Chi tiết">
+              {/* <Tooltip content="Chi tiết">
                 <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                   <EyeIcon />
                 </span>
-              </Tooltip>
+              </Tooltip> */}
               <Tooltip content="Chỉnh sửa">
                 <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                   <EditIcon onClick={() => onEdit(data)} />
