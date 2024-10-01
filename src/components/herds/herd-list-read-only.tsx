@@ -82,7 +82,7 @@ const HerdListReadOnly = ({ setSelected }: any) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await herdService.getHerds(page, rowsPerPage);
+      const response = await herdService.getHerd(page, rowsPerPage);
       if (response.isSuccess) {
         const formatResponse = response.data.data.map((x: any) => ({
           ...x,

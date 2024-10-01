@@ -23,20 +23,21 @@ import { Cage } from "@oursrc/lib/models/cage";
 import { Herd } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
 import { pigService } from "@oursrc/lib/services/pigService";
-import { Filter, Plus, Trash2Icon } from "lucide-react";
+import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
+import { pluck } from "@oursrc/lib/utils/dev-utils";
+import { ChevronRight, Filter, Plus, Trash2Icon } from "lucide-react";
 import React from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import SelectedPigsList from "./selected-pigs-list";
 
 type Stage = {
-  id: number;
   title: string;
   timeSpan: string;
   applyStageTime: DateValue;
   vaccinationToDos: [];
 };
 
-const FirstVaccinationStep = () => {
+const FirstVaccinationStep = ({setStep}: any) => {
   //State
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
@@ -44,8 +45,7 @@ const FirstVaccinationStep = () => {
   const [openBy, setOpenBy] = React.useState<string>("");
 
   const [stages, setStages] = React.useState<Stage[]>([
-    {
-      id: 0,
+    { 
       title: "",
       timeSpan: "",
       applyStageTime: today(getLocalTimeZone()),
@@ -71,23 +71,8 @@ const FirstVaccinationStep = () => {
       startDate: "",
       expectedEndDate: "",
       note: "",
-      stages: [
-        {
-          title: "",
-          timeSpan: 0,
-          applyStageTime: today(getLocalTimeZone()),
-          vaccinationToDos: { desciption: "" },
-        },
-      ],
     },
   });
-
-  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
-    {
-      control,
-      name: "stages",
-    }
-  );
 
   //Use Effect
   React.useEffect(() => {
@@ -148,39 +133,79 @@ const FirstVaccinationStep = () => {
   };
 
   const handleSubmitForm = async (data: any) => {
-    console.log(data);
-    console.log(stages);
-    console.log(date);
+    setStep(2)
+    return;
     try {
       data.startDate = date.start.toString();
       data.expectedEndDate = date.end.toString();
-      delete data.date;
-      // const res = await apiRequest.createHerd(data);
-      // if (res && res.isSuccess) {
-      //   toast({
-      //     variant: "success",
-      //     title: res.data,
-      //   });
-      //   dispatch(setNextHerdProgressStep());
-      // }
-      console.log(data);
-      // dispatch(setNextHerdProgressStep());
+
+      const validateStages = stages.filter(
+        (x: Stage) => x.title === ""
+      );
+      if (validateStages.length > 0) {
+        toast({
+          variant: "destructive",
+          title: `Có ${validateStages.length} giai đoạn chưa nhập đủ thông tin`,
+        });
+        return;
+      }
+      //prepare request
+      const stagesRequest = stages.map((x: any) => ({
+        ...x,
+        vaccinationStages: [{ description: "" }],
+        isDone: false,
+        applyStageTime: x.applyStageTime.toString(),
+      }));
+
+      const request = {
+        ...data,
+        createVaccinationStages: stagesRequest,
+        isApplyToAll: false,
+        pigIds: pluck("id", allSelectedPigs),
+      };
+
+      const response = await vaccinationService.createVaccinationPlan(request);
+      if (response && response.isSuccess) {
+        toast({
+          variant: "success",
+          title: response.data,
+        });
+        setStep(2)
+      }else {
+        throw new AggregateError([new Error()], response.errorMessage);
+      }
+      console.log(response);
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: error.message,
+        title: 'Lỗi hệ thống! Vui lòng thử lại',
+        description: error.message
       });
     } finally {
     }
   };
 
-  const handleStageDateChange = (event: CalendarDate, index: number) => {
-    console.log(event);
-    console.log(stages);
-    
-  }
+  const onStageChange = (event: any, field: string, index: number) => {
+    setStages(
+      stages.map((x: Stage, i: number) => {
+        if (i === index) {
+          switch (field) {
+            case "title":
+              return { ...x, title: event.target.value };
+            case "applyStageTime":
+              return { ...x, applyStageTime: parseDate(event.toString()) };
+            case "timeSpan":
+              return { ...x, timeSpan: event.target.value };
+          }
+        }
+        return {
+          ...x,
+        };
+      })
+    );
+  };
 
-  const handleDateChange = (event: RangeValue<CalendarDate>) => {
+  const handleVaccinationDateChange = (event: RangeValue<CalendarDate>) => {
     setDate({
       start: event.start,
       end: event.end,
@@ -195,7 +220,6 @@ const FirstVaccinationStep = () => {
     setStages([
       ...stages,
       {
-        id: 0,
         title: "",
         timeSpan: "",
         applyStageTime: today(getLocalTimeZone()),
@@ -210,16 +234,22 @@ const FirstVaccinationStep = () => {
     <div>
       <div className="container mx-auto">
         <form onSubmit={handleSubmit(handleSubmitForm)}>
-          <div className="flex justify-end">
-            <Button
-              color="primary"
-              variant="solid"
-              isDisabled={errors && Object.keys(errors).length > 0}
-              size="lg"
-              type="submit"
-            >
-              <p className="text-white">Bước tiếp theo</p>
-            </Button>
+          <div>
+            <Card className="w-full">
+              <CardBody className="flex flex-row justify-between items-center">
+                <h1 className="text-3xl">Tạo lịch tiêm phòng</h1>
+                <Button
+                  color="primary"
+                  variant="solid"
+                  isDisabled={errors && Object.keys(errors).length > 0}
+                  size="lg"
+                  type="submit"
+                  isIconOnly
+                >
+                  <ChevronRight />
+                </Button>
+              </CardBody>
+            </Card>
           </div>
           <Card className="p-4 mt-6">
             <div className="grid grid-flow-row grid-cols-2 gap-4 mt-2">
@@ -249,7 +279,7 @@ const FirstVaccinationStep = () => {
                   validationBehavior="native"
                   value={date || ""}
                   onChange={(event) => {
-                    handleDateChange(event);
+                    handleVaccinationDateChange(event);
                   }}
                 />
                 <Textarea
@@ -300,7 +330,6 @@ const FirstVaccinationStep = () => {
                     <div className="flex flex-row justify-between">
                       <div className="w-full grid grid-cols-4 gap-4">
                         <Input
-                          key={stage.id}
                           className="mb-5"
                           type="text"
                           radius="sm"
@@ -310,9 +339,9 @@ const FirstVaccinationStep = () => {
                           labelPlacement="outside"
                           isRequired
                           errorMessage="Tên giai đoạn không được để trống"
-                          {...register(`stages.${index}.title`, {
-                            required: true,
-                          })}
+                          onChange={(event) =>
+                            onStageChange(event, "title", index)
+                          }
                         />
                         <DatePicker
                           className="mb-5"
@@ -323,12 +352,25 @@ const FirstVaccinationStep = () => {
                           minValue={today(getLocalTimeZone())}
                           labelPlacement="outside"
                           isRequired
-                          onChange={(event) => {
-                            handleStageDateChange(event, index);
-                          }}
-                          // {...register(`stages.${index}.applyStageTime`, {
-                          //   required: true,
-                          // })}
+                          onChange={(event) =>
+                            onStageChange(event, "applyStageTime", index)
+                          }
+                        />
+                        <Input
+                          className="mb-5"
+                          type="number"
+                          min={1}
+                          defaultValue="1"
+                          radius="sm"
+                          size="lg"
+                          label="Số ngày thực hiện (dự kiến)"
+                          placeholder="Nhập số ngày thực hiện (dự kiến)"
+                          labelPlacement="outside"
+                          isRequired
+                          errorMessage="Số ngày thực hiện không được để trống"
+                          onChange={(event) =>
+                            onStageChange(event, "timeSpan", index)
+                          }
                         />
                       </div>
                       <div className="flex flex-row items-start">
@@ -356,9 +398,9 @@ const FirstVaccinationStep = () => {
                         </h3>
                         <Popover key="select" placement="bottom">
                           <PopoverTrigger>
-                            <Button
-                              startContent={<Filter size={20} />}
-                            ></Button>
+                            <Button isIconOnly color="success" size="sm">
+                              <Filter size={15} color="#ffffff" />
+                            </Button>
                           </PopoverTrigger>
                           <PopoverContent>
                             <div className="flex flex-col px-1 py-2">
@@ -389,7 +431,7 @@ const FirstVaccinationStep = () => {
                           </PopoverContent>
                         </Popover>
                       </div>
-                      <Divider orientation="horizontal" />
+                      <Divider orientation="horizontal" className="mt-1 b-2"/>
                       {openBy === "cage" ? (
                         <CageListReadOnly setSelected={setSelectedCages} />
                       ) : (

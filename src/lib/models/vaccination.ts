@@ -22,3 +22,27 @@ export type VaccinationStageProps = {
     { description: string; }
   ]
 };
+
+export type CreateVaccinationRequest = {
+  title: string;
+  startDate: string;
+  expectedEndDate: string;
+  actualEndDate: string;
+  note: string;
+  createVaccinationStages: [
+    {
+      title: string,
+      timeSpan: string,
+      applyStageTime: string,
+      isDone: boolean,
+      vaccinationToDos: [
+        {
+          description: string
+        }
+      ]
+    }
+  ],
+  isApplyToAll: boolean,
+  herdId: string,
+  pigIds: []
+}
