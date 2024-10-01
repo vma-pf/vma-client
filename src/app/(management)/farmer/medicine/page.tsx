@@ -2,6 +2,7 @@
 import { Tab, Tabs } from "@nextui-org/react";
 import MedicineList from "./_components/medicine-list";
 import RequestMedicineList from "./receipt-request/_components/request-medicine-list";
+import { usePathname } from "next/navigation";
 
 const Medicine = () => {
   const pathname = usePathname();

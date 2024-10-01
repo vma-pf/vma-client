@@ -27,12 +27,6 @@ import React from "react";
 import { HiChevronDown } from "react-icons/hi";
 import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "./models/cage-table-data";
 
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  active: "success",
-  sick: "warning",
-  dead: "danger",
-};
-
 export default function CageListReadOnly({setSelected}: any) {
   const { toast } = useToast();
 
