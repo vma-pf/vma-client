@@ -3,7 +3,7 @@ import { Tab, Tabs, useDisclosure } from "@nextui-org/react";
 import { usePathname } from "next/navigation";
 import RequestMedicineList from "./_components/request-medicine-list";
 import React from "react";
-
+// UNUSED PAGE
 const MedicineReceiptRequest = () => {
   const pathname = usePathname();
   return (
