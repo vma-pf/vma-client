@@ -25,10 +25,11 @@ import { Pig } from "@oursrc/lib/models/pig";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { Filter, Plus, Trash2Icon } from "lucide-react";
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import SelectedPigsList from "./selected-pigs-list";
 
-type Stages = {
+type Stage = {
+  id: number;
   title: string;
   timeSpan: string;
   applyStageTime: DateValue;
@@ -38,12 +39,13 @@ type Stages = {
 const FirstVaccinationStep = () => {
   //State
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
-  const [selectedHerd, setSelectedHerd] = React.useState<Herd|null>(null);
+  const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
   const [openBy, setOpenBy] = React.useState<string>("");
 
-  const [stages, setStages] = React.useState<Stages[]>([
+  const [stages, setStages] = React.useState<Stage[]>([
     {
+      id: 0,
       title: "",
       timeSpan: "",
       applyStageTime: today(getLocalTimeZone()),
@@ -60,6 +62,7 @@ const FirstVaccinationStep = () => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -68,17 +71,32 @@ const FirstVaccinationStep = () => {
       startDate: "",
       expectedEndDate: "",
       note: "",
+      stages: [
+        {
+          title: "",
+          timeSpan: 0,
+          applyStageTime: today(getLocalTimeZone()),
+          vaccinationToDos: { desciption: "" },
+        },
+      ],
     },
   });
 
+  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
+    {
+      control,
+      name: "stages",
+    }
+  );
+
   //Use Effect
   React.useEffect(() => {
-    if (selectedCages.length > 0) {
+    if (selectedHerds.length > 0) {
       fetchPigs("herd");
     } else {
       setAllSelectedPigs([]);
     }
-  }, [selectedHerd]);
+  }, [selectedHerds]);
 
   React.useEffect(() => {
     if (selectedCages.length > 0) {
@@ -92,7 +110,16 @@ const FirstVaccinationStep = () => {
     try {
       let fetchedPigs: Pig[] = [];
       if (fetchBy === "herd") {
-        const response = await pigService.getPigsByHerdId(selectedHerd.id, 1, 100)
+        const response = await pigService.getPigsByHerdId(
+          selectedHerds[0]?.id ?? "",
+          1,
+          100
+        );
+        if (response.isSuccess) {
+          fetchedPigs = [...response.data.data, ...fetchedPigs];
+        } else {
+          throw new AggregateError([new Error()], response.errorMessage);
+        }
       } else {
         for (let i = 0; i < selectedCages.length; i++) {
           const response = await pigService.getPigsByCageId(
@@ -103,7 +130,7 @@ const FirstVaccinationStep = () => {
           if (response.isSuccess) {
             fetchedPigs = [...response.data.data, ...fetchedPigs];
           } else {
-            throw new AggregateError(response.errorMessage);
+            throw new AggregateError([new Error()], response.errorMessage);
           }
         }
       }
@@ -147,6 +174,12 @@ const FirstVaccinationStep = () => {
     }
   };
 
+  const handleStageDateChange = (event: CalendarDate, index: number) => {
+    console.log(event);
+    console.log(stages);
+    
+  }
+
   const handleDateChange = (event: RangeValue<CalendarDate>) => {
     setDate({
       start: event.start,
@@ -162,6 +195,7 @@ const FirstVaccinationStep = () => {
     setStages([
       ...stages,
       {
+        id: 0,
         title: "",
         timeSpan: "",
         applyStageTime: today(getLocalTimeZone()),
@@ -266,17 +300,19 @@ const FirstVaccinationStep = () => {
                     <div className="flex flex-row justify-between">
                       <div className="w-full grid grid-cols-4 gap-4">
                         <Input
+                          key={stage.id}
                           className="mb-5"
                           type="text"
                           radius="sm"
                           size="lg"
                           label="Tên giai đoạn"
                           placeholder="Nhập tên giai đoạn"
-                          defaultValue={stage.title}
                           labelPlacement="outside"
                           isRequired
                           errorMessage="Tên giai đoạn không được để trống"
-                          // {...register("breed", { required: true })}
+                          {...register(`stages.${index}.title`, {
+                            required: true,
+                          })}
                         />
                         <DatePicker
                           className="mb-5"
@@ -287,7 +323,12 @@ const FirstVaccinationStep = () => {
                           minValue={today(getLocalTimeZone())}
                           labelPlacement="outside"
                           isRequired
-                          // {...register("date", { required: true })}
+                          onChange={(event) => {
+                            handleStageDateChange(event, index);
+                          }}
+                          // {...register(`stages.${index}.applyStageTime`, {
+                          //   required: true,
+                          // })}
                         />
                       </div>
                       <div className="flex flex-row items-start">
@@ -352,7 +393,7 @@ const FirstVaccinationStep = () => {
                       {openBy === "cage" ? (
                         <CageListReadOnly setSelected={setSelectedCages} />
                       ) : (
-                        <HerdListReadOnly setSelected={setSelectedHerd} />
+                        <HerdListReadOnly setSelected={setSelectedHerds} />
                       )}
                     </CardBody>
                   </Card>
