@@ -29,6 +29,7 @@ import { HiChevronDown } from "react-icons/hi";
 import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "../data";
 import MedicineModal from "../_modals/modal-medicine";
 import { medicineService } from "@oursrc/lib/services/medicineService";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -40,9 +41,12 @@ export default function MedicineList() {
   const { toast } = useToast();
 
   //Modal field
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const [updateId, setUpdateId] = React.useState<string>("");
-  const [context, setContext] = React.useState<string>("create");
+  const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
+  const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
+  const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure();
+  // const [updateId, setUpdateId] = React.useState<string>("");
+  const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | null>(null);
+  const [context, setContext] = React.useState<"create" | "edit" | "detail">("create");
   const [submitDone, setSubmitDone] = React.useState<boolean>(false);
 
   //Table field
@@ -52,7 +56,7 @@ export default function MedicineList() {
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(1);
-  const [rowsPerPage, setRowsPerPage] = React.useState(30);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "lastUpdatedAt",
     direction: "ascending",
@@ -84,23 +88,25 @@ export default function MedicineList() {
   const loadingState = loading || medicineList?.length === 0 ? "loading" : "idle";
 
   //Use Effect
-  React.useEffect(() => {
-    if (submitDone) {
-      onClose();
-      fetchData();
-      setSubmitDone(false);
-    }
-  }, [submitDone]);
+  // React.useEffect(() => {
+  //   if (submitDone) {
+  //     onClose();
+  //     fetchData();
+  //     setSubmitDone(false);
+  //   }
+  // }, [submitDone]);
 
   React.useEffect(() => {
-    fetchData();
-  }, [page, rowsPerPage]);
+    if (!isOpenAdd && !isOpenEdit && !isOpenDelete) {
+      fetchData();
+    }
+  }, [page, rowsPerPage, isOpenAdd, isOpenEdit, isOpenDelete]);
 
   //API function
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await medicineService.getMedicine(page, rowsPerPage);
+      const response: ResponseObjectList<Medicine> = await medicineService.getMedicine(page, rowsPerPage);
       if (response.isSuccess) {
         setMedicineList(response.data.data);
         setRowsPerPage(response.data.pageSize);
@@ -108,7 +114,7 @@ export default function MedicineList() {
         setTotalRecords(response.data.totalRecords);
         setLoading(false);
       } else {
-        throw new AggregateError(response.errorMessage);
+        throw new AggregateError([response.errorMessage]);
       }
     } catch (e) {
       setLoading(false);
@@ -119,28 +125,28 @@ export default function MedicineList() {
     }
   };
 
-  const onEdit = async (data: Medicine) => {
-    setContext("edit");
-    setUpdateId(data.id);
-    onOpen();
-  };
+  // const onEdit = async (data: Medicine) => {
+  //   setContext("edit");
+  //   setUpdateId(data.id);
+  //   onOpen();
+  // };
 
-  const onDelete = async (data: Medicine) => {
-    try {
-      const response = await medicineService.deleteMedicine(data.id);
-      if (response.isSuccess) {
-        fetchData();
-      } else {
-        throw new AggregateError(response.errorMessage);
-      }
-    } catch (e) {
-      setLoading(false);
-      toast({
-        variant: "destructive",
-        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
-      });
-    }
-  };
+  // const onDelete = async (data: Medicine) => {
+  //   try {
+  //     const response = await medicineService.deleteMedicine(data.id);
+  //     if (response.isSuccess) {
+  //       fetchData();
+  //     } else {
+  //       throw new AggregateError(response.errorMessage);
+  //     }
+  //   } catch (e) {
+  //     setLoading(false);
+  //     toast({
+  //       variant: "destructive",
+  //       title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
+  //     });
+  //   }
+  // };
 
   const items = React.useMemo(() => {
     return filteredItems;
@@ -211,7 +217,7 @@ export default function MedicineList() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button color="primary" endContent={<Plus />} onPress={onOpen}>
+            <Button color="primary" endContent={<Plus />} onPress={onOpenAdd}>
               Tạo mới
             </Button>
           </div>
@@ -254,12 +260,22 @@ export default function MedicineList() {
             </Tooltip>
             <Tooltip content="Chỉnh sửa">
               <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EditIcon onClick={() => onEdit(data)} />
+                <EditIcon
+                  onClick={() => {
+                    setSelectedMedicine(data);
+                    onOpenEdit();
+                  }}
+                />
               </span>
             </Tooltip>
             <Tooltip color="danger" content="Xóa">
               <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                <Trash2Icon onClick={() => onDelete(data)} />
+                <Trash2Icon
+                  onClick={() => {
+                    setSelectedMedicine(data);
+                    onOpenDelete();
+                  }}
+                />
               </span>
             </Tooltip>
           </div>
@@ -313,7 +329,9 @@ export default function MedicineList() {
           )}
         </TableBody>
       </Table>
-      <MedicineModal isOpen={isOpen} onOpenChange={onOpenChange} onClose={onClose} updateId={updateId} context={context} setSubmitDone={setSubmitDone} />
+      {isOpenAdd && <MedicineModal isOpen={isOpenAdd} onClose={onCloseAdd} context="create" />}
+      {isOpenEdit && <MedicineModal isOpen={isOpenEdit} onClose={onCloseEdit} context="edit" medicine={selectedMedicine || undefined} />}
+      {isOpenDelete && <MedicineModal isOpen={isOpenDelete} onClose={onCloseDelete} context="delete" medicine={selectedMedicine || undefined} />}
     </div>
   );
 }

@@ -78,8 +78,21 @@ export const parseToWeekday = (date: string): string => {
   return weekday;
 };
 
+export const eliminateTime = (date: string): string => {
+  if (!date) {
+    return "";
+  }
+  const dateObj = new Date(date)
+  // minus 7 hours to get the correct date
+  dateObj.setHours(dateObj.getHours() - 7);
+  const year = dateObj.getFullYear();
+  const month = ("0" + (dateObj.getMonth() + 1)).slice(-2);
+  const day = ("0" + dateObj.getDate()).slice(-2);
+  return `${year}-${month}-${day}`;
+}
+
 export const dateArrayConverter = (dates: string[]): string[] => {
-  return dates.map((date) => new Date(date).toISOString());
+  return dates.map((date) => eliminateTime(date));
 };
 
 export const ROLE = {

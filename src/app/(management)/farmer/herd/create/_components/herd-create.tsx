@@ -23,7 +23,7 @@ const HerdCreate = () => {
     formState: { errors },
   } = useForm();
   const [loading, setLoading] = React.useState<boolean | undefined>(false);
-  const [date, setDate] = React.useState<RangeValue<CalendarDate>>({
+  const [dateRange, setDateRange] = React.useState<RangeValue<CalendarDate>>({
     start: parseDate(new Date().toJSON().slice(0, 10)),
     end: parseDate(new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)),
   });
@@ -31,39 +31,38 @@ const HerdCreate = () => {
   const breed = watch("breed");
   const description = watch("description");
 
-  useEffect(() => {
-    setValue("startDate", date.start.toString() || "");
-    setValue("expectedEndDate", date.end.toString() || "");
-  }, []);
+  // useEffect(() => {
+  //   setValue("startDate", dateRange.start.toString() || "");
+  //   setValue("expectedEndDate", dateRange.end.toString() || "");
+  // }, []);
 
   const handleSubmitForm = async (data: any) => {
     try {
       setLoading(true);
-      data.startDate = new Date(data.startDate).toISOString();
-      data.expectedEndDate = new Date(data.expectedEndDate).toISOString();
+      data.startDate = new Date(dateRange.start.toString()).toISOString();
+      data.expectedEndDate = new Date(dateRange.end.toString()).toISOString();
       delete data.date;
-      console.log(data);
 
-      // const res: ResponseObject<any> = await herdService.createHerd(data);
-      // if (res && res.isSuccess) {
-      //   toast({
-      //     variant: "success",
-      //     title: "Tạo đàn thành công",
-      //   });
-      //   localStorage.setItem(
-      //     "herdData",
-      //     JSON.stringify({
-      //       ...data,
-      //       id: res.data,
-      //     })
-      //   );
-      //   dispatch(setNextHerdProgressStep());
-      // } else {
-      //   toast({
-      //     variant: "destructive",
-      //     title: res.errorMessage || "Có lỗi xảy ra",
-      //   });
-      // }
+      const res: ResponseObject<any> = await herdService.createHerd(data);
+      if (res && res.isSuccess) {
+        dispatch(setNextHerdProgressStep());
+        toast({
+          variant: "success",
+          title: "Tạo đàn thành công",
+        });
+        localStorage.setItem(
+          "herdData",
+          JSON.stringify({
+            ...data,
+            id: res.data.id,
+          })
+        );
+      } else {
+        toast({
+          variant: "destructive",
+          title: res.errorMessage || "Có lỗi xảy ra",
+        });
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -75,24 +74,27 @@ const HerdCreate = () => {
   };
 
   const handleDateChange = (event: RangeValue<CalendarDate>) => {
-    setDate({
+    setDateRange({
       start: event.start,
       end: event.end,
     });
   };
 
   const getCurrentStep = () => {
-    const steps = JSON.parse(localStorage.getItem("herdProgressSteps") || "null");
+    const steps = JSON.parse(localStorage.getItem("herdProgressSteps") || "[]") || [];
     const currentStep = steps.find((x: any) => x.isCurrentTab) || null;
     if (currentStep) {
       return currentStep.status;
+    } else {
+      return "not_yet";
     }
   };
 
   React.useEffect(() => {
     const storedData: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "null");
+
     if (storedData) {
-      setDate({
+      setDateRange({
         start: parseDate(storedData.startDate.slice(0, 10)),
         end: parseDate(storedData.expectedEndDate.slice(0, 10)),
       });
@@ -159,11 +161,11 @@ const HerdCreate = () => {
             size="lg"
             labelPlacement="outside"
             isRequired
-            isInvalid={date.end <= date.start ? true : false}
+            isInvalid={dateRange.end <= dateRange.start ? true : false}
             errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
             minValue={today(getLocalTimeZone())}
             validationBehavior="native"
-            value={date || ""}
+            value={dateRange || ""}
             onChange={(event) => {
               handleDateChange(event);
             }}

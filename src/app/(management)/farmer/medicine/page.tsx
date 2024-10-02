@@ -4,24 +4,14 @@ import MedicineList from "./_components/medicine-list";
 import RequestMedicineList from "./receipt-request/_components/request-medicine-list";
 
 const Medicine = () => {
-  const pathname = usePathname();
   return (
     <div>
       <div className="container mx-auto mb-4">
-        <Tabs
-          aria-label="Options"
-          size="lg"
-          color="primary"
-          variant="underlined"
-          defaultSelectedKey="/farmer/medicine"
-        >
+        <Tabs aria-label="Options" size="lg" color="primary" variant="underlined" defaultSelectedKey="/farmer/medicine">
           <Tab key="/farmer/medicine" title="Kho thuốc">
             <MedicineList />
           </Tab>
-          <Tab
-            key="/farmer/medicine/receipt-request"
-            title="Yêu cầu thêm thuốc"
-          >
+          <Tab key="/farmer/medicine/receipt-request" title="Yêu cầu thêm thuốc">
             <div className="mx-12">
               <RequestMedicineList />
             </div>

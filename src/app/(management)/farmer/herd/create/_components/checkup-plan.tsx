@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@oursrc/lib/hooks";
 import { setHerdProgressSteps } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
 import { checkupPlanService } from "@oursrc/lib/services/checkupPlanService";
+import { HerdInfo } from "@oursrc/lib/models/herd";
 
 export const CustomRadio = (props: any) => {
   const { children, ...otherProps } = props;
@@ -79,7 +80,6 @@ const CheckUpPlan = () => {
   const { toast } = useToast();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [title, setTitle] = React.useState<string | null>(null);
   const [selected, setSelected] = React.useState<string>("");
   const [selectedDate, setSelectedDate] = React.useState<DateValue | null>(null);
   const [repeat, setRepeat] = React.useState<number | null>(null);
@@ -129,23 +129,23 @@ const CheckUpPlan = () => {
         default:
           break;
       }
-      console.log(title);
-      console.log(data);
-      // const res: ResponseObject<any> = await checkupPlanService.createCheckUpPlan(data);
-      //   if (res.isSuccess) {
-      //     clearData();
-      //     router.push("/management/farmer/herd");
-      //     dispatch(setHerdProgressSteps([]));
-      //     toast({
-      //       title: "Tạo đàn thành công",
-      //       variant: "success",
-      //     });
-      //   } else {
-      //     toast({
-      //       title: res.errorMessage || "Có lỗi xảy ra",
-      //       variant: "destructive",
-      //     });
-      //   }
+      const herd: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "{}") || {};
+      const res: ResponseObject<any> = await checkupPlanService.createCheckUpPlan(herd.id, data);
+      console.log(res);
+      if (res.isSuccess) {
+        clearData();
+        router.push("/farmer/herd");
+        // dispatch(setHerdProgressSteps([]));
+        toast({
+          title: "Tạo đàn thành công",
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: res.errorMessage || "Có lỗi xảy ra",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
       console.log(error);
       toast({
@@ -161,7 +161,6 @@ const CheckUpPlan = () => {
     setSelected("");
     setSelectedDate(null);
     setRepeat(null);
-    setTitle(null);
     localStorage.removeItem("herdData");
     localStorage.removeItem("assignedPigs");
     localStorage.removeItem("herdProgressSteps");
@@ -223,15 +222,6 @@ const CheckUpPlan = () => {
     <div className="container mx-auto">
       <div className="mt-3 p-4 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-3xl mb-4">Tạo kế hoạch kiểm tra sức khỏe của đàn</p>
-        <Input
-          className="my-4"
-          label="Tiêu đề"
-          placeholder="Nhập tiêu đề"
-          labelPlacement="inside"
-          size="lg"
-          value={title || ""}
-          onValueChange={(value) => setTitle(value)}
-        />
         <div className="flex">
           <RadioGroup
             onValueChange={(value: string) => {
@@ -258,7 +248,7 @@ const CheckUpPlan = () => {
         </div>
       </div>
       <div className="flex justify-end mt-3">
-        <Button color="primary" variant="solid" isLoading={isLoading} size="lg" isDisabled={!selected || !selectedDate || !repeat || !title} onPress={handleSubmit}>
+        <Button color="primary" variant="solid" isLoading={isLoading} size="lg" isDisabled={!selected || !selectedDate || !repeat} onPress={handleSubmit}>
           Hoàn tất
         </Button>
       </div>

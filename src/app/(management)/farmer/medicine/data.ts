@@ -12,7 +12,7 @@ const columns = [
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
   { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
   { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
-  { name: "", uid: "actions" },
+  { name: "ACTIONS", uid: "actions" },
 ];
 
 const INITIAL_VISIBLE_COLUMNS = [
@@ -23,8 +23,6 @@ const INITIAL_VISIBLE_COLUMNS = [
   "registerNumber",
   "netWeight",
   "usage",
-  "lastUpdatedAt",
-  "lastUpdatedBy",
   "actions"
 ];
 

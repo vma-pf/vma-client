@@ -88,6 +88,7 @@ const Cage = () => {
                     <Button
                       color="danger"
                       isIconOnly
+                      isDisabled={cage.availableQuantity >= cage.capacity}
                       variant="solid"
                       onPress={() => {
                         onOpenDelete();
