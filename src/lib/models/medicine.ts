@@ -1,9 +1,9 @@
 type Medicine = {
-  id: string,
+  id?: string,
   unit: string,
   name: string,
   mainIngredient: string,
-  quantity: number,
+  quantity?: number,
   registerNumber: number,
   netWeight: string,
   usage: string,
@@ -14,7 +14,7 @@ type CreateMedicineRequest = {
   name: string,
   mainIngredient: string,
   registerNumber: number,
-  netWeight: string,
+  netWeight: number,
   usage: string
 };
 
@@ -23,7 +23,7 @@ type UpdateMedicineRequest = {
   name: string,
   mainIngredient: string,
   registerNumber: number,
-  netWeight: string,
+  netWeight: number,
   usage: string
 };
 

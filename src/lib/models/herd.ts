@@ -16,17 +16,17 @@ export type UpdateHerdRequest = {
     startDate: Date;
 };
 
-export type PigAssign = {
-    id?: string;
-    code?: string;
-    gender: string;
-    cage?: Cage;
-    herdId?: string;
-    weight?: number;
-    height?: number;
-    width?: number;
-    note?: string;
-};
+// export type PigAssign = {
+//     id?: string;
+//     code?: string;
+//     gender?: string;
+//     cage?: Cage;
+//     herdId?: string;
+//     weight?: number;
+//     height?: number;
+//     width?: number;
+//     note?: string;
+// };
 
 export type HerdInfo = {
     id: string;

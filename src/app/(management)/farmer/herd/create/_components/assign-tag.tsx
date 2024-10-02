@@ -13,9 +13,11 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/component
 import { FaWeightHanging } from "react-icons/fa6";
 import { CiLineHeight } from "react-icons/ci";
 import { AiOutlineColumnWidth } from "react-icons/ai";
-import { PigAssign } from "@oursrc/lib/models/herd";
+import { HerdInfo } from "@oursrc/lib/models/herd";
 import { Cage } from "@oursrc/lib/models/cage";
 import { cageService } from "@oursrc/lib/services/cageService";
+import { pigService } from "@oursrc/lib/services/pigService";
+import { Pig } from "@oursrc/lib/models/pig";
 
 // const pigList: Pig[] = [
 //   { id: 1, name: "Heo 001", pigCode: "HEO001" },
@@ -38,7 +40,7 @@ import { cageService } from "@oursrc/lib/services/cageService";
 const AssignTag = () => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const [assignedPigs, setAssignedPigs] = useState<PigAssign[]>([]);
+  const [assignedPigs, setAssignedPigs] = useState<Pig[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = React.useState<boolean>(false);
   const [cages, setCages] = React.useState<Cage[]>([]);
@@ -76,18 +78,34 @@ const AssignTag = () => {
     }
   };
 
-  React.useEffect(() => {
-    if (assignedPigs.length > 0) {
-      localStorage.setItem("assignedPigs", JSON.stringify(assignedPigs));
-      getCages();
+  const getAllPigs = async () => {
+    try {
+      const herdData: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "{}");
+      const res: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(herdData.id, 1, 500);
+      if (res && res.isSuccess) {
+        console.log(res.data.data);
+
+        setAssignedPigs(res.data.data);
+      } else {
+        toast({
+          variant: "destructive",
+          title: res.errorMessage || "Có lỗi xảy ra",
+        });
+      }
+    } catch (error) {
+      console.log(error);
     }
-  }, [assignedPigs]);
+  };
 
   React.useEffect(() => {
-    const storedData: PigAssign[] = JSON.parse(localStorage.getItem("assignedPigs") || "[]");
-    if (storedData.length > 0) {
-      setAssignedPigs(storedData);
+    if (!isOpen) {
+      getAllPigs();
+      getCages();
     }
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    getAllPigs();
     getCages();
   }, []);
   return (
@@ -187,7 +205,7 @@ const AssignTag = () => {
           <p className="text-3xl font-bold text-center mb-5">Danh sách heo</p>
           {!loading ? (
             <div className="m-3 grid grid-cols-3">
-              {assignedPigs.length > 0 ? (
+              {assignedPigs?.length > 0 ? (
                 cages.map((cage, idx) => (
                   <div key={idx} className="m-2 col-span-1 border-2 rounded-lg">
                     <p className="text-center text-xl font-semibold">Chuồng: {cage.code}</p>
@@ -199,8 +217,8 @@ const AssignTag = () => {
                     </div>
                     <div className="grid grid-cols-2">
                       {assignedPigs
-                        .filter((pig) => pig.cage?.id === cage.id)
-                        .map((pig: PigAssign, index) => (
+                        .filter((pig) => pig.cageId === cage.id)
+                        .map((pig: Pig, index) => (
                           <motion.div
                             className="col-span-1 mx-2 my-2 p-2 border-2 rounded-xl shadow-md cursor-pointer"
                             key={index}
@@ -213,8 +231,8 @@ const AssignTag = () => {
                             <HoverCard openDelay={100} closeDelay={100}>
                               <HoverCardTrigger asChild>
                                 <div className="">
-                                  <p className="overflow-auto break-all">Mã: {pig.code}</p>
-                                  <p className="text-lg font-semibold overflow-auto">Giới tính: {pig.gender === "Male" ? "Đực" : "Cái"}</p>
+                                  <p className="overflow-auto break-all">Mã: {pig.pigCode}</p>
+                                  {/* <p className="text-lg font-semibold overflow-auto">Giới tính: {pig.gender === "Male" ? "Đực" : "Cái"}</p> */}
                                 </div>
                               </HoverCardTrigger>
                               <HoverCardContent>
@@ -255,7 +273,7 @@ const AssignTag = () => {
         </div>
         <AssignInfo isOpen={isOpen} onClose={onClose} setAssignedPigs={setAssignedPigs} />
         <div className="flex justify-end">
-          <Button color="primary" variant="solid" isLoading={loading} size="lg" isDisabled={assignedPigs.length <= 0} type="submit" onPress={handleSubmit}>
+          <Button color="primary" variant="solid" isLoading={loading} size="lg" isDisabled={assignedPigs?.length <= 0} type="submit" onPress={handleSubmit}>
             Bước tiếp theo
           </Button>
         </div>

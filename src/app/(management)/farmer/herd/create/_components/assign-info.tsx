@@ -4,20 +4,13 @@ import { IoMdPricetags } from "react-icons/io";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { useForm } from "react-hook-form";
-import { HerdInfo, PigAssign } from "@oursrc/lib/models/herd";
+import { HerdInfo } from "@oursrc/lib/models/herd";
 import { Cage } from "@oursrc/lib/models/cage";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { cageService } from "@oursrc/lib/services/cageService";
+import { Pig } from "@oursrc/lib/models/pig";
 
-const AssignInfo = ({
-  isOpen,
-  onClose,
-  setAssignedPigs,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  setAssignedPigs: React.Dispatch<React.SetStateAction<PigAssign[]>>;
-}) => {
+const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onClose: () => void; setAssignedPigs: React.Dispatch<React.SetStateAction<Pig[]>> }) => {
   const { toast } = useToast();
   const {
     register,
@@ -84,19 +77,8 @@ const AssignInfo = ({
       };
       const res: ResponseObject<any> = await pigService.assignPigToCage(pig);
       if (res && res.isSuccess) {
-        const assignedPig: PigAssign = {
-          id: res.data.id,
-          code: res.data.code,
-          gender: res.data.gender,
-          cage: res.data.cage,
-          herdId: res.data.herdId,
-          weight: res.data.weight,
-          height: res.data.height,
-          width: res.data.width,
-          note: res.data.note,
-        };
         onClose();
-        setAssignedPigs((prev) => [...prev, assignedPig]);
+        setAssignedPigs(res.data);
         resetData();
         toast({
           variant: "success",
