@@ -1,4 +1,3 @@
-"use client";
 import {
   Button,
   Dropdown,
@@ -16,20 +15,22 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip
+  Tooltip,
 } from "@nextui-org/react";
-import { capitalize } from "@oursrc/components/utils";
-import { useToast } from "@oursrc/hooks/use-toast";
-import { Cage } from "@oursrc/lib/models/cage";
-import { cageService } from "@oursrc/lib/services/cageService";
+import { toast } from "@oursrc/hooks/use-toast";
+import { Medicine } from "@oursrc/lib/models/medicine";
+import { medicineService } from "@oursrc/lib/services/medicineService";
 import { Search } from "lucide-react";
 import React from "react";
-import { HiChevronDown } from "react-icons/hi";
-import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "./models/cage-table-data";
+import { HiChevronDown } from "react-icons/hi2";
+import { capitalize } from "../utils";
+import {
+  columns,
+  INITIAL_VISIBLE_COLUMNS,
+  statusOptions,
+} from "./models/medicine-table-data";
 
-export default function CageListReadOnly({setSelected}: any) {
-  const { toast } = useToast();
-
+const MedicinesListReadOnly = ({ setSelected }: any) => {
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
@@ -57,34 +58,55 @@ export default function CageListReadOnly({setSelected}: any) {
       Array.from(visibleColumns).includes(column.uid)
     );
   }, [visibleColumns]);
-  const [cageList, setCageList] = React.useState<Cage[]>([]);
+  const [medicineList, setMedicineList] = React.useState<Medicine[]>([]);
+
+  const filteredItems = React.useMemo(() => {
+    let filteredMedicines: Medicine[] = [...medicineList];
+
+    if (hasSearchFilter) {
+      filteredMedicines = filteredMedicines.filter((medicine) =>
+        medicine.name.toLowerCase().includes(filterValue.toLowerCase())
+      );
+    }
+    if (
+      statusFilter !== "all" &&
+      Array.from(statusFilter).length !== statusOptions.length
+    ) {
+      filteredMedicines = filteredMedicines.filter((medicine) =>
+        Array.from(statusFilter).includes(medicine.name as string)
+      );
+    }
+    return filteredMedicines;
+  }, [medicineList, filterValue, statusFilter]);
 
   const [loading, setLoading] = React.useState(false);
-  const loadingState = loading || cageList?.length === 0 ? "loading" : "idle";
+  const loadingState =
+    loading || medicineList?.length === 0 ? "loading" : "idle";
 
-  //Use Effect
   React.useEffect(() => {
-    setSelected(cageList.filter(x => Array.from(selectedKeys).includes(x.id)))
-  },[selectedKeys])
+    const selectedMed = medicineList.find(x => x.id === Array.from(selectedKeys)[0])
+    setSelected(selectedMed)
+  }, [selectedKeys])
 
   React.useEffect(() => {
     fetchData();
   }, [page, rowsPerPage]);
 
-  //API function
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await cageService.getCages(page, rowsPerPage);
+      const response = await medicineService.getMedicine(page, rowsPerPage);
       if (response.isSuccess) {
-        setCageList(response.data.data);
+        setMedicineList(response.data.data);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
+        setLoading(false);
       } else {
         throw new AggregateError(response.errorMessage);
       }
     } catch (e) {
+      setLoading(false);
       toast({
         variant: "destructive",
         title:
@@ -92,38 +114,17 @@ export default function CageListReadOnly({setSelected}: any) {
             ? e.message
             : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
-    } finally {
-      setLoading(false);
     }
   };
-
-  const filteredItems = React.useMemo(() => {
-    let cloneFilteredItems: Cage[] = [...cageList];
-
-    if (hasSearchFilter) {
-      cloneFilteredItems = cloneFilteredItems.filter((item) =>
-        item.code.toLowerCase().includes(filterValue.toLowerCase())
-      );
-    }
-    if (
-      statusFilter !== "all" &&
-      Array.from(statusFilter).length !== statusOptions.length
-    ) {
-      cloneFilteredItems = cloneFilteredItems.filter((item) =>
-        Array.from(statusFilter).includes(item.code as string)
-      );
-    }
-    return cloneFilteredItems;
-  }, [cageList, filterValue, statusFilter]);
 
   const items = React.useMemo(() => {
     return filteredItems;
   }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: Cage, b: Cage) => {
-      const first = a[sortDescriptor.column as keyof Cage] as number;
-      const second = b[sortDescriptor.column as keyof Cage] as number;
+    return [...items].sort((a: Medicine, b: Medicine) => {
+      const first = a[sortDescriptor.column as keyof Medicine] as number;
+      const second = b[sortDescriptor.column as keyof Medicine] as number;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -160,7 +161,7 @@ export default function CageListReadOnly({setSelected}: any) {
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
-            placeholder="Tìm kiếm theo mã..."
+            placeholder="Tìm kiếm theo tên thuốc..."
             startContent={<Search />}
             value={filterValue}
             onClear={() => onClear()}
@@ -191,9 +192,6 @@ export default function CageListReadOnly({setSelected}: any) {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            {/* <Button color="primary" endContent={<Plus />} onPress={onOpen}>
-              Tạo mới
-            </Button> */}
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -220,16 +218,18 @@ export default function CageListReadOnly({setSelected}: any) {
     visibleColumns,
     onSearchChange,
     onRowsPerPageChange,
-    cageList.length,
+    medicineList.length,
     hasSearchFilter,
   ]);
-
   const renderCell = React.useCallback(
-    (data: Cage, columnKey: React.Key) => {
-      const cellValue = data[columnKey as keyof Cage];
+    (data: Medicine, columnKey: React.Key) => {
+      const cellValue = data[columnKey as keyof Medicine];
 
       switch (columnKey) {
-        case "description":
+        case "mainIngredient":
+        case "name":
+        case "unit":
+        case "usage":
           return (
             <Tooltip
               showArrow={true}
@@ -237,29 +237,9 @@ export default function CageListReadOnly({setSelected}: any) {
               color="primary"
               delay={1000}
             >
-              <p className="truncate cursor-default">{cellValue}</p>
+              <p className="truncate">{cellValue}</p>
             </Tooltip>
           );
-        // case "actions":
-        //   return (
-        //     <div className="flex justify-end items-center gap-2">
-        //       <Tooltip content="Chi tiết">
-        //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-        //           <EyeIcon />
-        //         </span>
-        //       </Tooltip>
-        //       <Tooltip content="Chỉnh sửa">
-        //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-        //           <EditIcon onClick={() => onEdit(data)} />
-        //         </span>
-        //       </Tooltip>
-        //       <Tooltip color="danger" content="Xóa">
-        //         <span className="text-lg text-danger cursor-pointer active:opacity-50">
-        //           <Trash2Icon onClick={() => onDelete(data)} />
-        //         </span>
-        //       </Tooltip>
-        //     </div>
-        //   );
         default:
           return cellValue;
       }
@@ -288,19 +268,19 @@ export default function CageListReadOnly({setSelected}: any) {
       </div>
     );
   }, [selectedKeys, items.length, page, totalPages, hasSearchFilter]);
-
   return (
     <div>
       <Table
-        isStriped
+        layout="fixed"
         color="primary"
+        isStriped
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
-          wrapper: "min-h-[500px]",
+          wrapper: "max-h-[750px]",
         }}
         selectedKeys={selectedKeys}
-        selectionMode="multiple"
+        selectionMode="single"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
@@ -325,7 +305,7 @@ export default function CageListReadOnly({setSelected}: any) {
           loadingState={loadingState}
         >
           {(item) => (
-            <TableRow key={item.id} className="h-12">
+            <TableRow key={item.id} className="h-12" >
               {(columnKey) => (
                 <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}
@@ -335,4 +315,5 @@ export default function CageListReadOnly({setSelected}: any) {
       </Table>
     </div>
   );
-}
+};
+export default MedicinesListReadOnly;

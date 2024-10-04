@@ -6,6 +6,13 @@ import { ResponseObject, ResponseObjectList } from "../models/response-object";
 const endpoint = "api/pigs";
 
 export const pigService = {
+  getPigsByHerdId: (herdId: string, page: number, pageSize: number = 30) =>
+    http.get<ResponseObjectList<Pig>>(endpoint + `/herd/${herdId}`, {
+      params: {
+        pageIndex: page?.toString() || "",
+        pageSize: pageSize?.toString() || "",
+      },
+    }),
   getPigsByCageId: (cageId: string, page: number, pageSize: number) =>
     http.get<ResponseObjectList<Pig>>(endpoint + `/cage/${cageId}`, {
       params: {

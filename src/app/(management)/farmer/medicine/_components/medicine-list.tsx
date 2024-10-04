@@ -298,7 +298,6 @@ export default function MedicineList() {
   return (
     <div>
       <Table
-        aria-label="Example table with custom cells, pagination and sorting"
         layout="fixed"
         isStriped
         bottomContent={bottomContent}

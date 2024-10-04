@@ -118,7 +118,9 @@ const Vaccination = () => {
                 </div>
               </div>
             ) : (
-              <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>
+              <p className="text-center text-lg mt-3">
+                Chưa chọn lịch tiêm phòng
+              </p>
             )}
           </div>
           <div className="p-3 border-2 rounded-2xl w-1/2">
@@ -157,7 +159,9 @@ const Vaccination = () => {
                 </div> */}
               </div>
             ) : (
-              <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>
+              <p className="text-center text-lg mt-3">
+                Chưa chọn lịch tiêm phòng
+              </p>
             )}
           </div>
         </div>
