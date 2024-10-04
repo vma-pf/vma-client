@@ -5,182 +5,184 @@ import { FaRegCalendarPlus } from "react-icons/fa6";
 import { VaccinationData, VaccinationStageProps } from "../../../../lib/models/vaccination";
 import VaccinationStage from "./_components/vaccination-stage";
 import { Accordion, AccordionItem, Progress } from "@nextui-org/react";
-import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
+import { herdService } from "@oursrc/lib/services/herdService";
+import { HerdInfo } from "@oursrc/lib/models/herd";
 
-const vaccinationList: any[] = [
-  {
-    id: "1",
-    title: "Lịch xuân",
-    description: "Lịch tiêm phòng cho mùa xuân",
-    herdId: "1",
-    startDate: "2021-09-10",
-    expectedEndDate: "2021-09-10",
-    actualEndDate: "2021-09-10",
-    note: "Đã tiêm phòng",
-    status: 0,
-    vaccinationStages: [
-      {
-        vaccinationPlanId: "1",
-        title: "Tiêm phòng cho heo",
-        applyStageTime: "2024-05-28",
-        timeSpan: "8:00 - 10:00",
-        isDone: true,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho heo con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "1",
-        title: "Tiêm phòng cho gà",
-        applyStageTime: "2024-05-28",
-        timeSpan: "10:00 - 12:00",
-        isDone: true,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho gà con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "1",
-        title: "Tiêm phòng cho bò",
-        applyStageTime: "2024-05-28",
-        timeSpan: "13:00 - 15:00",
-        isDone: true,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho bò con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "1",
-        title: "Tiêm phòng cho chó",
-        applyStageTime: "2024-05-28",
-        timeSpan: "15:00 - 17:00",
-        isDone: false,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho chó con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "1",
-        title: "Tiêm phòng cho mèo",
-        applyStageTime: "2024-05-28",
-        timeSpan: "17:00 - 19:00",
-        isDone: false,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho mèo con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "1",
-        title: "Tiêm phòng cho cá",
-        applyStageTime: "2023-05-28",
-        timeSpan: "19:00 - 21:00",
-        isDone: false,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho cá con",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "2",
-    title: "Lịch hạ",
-    description: "Lịch tiêm phòng cho mùa hạ",
-    herdId: "2",
-    startDate: "2021-09-10",
-    expectedEndDate: "2021-09-10",
-    actualEndDate: "2021-09-10",
-    note: "Đã tiêm phòng",
-    status: 0,
-    vaccinationStages: [
-      {
-        vaccinationPlanId: "2",
-        title: "Tiêm phòng cho heo",
-        applyStageTime: "2024-05-28",
-        timeSpan: "8:00 - 10:00",
-        isDone: true,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho heo con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "2",
-        title: "Tiêm phòng cho gà",
-        applyStageTime: "2024-05-28",
-        timeSpan: "10:00 - 12:00",
-        isDone: true,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho gà con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "2",
-        title: "Tiêm phòng cho bò",
-        applyStageTime: "2024-05-28",
-        timeSpan: "13:00 - 15:00",
-        isDone: true,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho bò con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "2",
-        title: "Tiêm phòng cho chó",
-        applyStageTime: "2024-05-28",
-        timeSpan: "15:00 - 17:00",
-        isDone: false,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho chó con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "2",
-        title: "Tiêm phòng cho mèo",
-        applyStageTime: "2024-05-28",
-        timeSpan: "17:00 - 19:00",
-        isDone: false,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho mèo con",
-          },
-        ],
-      },
-      {
-        vaccinationPlanId: "2",
-        title: "Tiêm phòng cho cá",
-        applyStageTime: "2023-05-28",
-        timeSpan: "19:00 - 21:00",
-        isDone: false,
-        vaccinationToDos: [
-          {
-            description: "Tiêm phòng cho cá con",
-          },
-        ],
-      },
-    ],
-  },
-];
+// const vaccinationList: any[] = [
+//   {
+//     id: "1",
+//     title: "Lịch xuân",
+//     description: "Lịch tiêm phòng cho mùa xuân",
+//     herdId: "1",
+//     startDate: "2021-09-10",
+//     expectedEndDate: "2021-09-10",
+//     actualEndDate: "2021-09-10",
+//     note: "Đã tiêm phòng",
+//     status: 0,
+//     vaccinationStages: [
+//       {
+//         vaccinationPlanId: "1",
+//         title: "Tiêm phòng cho heo",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "8:00 - 10:00",
+//         isDone: true,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho heo con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "1",
+//         title: "Tiêm phòng cho gà",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "10:00 - 12:00",
+//         isDone: true,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho gà con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "1",
+//         title: "Tiêm phòng cho bò",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "13:00 - 15:00",
+//         isDone: true,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho bò con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "1",
+//         title: "Tiêm phòng cho chó",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "15:00 - 17:00",
+//         isDone: false,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho chó con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "1",
+//         title: "Tiêm phòng cho mèo",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "17:00 - 19:00",
+//         isDone: false,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho mèo con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "1",
+//         title: "Tiêm phòng cho cá",
+//         applyStageTime: "2023-05-28",
+//         timeSpan: "19:00 - 21:00",
+//         isDone: false,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho cá con",
+//           },
+//         ],
+//       },
+//     ],
+//   },
+//   {
+//     id: "2",
+//     title: "Lịch hạ",
+//     description: "Lịch tiêm phòng cho mùa hạ",
+//     herdId: "2",
+//     startDate: "2021-09-10",
+//     expectedEndDate: "2021-09-10",
+//     actualEndDate: "2021-09-10",
+//     note: "Đã tiêm phòng",
+//     status: 0,
+//     vaccinationStages: [
+//       {
+//         vaccinationPlanId: "2",
+//         title: "Tiêm phòng cho heo",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "8:00 - 10:00",
+//         isDone: true,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho heo con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "2",
+//         title: "Tiêm phòng cho gà",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "10:00 - 12:00",
+//         isDone: true,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho gà con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "2",
+//         title: "Tiêm phòng cho bò",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "13:00 - 15:00",
+//         isDone: true,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho bò con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "2",
+//         title: "Tiêm phòng cho chó",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "15:00 - 17:00",
+//         isDone: false,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho chó con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "2",
+//         title: "Tiêm phòng cho mèo",
+//         applyStageTime: "2024-05-28",
+//         timeSpan: "17:00 - 19:00",
+//         isDone: false,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho mèo con",
+//           },
+//         ],
+//       },
+//       {
+//         vaccinationPlanId: "2",
+//         title: "Tiêm phòng cho cá",
+//         applyStageTime: "2023-05-28",
+//         timeSpan: "19:00 - 21:00",
+//         isDone: false,
+//         vaccinationToDos: [
+//           {
+//             description: "Tiêm phòng cho cá con",
+//           },
+//         ],
+//       },
+//     ],
+//   },
+// ];
 
 // const vaccinationStage: VaccinationStageProps[] = [
 //   {
@@ -255,38 +257,38 @@ const vaccinationList: any[] = [
 //   },
 // ];
 
-const herd = {
-  id: "1",
-  name: "Đàn 1",
-  quantity: 100,
-  breed: "Iberico",
-  barns: [
-    {
-      id: "1",
-      code: "CAG001",
-      name: "Chuồng 1",
-      quantity: 50,
-    },
-    {
-      id: "2",
-      code: "CAG002",
-      name: "Chuồng 2",
-      quantity: 50,
-    },
-    {
-      id: "3",
-      code: "CAG003",
-      name: "Chuồng 3",
-      quantity: 50,
-    },
-    {
-      id: "4",
-      code: "CAG004",
-      name: "Chuồng 4",
-      quantity: 50,
-    },
-  ],
-};
+// const herd = {
+//   id: "1",
+//   name: "Đàn 1",
+//   quantity: 100,
+//   breed: "Iberico",
+//   barns: [
+//     {
+//       id: "1",
+//       code: "CAG001",
+//       name: "Chuồng 1",
+//       quantity: 50,
+//     },
+//     {
+//       id: "2",
+//       code: "CAG002",
+//       name: "Chuồng 2",
+//       quantity: 50,
+//     },
+//     {
+//       id: "3",
+//       code: "CAG003",
+//       name: "Chuồng 3",
+//       quantity: 50,
+//     },
+//     {
+//       id: "4",
+//       code: "CAG004",
+//       name: "Chuồng 4",
+//       quantity: 50,
+//     },
+//   ],
+// };
 
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
@@ -298,11 +300,12 @@ const statusMap = [
 const Vaccination = () => {
   const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(new Set<string>());
   const [vaccinationData, setVaccinationData] = React.useState<VaccinationData>();
+  const [herd, setHerd] = React.useState<HerdInfo>();
 
-  const findVaccination = async () => {
+  const findVaccination = async (id: string) => {
     try {
       const vaccinationId = "4b75d78c-7c38-4447-9fe7-ebbcaff55faf";
-      const res: ResponseObject<any> = await vaccinationService.getVaccinationPlan(vaccinationId);
+      const res: ResponseObject<any> = await vaccinationService.getVaccinationPlan(id);
       if (res && res.isSuccess) {
         setVaccinationData(res.data);
       } else {
@@ -316,10 +319,25 @@ const Vaccination = () => {
     // );
   };
 
+  const findHerdData = async (id: string) => {
+    try {
+      const vaccinationId = "4b75d78c-7c38-4447-9fe7-ebbcaff55faf";
+      const res: ResponseObject<HerdInfo> = await herdService.getHerdByVaccinationPlanId(id);
+      console.log("res", res);
+      if (res && res.isSuccess) {
+        setHerd(res.data);
+      } else {
+        console.log("Error: ", res.errorMessage);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
   React.useEffect(() => {
-    console.log("selectedVaccinationId", selectedVaccinationId);
     if (selectedVaccinationId.size > 0) {
-      findVaccination();
+      findVaccination(selectedVaccinationId.values().next().value);
+      findHerdData(selectedVaccinationId.values().next().value);
     }
   }, [selectedVaccinationId]);
 
@@ -327,7 +345,7 @@ const Vaccination = () => {
     <div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-xl mb-3">Trước tiên, hãy chọn lịch tiêm phòng</p>
-        <VaccinationList data={vaccinationList} setSelectedVaccination={setSelectedVaccinationId} />
+        <VaccinationList setSelectedVaccination={setSelectedVaccinationId} />
       </div>
       <div className="mb-3 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <div className="flex flex-shrink gap-5">
@@ -384,21 +402,21 @@ const Vaccination = () => {
           </div>
           <div className="p-3 border-2 rounded-2xl w-1/2">
             <p className="text-xl font-semibold">Thông tin đàn heo</p>
-            {vaccinationData ? (
+            {herd ? (
               <div>
                 <div className="mt-3 flex justify-between">
                   <p className="text-md">Tên đàn:</p>
-                  <p className="text-lg font-semibold">{herd.name}</p>
+                  <p className="text-lg font-semibold">{herd.code}</p>
                 </div>
                 <div className="mt-3 flex justify-between">
                   <p className="text-md">Số lượng:</p>
-                  <p className="text-lg font-semibold">{herd.quantity}</p>
+                  <p className="text-lg font-semibold">{herd.totalNumber}</p>
                 </div>
                 <div className="mt-3 flex justify-between">
                   <p className="text-md">Giống:</p>
                   <p className="text-lg font-semibold">{herd.breed}</p>
                 </div>
-                <div className="mt-3 flex justify-between">
+                {/* <div className="mt-3 flex justify-between">
                   <Accordion variant="splitted" defaultExpandedKeys={["1"]}>
                     <AccordionItem key={1} title="Danh sách chuồng">
                       <div className="flex justify-between">
@@ -415,14 +433,14 @@ const Vaccination = () => {
                       ))}
                     </AccordionItem>
                   </Accordion>
-                </div>
+                </div> */}
               </div>
             ) : (
               <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>
             )}
           </div>
         </div>
-        <div>{vaccinationData && <VaccinationStage data={vaccinationData.vaccinationStages} />}</div>
+        <div>{vaccinationData?.vaccinationStages && <VaccinationStage data={vaccinationData?.vaccinationStages} />}</div>
       </div>
     </div>
   );

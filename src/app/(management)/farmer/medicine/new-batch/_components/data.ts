@@ -8,11 +8,10 @@ const columns = [
   { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
   { name: "SỐ ĐĂNG KÝ", uid: "registerNumber", sortable: true },
   { name: "TRỌNG LƯỢNG", uid: "netWeight", sortable: true },
-  { name: "TÌNH TRẠNG SỬ DỤNG", uid: "usage", sortable: true },
+  { name: "CÁCH SỬ DỤNG", uid: "usage", sortable: true },
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
   { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
   { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
-  { name: "ACTIONS", uid: "actions" },
 ];
 
 const INITIAL_VISIBLE_COLUMNS = [
@@ -23,7 +22,6 @@ const INITIAL_VISIBLE_COLUMNS = [
   "registerNumber",
   "netWeight",
   "usage",
-  "actions"
 ];
 
 const statusOptions = [{ name: "", uid: "" }];

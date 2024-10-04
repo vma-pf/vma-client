@@ -9,6 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
     "@internationalized/date": "^3.5.5",
     "@microsoft/signalr": "^8.0.7",
     "@microsoft/signalr-protocol-msgpack": "^8.0.7",
@@ -19,6 +24,8 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
     "@reduxjs/toolkit": "^2.2.7",
+    "@syncfusion/ej2-material-theme": "^27.1.51",
+    "@syncfusion/ej2-react-schedule": "^27.1.51",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",

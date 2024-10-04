@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { handleErrorApi } from "@oursrc/lib/utils";
 import { FiLogOut } from "react-icons/fi";
 import { authService } from "@oursrc/lib/services/authService";
+import { useToast } from "@oursrc/hooks/use-toast";
 
 export type NavbarItem = {
   path: string;
@@ -18,6 +19,7 @@ export type NavbarItem = {
 
 const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; prefix: string }) => {
   const router = useRouter();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
   const [open, setOpen] = React.useState<boolean>(true);
 
@@ -27,8 +29,16 @@ const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; pref
       await authService.logoutFromNextClientToNextServer();
       localStorage.removeItem("accessToken");
       router.push("/login");
+      toast({
+        title: "Đăng xuất thành công",
+        variant: "success",
+      });
     } catch (error) {
       handleErrorApi({ error });
+      toast({
+        title: "Đăng xuất thất bại",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

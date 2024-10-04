@@ -51,12 +51,12 @@ const request = async <Response>(
   url: string,
   options: CustomOptions | undefined
 ): Promise<any> => {
-  const token = localStorage.getItem("accessToken") || undefined;
+  const token = localStorage.getItem("accessToken") || "";
   const body = options?.body ? JSON.stringify(options.body) : undefined;
   const params = options?.params || undefined;
   const baseHeaders = {
     "Content-Type": "application/json",
-    Authorization: token ? `Bearer ${token}` : ""
+    Authorization: `Bearer ${token}`,
   };
   const baseUrl = options?.baseUrl === undefined ? SERVERURL : options.baseUrl;
   let fullUrl = url.startsWith("/") ? baseUrl + url : baseUrl + "/" + url;

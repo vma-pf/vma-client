@@ -1,49 +1,47 @@
-import { Divider } from "@nextui-org/react"
+import { FaUpload } from "react-icons/fa6";
+import { LuImage } from "react-icons/lu";
 
-type Props = {
-  size: String //md, lg
-}
-const AttachMedia = ({size = '100'}: Props) => {
+const AttachMedia = ({
+  fileId,
+  selectedFile,
+  setSelectedFile,
+}: {
+  fileId: string;
+  selectedFile: File | string | undefined;
+  setSelectedFile: React.Dispatch<React.SetStateAction<File | string | undefined>>;
+}) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : undefined;
+    if (file && ["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
+      setSelectedFile(file);
+    } else {
+      console.error("Invalid file type. Please select a JPG or PNG image.");
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(undefined);
+  };
   return (
-    <div className="flex">
-      <div className={`flex items-center justify-center mr-6 w-${size}`}>
-        <label
-          htmlFor="dropzone-file"
-          className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
-        >
-          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg
-              className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 20 16"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-              />
-            </svg>
-            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-              <span className="font-semibold">Click to upload</span> or drag and
-              drop
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              SVG, PNG, JPG or GIF (MAX. 800x400px)
-            </p>
-          </div>
-          <input id="dropzone-file" type="file" className="hidden" />
-        </label>
+    <div className="h-full mb-6">
+      {/* <div className="bg-gray-200 dark:bg-zinc-600 p-6"> */}
+      <div className="min-h-[200px] flex flex-col items-center justify-center w-full border-3 border-dashed rounded-lg bg-white dark:bg-black hover:bg-gray-100 dark:hover:bg-zinc-700">
+        {!selectedFile ? (
+          <label className="h-[200px] w-full flex flex-col items-center justify-center" htmlFor={`file-upload-${fileId}`}>
+            <LuImage className="image-bg" size={30} />
+            <p className="text-sm text-default-400">Chọn ảnh từ máy tính</p>
+          </label>
+        ) : (
+          <img
+            className="w-full h-fit p-2 object-cover cursor-pointer"
+            onClick={handleRemoveImage}
+            src={typeof selectedFile === "object" ? URL.createObjectURL(selectedFile) : selectedFile}
+            alt="image preview"
+          />
+        )}
+        <input id={`file-upload-${fileId}`} type="file" onChange={handleFileChange} accept=".jpg,.jpeg,.png" hidden />
       </div>
-      <Divider orientation="vertical" />
-      <div>
-        <h2 className="text-xl">Yêu cầu hình ảnh:</h2>
-        <span className="block ml-6"><strong>- Tối thiểu:</strong> 400px x 400px</span>
-        <span className="block ml-6"><strong>- Tối đa dung lượng:</strong> 2mb</span>
-      </div>
+      {/* </div> */}
     </div>
   );
 };

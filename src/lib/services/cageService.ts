@@ -15,13 +15,13 @@ export const cageService = {
     }),
   getCageId: (id: string) => http.get(endpoint + `/${id}`),
   createCage: (model: CreateCageRequest) =>
-    http.post<ResponseObjectList<any>>(endpoint, {
+    http.post<ResponseObjectList<Cage>>(endpoint, {
       code: model.code,
       capacity: model.capacity,
       description: model.description,
     }),
   updateCage: (model: CreateCageRequest, id: string) =>
-    http.put<ResponseObjectList<any>>(endpoint + `/${id}`, {
+    http.put<ResponseObjectList<Cage>>(endpoint + `/${id}`, {
       code: model.code,
       capacity: model.capacity,
       description: model.description,

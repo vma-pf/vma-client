@@ -1,5 +1,21 @@
 import { Cage } from "./cage";
 
+export type CreateHerdRequest = {
+    code: string;
+    breed: string;
+    totalNumber: number;
+    expectedEndDate: Date;
+    startDate: Date;
+    description: string;
+};
+
+export type UpdateHerdRequest = {
+    breed: string;
+    totalNumber: number;
+    expectedEndDate: Date;
+    startDate: Date;
+};
+
 export type PigAssign = {
     id?: string;
     code?: string;
@@ -25,7 +41,7 @@ export type HerdInfo = {
     status: number;
 };
 
-type Herd = {
+export type Herd = {
   id: string;
   code: string;
   breed: string;
@@ -37,20 +53,3 @@ type Herd = {
   averageWeight: number;
   status: number;
 };
-type CreateHerdRequest = {
-  code: string;
-  breed: string;
-  totalNumber: number;
-  expectedEndDate: Date;
-  startDate: Date;
-  description: string;
-};
-
-type UpdateHerdRequest = {
-  breed: string;
-  totalNumber: number;
-  expectedEndDate: Date;
-  startDate: Date;
-};
-
-export type { CreateHerdRequest, UpdateHerdRequest, Herd };

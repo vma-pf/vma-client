@@ -5,7 +5,6 @@ import HerdCreate from "./_components/herd-create";
 import { useHerdProgressSteps } from "@oursrc/lib/store";
 import CageCreate from "./_components/cage-create";
 import AssignTag from "./_components/assign-tag";
-import PreviewInfo from "./_components/preview-info";
 import { motion } from "framer-motion";
 import CheckUpPlan from "./_components/checkup-plan";
 

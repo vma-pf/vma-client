@@ -27,6 +27,13 @@ export const pigService = {
         pageSize: pageSize?.toString() || "",
       },
     }),
+  getPigsByHerdId: (herdId: string, pageIndex: number, pageSize: number) =>
+    http.get<ResponseObjectList<Pig>>(endpoint + `/herd/${herdId}`, {
+      params: {
+        pageIndex: pageIndex?.toString() || "",
+        pageSize: pageSize?.toString() || "",
+      },
+    }),
   assignPigToCage: (pig: any) => http.post<ResponseObject<any>>(endpoint, pig),
   getPigId: (id: string) => http.get(endpoint + `/${id}`),
 };

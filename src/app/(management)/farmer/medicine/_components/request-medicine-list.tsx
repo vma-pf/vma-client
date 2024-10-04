@@ -1,16 +1,6 @@
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  Card,
-  CardBody,
-  Tab,
-  Tabs,
-  Tooltip,
-  useDisclosure,
-} from "@nextui-org/react";
+import { Accordion, AccordionItem, Button, Card, CardBody, Tab, Tabs, Tooltip, useDisclosure } from "@nextui-org/react";
 import { BanIcon, CheckIcon, InfoIcon, Plus } from "lucide-react";
-import ModalRequestMedicine from "../_modals/modal-request-medicine";
+import ModalRequestMedicine from "./_modals/modal-request-medicine";
 
 const RequestMedicineList = () => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -42,7 +32,9 @@ const RequestMedicineList = () => {
     return (
       <div className="flex justify-between items-center">
         <h3 className="truncate max-w-96">{title}</h3>
-        <small>yêu cầu ngày: <strong>{requestDate}</strong></small>
+        <small>
+          yêu cầu ngày: <strong>{requestDate}</strong>
+        </small>
       </div>
     );
   };
@@ -64,33 +56,24 @@ const RequestMedicineList = () => {
                       key="1"
                       startContent={getStatus("pending")}
                       aria-label="Accordion 1"
-                      title={getRequestItemTitle(
-                        "Yêu cầu nhập thuốc kháng sinh",
-                        "20/09/2024"
-                      )}
+                      title={getRequestItemTitle("Yêu cầu nhập thuốc kháng sinh", "20/09/2024")}
                     >
                       <div className="mx-auto">
                         <div className="grid grid-cols-2 gap-4">
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             <Tooltip color="warning" content="Đang chờ duyệt">
                               <InfoIcon className="text-warning" />
                             </Tooltip>
                           </Card>
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             <Tooltip color="warning" content="Đang chờ duyệt">
                               <InfoIcon className="text-warning" />
                             </Tooltip>
                           </Card>
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             <Tooltip color="warning" content="Đang chờ duyệt">
                               <InfoIcon className="text-warning" />
                             </Tooltip>
@@ -108,33 +91,24 @@ const RequestMedicineList = () => {
                       key="1"
                       startContent={getStatus("pending")}
                       aria-label="Accordion 1"
-                      title={getRequestItemTitle(
-                        "Yêu cầu nhập thuốc kháng sinh lý cho heooooooooooooooooo",
-                        "20/09/2024"
-                      )}
+                      title={getRequestItemTitle("Yêu cầu nhập thuốc kháng sinh lý cho heooooooooooooooooo", "20/09/2024")}
                     >
                       <div className="mx-auto">
                         <div className="grid grid-cols-2 gap-4">
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             <Tooltip color="warning" content="Đang chờ duyệt">
                               <InfoIcon className="text-warning" />
                             </Tooltip>
                           </Card>
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             <Tooltip color="warning" content="Đang chờ duyệt">
                               <InfoIcon className="text-warning" />
                             </Tooltip>
                           </Card>
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             <Tooltip color="warning" content="Đang chờ duyệt">
                               <InfoIcon className="text-warning" />
                             </Tooltip>
@@ -154,29 +128,20 @@ const RequestMedicineList = () => {
                       key="1"
                       startContent={getStatus("approved")}
                       aria-label="Accordion 1"
-                      title={getRequestItemTitle(
-                        "Yêu cầu nhập thuốc kháng sinh",
-                        "20/09/2024"
-                      )}
+                      title={getRequestItemTitle("Yêu cầu nhập thuốc kháng sinh", "20/09/2024")}
                     >
                       <div className="mx-auto">
                         <div className="grid grid-cols-2 gap-4">
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             {getStatus("approved")}
                           </Card>
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             {getStatus("approved")}
                           </Card>
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             {getStatus("approved")}
                           </Card>
                         </div>
@@ -187,36 +152,27 @@ const RequestMedicineList = () => {
               </Card>
             </Tab>
             <Tab key="canceled" title="Đã từ chối" className="w-full">
-            <Card>
+              <Card>
                 <CardBody>
                   <Accordion>
                     <AccordionItem
                       key="1"
                       startContent={getStatus("canceled")}
                       aria-label="Accordion 1"
-                      title={getRequestItemTitle(
-                        "Yêu cầu nhập thuốc kháng sinh",
-                        "20/09/2024"
-                      )}
+                      title={getRequestItemTitle("Yêu cầu nhập thuốc kháng sinh", "20/09/2024")}
                     >
                       <div className="mx-auto">
                         <div className="grid grid-cols-2 gap-4">
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             {getStatus("approved")}
                           </Card>
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             {getStatus("canceled")}
                           </Card>
                           <Card className="flex flex-row justify-between p-4">
-                            <span className="truncate">
-                              Thuốc Aaaaaaaaaaaaaaaaaaa
-                            </span>
+                            <span className="truncate">Thuốc Aaaaaaaaaaaaaaaaaaa</span>
                             {getStatus("canceled")}
                           </Card>
                         </div>

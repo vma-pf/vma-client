@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Textarea } from "@nextui-org/react";
 import { useForm } from "react-hook-form";
-import { Cage } from "@oursrc/lib/models/cage";
+import { Cage, CreateCageRequest } from "@oursrc/lib/models/cage";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { cageService } from "@oursrc/lib/services/cageService";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
@@ -34,11 +34,11 @@ const AddEditForm = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
   const handleSubmitForm = async (data: any) => {
     try {
       if (operation === "edit") {
-        const res: ResponseObject<any> = await cageService.updateCage(data, cage?.id || "");
+        const res: ResponseObject<Cage> = await cageService.updateCage(data, cage?.id || "");
         if (res && res.isSuccess) {
           toast({
             variant: "success",
-            title: res.data || "Chỉnh sửa chuồng thành công",
+            title: "Chỉnh sửa chuồng thành công",
           });
         } else {
           toast({
@@ -47,11 +47,11 @@ const AddEditForm = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
           });
         }
       } else if (operation === "add") {
-        const res: ResponseObject<any> = await cageService.createCage(data);
+        const res: ResponseObject<Cage> = await cageService.createCage(data);
         if (res && res.isSuccess) {
           toast({
             variant: "success",
-            title: res.data || "Thêm chuồng thành công",
+            title: "Thêm chuồng thành công",
           });
         } else {
           toast({
