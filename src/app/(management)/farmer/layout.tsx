@@ -18,6 +18,7 @@ const FarmerLayout = ({
     "/herd": "Quản lý đàn heo",
     "/herd/create": "Tạo đàn mới",
     "/medicine": "Quản lý thuốc",
+    "/medicine/new-batch": "Tạo lô mới",
     "/vaccination": "Lịch tiêm phòng",
     "/treatment": "Kế hoạch điều trị",
     "/cage": "Quản lý chuồng",

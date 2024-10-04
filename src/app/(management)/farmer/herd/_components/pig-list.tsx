@@ -59,7 +59,7 @@ const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export default function PigList() {
+export default function PigList({ herdId }: { herdId: string }) {
   const [pigList, setPigList] = React.useState<Pig[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
@@ -99,7 +99,7 @@ export default function PigList() {
 
   React.useEffect(() => {
     fetchData();
-  }, [page, rowsPerPage]);
+  }, [herdId, page, rowsPerPage]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -121,9 +121,10 @@ export default function PigList() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response: ResponseObjectList<Pig> = await pigService.getPigs(page, rowsPerPage);
+      const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(herdId, 1, 5);
+      console.log("response: ", response);
       if (response.isSuccess) {
-        setPigList(response.data.data);
+        setPigList(response.data.data || []);
         setTotalRecords(response.data.totalRecords);
         setPage(response.data?.pageIndex);
         setPages(response.data?.totalPages);
@@ -349,7 +350,7 @@ export default function PigList() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Không có kết quả"} loadingState={isLoading || !pigList.length ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
+        <TableBody emptyContent={"Không có kết quả"} loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
           {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
         </TableBody>
       </Table>

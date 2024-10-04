@@ -440,7 +440,7 @@ const Vaccination = () => {
             )}
           </div>
         </div>
-        <div>{vaccinationData && <VaccinationStage data={vaccinationData.vaccinationStages} />}</div>
+        <div>{vaccinationData?.vaccinationStages && <VaccinationStage data={vaccinationData?.vaccinationStages} />}</div>
       </div>
     </div>
   );

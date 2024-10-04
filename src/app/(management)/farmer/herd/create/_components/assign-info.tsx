@@ -144,6 +144,7 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
   React.useEffect(() => {
     if (isOpen === true) {
       getCages();
+      setTag(Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
     }
   }, [isOpen]);
 
@@ -180,6 +181,7 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
                   placeholder="Nhập cân nặng"
                   labelPlacement="outside"
                   isRequired
+                  endContent="kg"
                   isInvalid={weight ? false : true}
                   errorMessage="Cân nặng không được để trống"
                   value={weight || ""}
@@ -212,6 +214,7 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
                   placeholder="Nhập chiều cao"
                   labelPlacement="outside"
                   isRequired
+                  endContent="cm"
                   isInvalid={height ? false : true}
                   errorMessage="Chiều cao không được để trống"
                   value={height || ""}
@@ -226,6 +229,7 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
                   placeholder="Nhập chiều rộng"
                   labelPlacement="outside"
                   isRequired
+                  endContent="cm"
                   isInvalid={width ? false : true}
                   errorMessage="Chiều rộng không được để trống"
                   value={width || ""}

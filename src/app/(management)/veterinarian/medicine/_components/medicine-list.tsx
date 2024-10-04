@@ -26,10 +26,28 @@ import { Medicine } from "@oursrc/lib/models/medicine";
 import { EditIcon, EyeIcon, Plus, Search, Trash2Icon } from "lucide-react";
 import React from "react";
 import { HiChevronDown } from "react-icons/hi";
-import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "../data";
-import MedicineModal from "./_modals/modal-medicine";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+
+const columns = [
+  { name: "TÊN", uid: "name", sortable: true },
+  {
+    name: "THÀNH PHẦN CHÍNH",
+    uid: "mainIngredient",
+    sortable: true,
+  },
+  { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
+  { name: "SỐ ĐĂNG KÝ", uid: "registerNumber", sortable: true },
+  { name: "TRỌNG LƯỢNG", uid: "netWeight", sortable: true },
+  { name: "TÌNH TRẠNG SỬ DỤNG", uid: "usage", sortable: true },
+  { name: "ĐƠN VỊ", uid: "unit", sortable: true },
+  { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
+  { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
+];
+
+const INITIAL_VISIBLE_COLUMNS = ["unit", "name", "mainIngredient", "quantity", "registerNumber", "netWeight", "usage"];
+
+const statusOptions = [{ name: "", uid: "" }];
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -39,15 +57,6 @@ const statusColorMap: Record<string, ChipProps["color"]> = {
 
 export default function MedicineList() {
   const { toast } = useToast();
-
-  //Modal field
-  const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
-  const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
-  const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure();
-  // const [updateId, setUpdateId] = React.useState<string>("");
-  const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | null>(null);
-  const [context, setContext] = React.useState<"create" | "edit" | "detail">("create");
-  const [submitDone, setSubmitDone] = React.useState<boolean>(false);
 
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
@@ -87,20 +96,9 @@ export default function MedicineList() {
   const [loading, setLoading] = React.useState(false);
   const loadingState = loading || medicineList?.length === 0 ? "loading" : "idle";
 
-  //Use Effect
-  // React.useEffect(() => {
-  //   if (submitDone) {
-  //     onClose();
-  //     fetchData();
-  //     setSubmitDone(false);
-  //   }
-  // }, [submitDone]);
-
   React.useEffect(() => {
-    if (!isOpenAdd && !isOpenEdit && !isOpenDelete) {
-      fetchData();
-    }
-  }, [page, rowsPerPage, isOpenAdd, isOpenEdit, isOpenDelete]);
+    fetchData();
+  }, [page, rowsPerPage]);
 
   //API function
   const fetchData = async () => {
@@ -125,29 +123,6 @@ export default function MedicineList() {
     }
   };
 
-  // const onEdit = async (data: Medicine) => {
-  //   setContext("edit");
-  //   setUpdateId(data.id);
-  //   onOpen();
-  // };
-
-  // const onDelete = async (data: Medicine) => {
-  //   try {
-  //     const response = await medicineService.deleteMedicine(data.id);
-  //     if (response.isSuccess) {
-  //       fetchData();
-  //     } else {
-  //       throw new AggregateError(response.errorMessage);
-  //     }
-  //   } catch (e) {
-  //     setLoading(false);
-  //     toast({
-  //       variant: "destructive",
-  //       title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
-  //     });
-  //   }
-  // };
-
   const items = React.useMemo(() => {
     return filteredItems;
   }, [filteredItems]);
@@ -162,12 +137,11 @@ export default function MedicineList() {
     });
   }, [sortDescriptor, items]);
 
-  //call api
   const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(Number(e.target.value));
     setPage(1);
   }, []);
-  //call api
+
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
       setFilterValue(value);
@@ -217,9 +191,6 @@ export default function MedicineList() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button color="primary" endContent={<Plus />} onPress={onOpenAdd}>
-              Tạo mới
-            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -249,36 +220,6 @@ export default function MedicineList() {
           <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
             <p className="truncate">{cellValue}</p>
           </Tooltip>
-        );
-      case "actions":
-        return (
-          <div className="flex justify-end items-center gap-2">
-            <Tooltip content="Chi tiết">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EyeIcon />
-              </span>
-            </Tooltip>
-            <Tooltip content="Chỉnh sửa">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EditIcon
-                  onClick={() => {
-                    setSelectedMedicine(data);
-                    onOpenEdit();
-                  }}
-                />
-              </span>
-            </Tooltip>
-            <Tooltip color="danger" content="Xóa">
-              <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                <Trash2Icon
-                  onClick={() => {
-                    setSelectedMedicine(data);
-                    onOpenDelete();
-                  }}
-                />
-              </span>
-            </Tooltip>
-          </div>
         );
       default:
         return cellValue;
@@ -329,9 +270,6 @@ export default function MedicineList() {
           )}
         </TableBody>
       </Table>
-      {isOpenAdd && <MedicineModal isOpen={isOpenAdd} onClose={onCloseAdd} context="create" />}
-      {isOpenEdit && <MedicineModal isOpen={isOpenEdit} onClose={onCloseEdit} context="edit" medicine={selectedMedicine || undefined} />}
-      {isOpenDelete && <MedicineModal isOpen={isOpenDelete} onClose={onCloseDelete} context="delete" medicine={selectedMedicine || undefined} />}
     </div>
   );
 }

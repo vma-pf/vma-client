@@ -131,7 +131,7 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
           </DropdownMenu>
         </Dropdown>
       </div>
-      {filterVaccination(filterStatus).length === 0 ? (
+      {data.length === 0 || filterVaccination(filterStatus).length === 0 ? (
         <p className="text-center text-lg mt-3">Không có lịch trình tiêm phòng</p>
       ) : (
         filterVaccination(filterStatus)
