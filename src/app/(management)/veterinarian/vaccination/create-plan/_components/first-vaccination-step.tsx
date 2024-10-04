@@ -37,7 +37,7 @@ type Stage = {
   vaccinationToDos: [];
 };
 
-const FirstVaccinationStep = ({setStep}: any) => {
+const FirstVaccinationStep = ({setStep, setVaccinationPlanFirstStepResult}: any) => {
   //State
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
@@ -47,7 +47,7 @@ const FirstVaccinationStep = ({setStep}: any) => {
   const [stages, setStages] = React.useState<Stage[]>([
     { 
       title: "",
-      timeSpan: "",
+      timeSpan: "1",
       applyStageTime: today(getLocalTimeZone()),
       vaccinationToDos: [],
     },
@@ -136,8 +136,8 @@ const FirstVaccinationStep = ({setStep}: any) => {
     setStep(2)
     return;
     try {
-      data.startDate = date.start.toString();
-      data.expectedEndDate = date.end.toString();
+      data.startDate = new Date(date.start.toString()).toISOString();
+      data.expectedEndDate = new Date(date.end.toString()).toISOString();
 
       const validateStages = stages.filter(
         (x: Stage) => x.title === ""
@@ -150,11 +150,11 @@ const FirstVaccinationStep = ({setStep}: any) => {
         return;
       }
       //prepare request
-      const stagesRequest = stages.map((x: any) => ({
+      const stagesRequest = stages.map((x: Stage) => ({
         ...x,
         vaccinationStages: [{ description: "" }],
         isDone: false,
-        applyStageTime: x.applyStageTime.toString(),
+        applyStageTime: new Date(x.applyStageTime.toString()).toISOString(),
       }));
 
       const request = {
@@ -168,9 +168,11 @@ const FirstVaccinationStep = ({setStep}: any) => {
       if (response && response.isSuccess) {
         toast({
           variant: "success",
-          title: response.data,
+          title: 'Tạo thành công bước 1',
+          description: 'Đã tạo thành công lịch tiêm phòng bước 1! Vui lòng qua bước 2 để thêm thuốc cho giai đoạn'
         });
         setStep(2)
+        setVaccinationPlanFirstStepResult(response.data)
       }else {
         throw new AggregateError([new Error()], response.errorMessage);
       }

@@ -5,12 +5,13 @@ import SecondVaccinationStep from "./_components/second-vaccination-step";
 
 const CreatePlan = () => {
   const [step, setStep] = React.useState<number>(1);
+  const [vaccinationPlanFirstStepResult, setVaccinationPlanFirstStepResult] = React.useState<any>()
   return (
     <div>
       {step === 1 ? (
-        <FirstVaccinationStep setStep={setStep} />
+        <FirstVaccinationStep setStep={setStep} setVaccinationPlanFirstStepResult={setVaccinationPlanFirstStepResult} />
       ) : (
-        <SecondVaccinationStep setStep={setStep} />
+        <SecondVaccinationStep setStep={setStep} vaccinationPlan={vaccinationPlanFirstStepResult} />
       )}
     </div>
   );
