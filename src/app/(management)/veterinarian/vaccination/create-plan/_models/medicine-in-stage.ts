@@ -7,7 +7,9 @@ export type MedicineInStage = {
 
 export type MedicineEachStage = {
   medicineId: string;
-  isPurchaseNeeded: boolean;
-  newMedicineName: string;
+  medicineName: string;
+  quantity: number;
+  netWeight: string,
+  unit: string,
   portionEachPig: number;
 };

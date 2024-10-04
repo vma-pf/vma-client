@@ -133,8 +133,6 @@ const FirstVaccinationStep = ({setStep, setVaccinationPlanFirstStepResult}: any)
   };
 
   const handleSubmitForm = async (data: any) => {
-    setStep(2)
-    return;
     try {
       data.startDate = new Date(date.start.toString()).toISOString();
       data.expectedEndDate = new Date(date.end.toString()).toISOString();

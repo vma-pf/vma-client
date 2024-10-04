@@ -7,14 +7,13 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Spinner,
-  Switch,
   Tab,
-  Tabs,
+  Tabs
 } from "@nextui-org/react";
 import MedicinesListReadOnly from "@oursrc/components/medicines/medicines-list-read-only";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { v4 as uuidv4 } from "uuid";
 
 const AddMedicineToStageModal = ({
   isOpen,
@@ -26,21 +25,26 @@ const AddMedicineToStageModal = ({
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
       newMedicineName: "",
-      isPurchaseNeeded: false,
       portionEachPig: 0,
     },
   });
   const onSubmitNewMedicine = (data: any) => {
     switch (currentTab) {
       case "existed":
-        setSelectedMedicine(selectedMed);
+        setSelectedMedicine({
+          ...selectedMed,
+          portionEachPig: data.portionEachPig,
+          type: "existed",
+        });
         return;
       case "new":
         setSelectedMedicine({
+          id: uuidv4(),
           unit: "",
           name: data.newMedicineName,
           mainIngredient: "",
@@ -49,9 +53,15 @@ const AddMedicineToStageModal = ({
           netWeight: "",
           usage: "",
           batches: [],
+          portionEachPig: data.portionEachPig,
+          type: "new",
         });
         return;
     }
+    reset({
+      newMedicineName: "",
+      portionEachPig: 0,
+    });
   };
   return (
     <div>
@@ -59,6 +69,7 @@ const AddMedicineToStageModal = ({
         backdrop="opaque"
         isOpen={isOpen}
         size="5xl"
+        placement="top"
         onOpenChange={onOpenChange}
       >
         <ModalContent>
@@ -71,10 +82,18 @@ const AddMedicineToStageModal = ({
                 <ModalBody>
                   <Tabs onSelectionChange={(e) => setCurrentTab(e)}>
                     <Tab key="existed" title="Thuốc trong kho">
+                      <Input
+                        type="number"
+                        label="Số lượng liều mỗi con"
+                        isRequired
+                        isInvalid={errors.portionEachPig ? true : false}
+                        errorMessage="Số lượng liều mỗi con không được để trống"
+                        {...register("portionEachPig", { required: true })}
+                      />
                       <MedicinesListReadOnly setSelected={setSelectedMed} />
                     </Tab>
                     <Tab key="new" title="Tạo mới">
-                      <div>
+                      <div className="grid grid-cols-2 gap-4">
                         <Input
                           type="text"
                           label="Tên thuốc mới"
@@ -90,14 +109,14 @@ const AddMedicineToStageModal = ({
                         >
                           Yêu cầu mua mới
                         </Switch> */}
-                        {/* <Input
+                        <Input
                           type="number"
                           label="Số lượng liều mỗi con"
                           isRequired
                           isInvalid={errors.portionEachPig ? true : false}
                           errorMessage="Số lượng liều mỗi con không được để trống"
                           {...register("portionEachPig", { required: true })}
-                        /> */}
+                        />
                       </div>
                     </Tab>
                   </Tabs>

@@ -1,6 +1,7 @@
 import http from "@oursrc/lib/http";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { CreateVaccinationRequest } from "../models/vaccination";
+import { MedicineInStage } from "@oursrc/app/(management)/veterinarian/vaccination/create-plan/_models/medicine-in-stage";
 
 export const vaccinationService = {
   getVaccinationPlan: (id: string) =>
@@ -19,4 +20,6 @@ export const vaccinationService = {
       herdId: model.herdId,
       pigIds: model.pigIds,
     }),
+  addInventoryToVaccinationPlan: (data: MedicineInStage[]) =>
+    http.post<ResponseObject<any>>("add-inventory-to-vaccination-stage", data),
 };

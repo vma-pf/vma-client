@@ -272,6 +272,7 @@ const MedicinesListReadOnly = ({ setSelected }: any) => {
     <div>
       <Table
         layout="fixed"
+        color="primary"
         isStriped
         bottomContent={bottomContent}
         bottomContentPlacement="outside"

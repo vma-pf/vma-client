@@ -2,9 +2,14 @@
 import React from "react";
 import VaccinationList from "./_components/vaccination-list";
 import { FaRegCalendarPlus } from "react-icons/fa6";
-import { VaccinationData, VaccinationStageProps } from "./_components/vaccination";
+import {
+  VaccinationData,
+  VaccinationStageProps,
+} from "./_components/vaccination";
 import VaccinationStage from "./_components/vaccination-stage";
-import { Accordion, AccordionItem } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
 
 const vaccinationData: VaccinationData[] = [
   {
@@ -215,17 +220,37 @@ const herd = {
   ],
 };
 const Vaccination = () => {
-  const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(new Set<string>());
+  const router = useRouter();
+  const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(
+    new Set<string>()
+  );
 
   const findVaccination = (id: Set<String>) => {
-    return vaccinationData.find((vaccination) => vaccination.id === id.values().next().value);
+    return vaccinationData.find(
+      (vaccination) => vaccination.id === id.values().next().value
+    );
   };
 
   return (
     <div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <p className="text-xl mb-3">Trước tiên, hãy chọn lịch tiêm phòng</p>
-        <VaccinationList data={vaccinationData} setSelectedVaccination={setSelectedVaccinationId} />
+        <div className="flex justify-between">
+          <p className="text-xl mb-3">Trước tiên, hãy chọn lịch tiêm phòng</p>
+          <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+            <Button
+              size="sm"
+              color="primary"
+              onClick={() => router.push("/veterinarian/vaccination/create-plan")}
+            >
+              <span>Tạo lịch tiêm phòng</span>
+              <Plus />
+            </Button>
+          </span>
+        </div>
+        <VaccinationList
+          data={vaccinationData}
+          setSelectedVaccination={setSelectedVaccinationId}
+        />
       </div>
       <div className="mb-3 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <div className="flex flex-shrink gap-5">
@@ -235,32 +260,48 @@ const Vaccination = () => {
               <div>
                 <div className="mby-2 flex items-center">
                   <FaRegCalendarPlus className="my-auto mr-4 text-3xl" />
-                  <p className="my-auto text-2xl font-bold mt-3">{findVaccination(selectedVaccinationId)?.title}</p>
+                  <p className="my-auto text-2xl font-bold mt-3">
+                    {findVaccination(selectedVaccinationId)?.title}
+                  </p>
                 </div>
-                <p className="text-lg mt-3">{findVaccination(selectedVaccinationId)?.description}</p>
+                <p className="text-lg mt-3">
+                  {findVaccination(selectedVaccinationId)?.description}
+                </p>
                 <div className="flex justify-between">
                   <p className="text-md mt-3">Phân loại:</p>
-                  <p className="text-lg mt-3 font-semibold">{findVaccination(selectedVaccinationId)?.type}</p>
+                  <p className="text-lg mt-3 font-semibold">
+                    {findVaccination(selectedVaccinationId)?.type}
+                  </p>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-md mt-3">Ngày bắt đầu:</p>
-                  <p className="text-lg mt-3 font-semibold">{findVaccination(selectedVaccinationId)?.startDate}</p>
+                  <p className="text-lg mt-3 font-semibold">
+                    {findVaccination(selectedVaccinationId)?.startDate}
+                  </p>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-md mt-3">Ngày kết thúc (dự kiến):</p>
-                  <p className="text-lg mt-3 font-semibold">{findVaccination(selectedVaccinationId)?.expectedEndDate}</p>
+                  <p className="text-lg mt-3 font-semibold">
+                    {findVaccination(selectedVaccinationId)?.expectedEndDate}
+                  </p>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-md mt-3">Ngày kết thúc (thực tế):</p>
-                  <p className="text-lg mt-3 font-semibold">{findVaccination(selectedVaccinationId)?.actualEndDate}</p>
+                  <p className="text-lg mt-3 font-semibold">
+                    {findVaccination(selectedVaccinationId)?.actualEndDate}
+                  </p>
                 </div>
                 <div className="flex justify-between">
                   <p className="text-md mt-3">Ghi chú:</p>
-                  <p className="text-lg mt-3 font-semibold">{findVaccination(selectedVaccinationId)?.note}</p>
+                  <p className="text-lg mt-3 font-semibold">
+                    {findVaccination(selectedVaccinationId)?.note}
+                  </p>
                 </div>
               </div>
             ) : (
-              <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>
+              <p className="text-center text-lg mt-3">
+                Chưa chọn lịch tiêm phòng
+              </p>
             )}
           </div>
           <div className="p-3 border-2 rounded-2xl w-1/2">
@@ -300,11 +341,17 @@ const Vaccination = () => {
                 </div>
               </div>
             ) : (
-              <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>
+              <p className="text-center text-lg mt-3">
+                Chưa chọn lịch tiêm phòng
+              </p>
             )}
           </div>
         </div>
-        <div>{findVaccination(selectedVaccinationId) && <VaccinationStage data={vaccinationStage} />}</div>
+        <div>
+          {findVaccination(selectedVaccinationId) && (
+            <VaccinationStage data={vaccinationStage} />
+          )}
+        </div>
       </div>
     </div>
   );
