@@ -24,6 +24,7 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
     column: "title",
     direction: "ascending",
   });
+  const [isLoading, setIsLoading] = React.useState(false);
   const [vaccinationList, setVaccinationList] = React.useState<VaccinationData[]>([]);
   const [filterValue, setFilterValue] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<Selection>(new Set([]));
@@ -63,6 +64,7 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
 
   const getAllVaccinationPlan = async () => {
     try {
+      setIsLoading(true);
       const res: ResponseObjectList<VaccinationData> = await vaccinationService.getAllVaccinationPlan(1, 500);
       console.log("res: ", res);
       if (res && res.isSuccess) {
@@ -72,6 +74,8 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
       }
     } catch (error) {
       console.log("Error: ", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -109,7 +113,7 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
           Tình trạng
         </TableColumn>
       </TableHeader>
-      <TableBody loadingContent={<Spinner label="Loading..." />} items={sortedItems}>
+      <TableBody loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
         {vaccinationList.map((data: VaccinationData) => (
           <TableRow key={data.id}>
             <TableCell>{data.title}</TableCell>

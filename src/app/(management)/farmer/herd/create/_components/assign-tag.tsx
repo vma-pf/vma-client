@@ -83,8 +83,6 @@ const AssignTag = () => {
       const herdData: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "{}");
       const res: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(herdData.id, 1, 500);
       if (res && res.isSuccess) {
-        console.log(res.data.data);
-
         setAssignedPigs(res.data.data);
       } else {
         toast({
