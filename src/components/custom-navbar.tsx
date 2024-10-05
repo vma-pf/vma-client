@@ -28,6 +28,7 @@ const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; pref
       setIsLoading(true);
       await authService.logoutFromNextClientToNextServer();
       localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       router.push("/login");
       toast({
         title: "Đăng xuất thành công",

@@ -99,7 +99,7 @@ const AddEditForm = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
     setValue("code", cage?.code ? cage?.code : "");
     setValue("capacity", cage?.capacity ? cage?.capacity.toString() : "");
     setValue("description", cage?.description ? cage?.description : "");
-  }, []);
+  }, [cage, setValue]);
   return (
     <Modal
       isOpen={isOpen}

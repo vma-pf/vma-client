@@ -1,6 +1,4 @@
 import { cookies } from "next/headers";
-import { apiRequest } from "@oursrc/app/(auth)/api-request";
-import { HttpError } from "@oursrc/lib/http";
 
 export async function POST(request: Request) {
   const cookieStore = cookies();

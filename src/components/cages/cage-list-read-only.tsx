@@ -16,7 +16,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip
+  Tooltip,
 } from "@nextui-org/react";
 import { capitalize } from "@oursrc/components/utils";
 import { useToast } from "@oursrc/hooks/use-toast";
@@ -27,23 +27,13 @@ import React from "react";
 import { HiChevronDown } from "react-icons/hi";
 import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "./models/cage-table-data";
 
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  active: "success",
-  sick: "warning",
-  dead: "danger",
-};
-
-export default function CageListReadOnly({setSelected}: any) {
+export default function CageListReadOnly({ setSelected }: any) {
   const { toast } = useToast();
 
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
-  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
-    new Set([])
-  );
-  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
-    new Set(INITIAL_VISIBLE_COLUMNS)
-  );
+  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
+  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(1);
@@ -59,9 +49,7 @@ export default function CageListReadOnly({setSelected}: any) {
   const headerColumns = React.useMemo(() => {
     if (visibleColumns === "all") return columns;
 
-    return columns.filter((column: any) =>
-      Array.from(visibleColumns).includes(column.uid)
-    );
+    return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
   const [cageList, setCageList] = React.useState<Cage[]>([]);
 
@@ -71,10 +59,10 @@ export default function CageListReadOnly({setSelected}: any) {
   //Use Effect
   React.useEffect(() => {
     const id = Array.from(selectedKeys)[0];
-    if(id){
-      setSelected(cageList.find(x => x.id === id))
+    if (id) {
+      setSelected(cageList.find((x) => x.id === id));
     }
-  },[selectedKeys])
+  }, [selectedKeys]);
 
   React.useEffect(() => {
     fetchData();
@@ -96,10 +84,7 @@ export default function CageListReadOnly({setSelected}: any) {
     } catch (e) {
       toast({
         variant: "destructive",
-        title:
-          e instanceof AggregateError
-            ? e.message
-            : "Lỗi hệ thống. Vui lòng thử lại sau!",
+        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     } finally {
       setLoading(false);
@@ -110,17 +95,10 @@ export default function CageListReadOnly({setSelected}: any) {
     let cloneFilteredItems: Cage[] = [...cageList];
 
     if (hasSearchFilter) {
-      cloneFilteredItems = cloneFilteredItems.filter((item) =>
-        item.code.toLowerCase().includes(filterValue.toLowerCase())
-      );
+      cloneFilteredItems = cloneFilteredItems.filter((item) => item.code.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (
-      statusFilter !== "all" &&
-      Array.from(statusFilter).length !== statusOptions.length
-    ) {
-      cloneFilteredItems = cloneFilteredItems.filter((item) =>
-        Array.from(statusFilter).includes(item.code as string)
-      );
+    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
+      cloneFilteredItems = cloneFilteredItems.filter((item) => Array.from(statusFilter).includes(item.code as string));
     }
     return cloneFilteredItems;
   }, [cageList, filterValue, statusFilter]);
@@ -140,13 +118,10 @@ export default function CageListReadOnly({setSelected}: any) {
   }, [sortDescriptor, items]);
 
   //call api
-  const onRowsPerPageChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setRowsPerPage(Number(e.target.value));
-      setPage(1);
-    },
-    []
-  );
+  const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRowsPerPage(Number(e.target.value));
+    setPage(1);
+  }, []);
   //call api
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
@@ -178,10 +153,7 @@ export default function CageListReadOnly({setSelected}: any) {
           <div className="flex gap-3">
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<HiChevronDown className="text-small" />}
-                  variant="flat"
-                >
+                <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
                   Hiển thị cột
                 </Button>
               </DropdownTrigger>
@@ -206,15 +178,10 @@ export default function CageListReadOnly({setSelected}: any) {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-default-400 text-small">
-            Tổng cộng {totalRecords} kết quả
-          </span>
+          <span className="text-default-400 text-small">Tổng cộng {totalRecords} kết quả</span>
           <label className="flex items-center text-default-400 text-small">
             Số hàng mỗi trang:
-            <select
-              className="bg-transparent outline-none text-default-400 text-small"
-              onChange={onRowsPerPageChange}
-            >
+            <select className="bg-transparent outline-none text-default-400 text-small" onChange={onRowsPerPageChange}>
               <option value="5">5</option>
               <option value="10">10</option>
               <option value="15">15</option>
@@ -223,76 +190,48 @@ export default function CageListReadOnly({setSelected}: any) {
         </div>
       </div>
     );
-  }, [
-    filterValue,
-    statusFilter,
-    visibleColumns,
-    onSearchChange,
-    onRowsPerPageChange,
-    cageList.length,
-    hasSearchFilter,
-  ]);
+  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, cageList.length, hasSearchFilter]);
 
-  const renderCell = React.useCallback(
-    (data: Cage, columnKey: React.Key) => {
-      const cellValue = data[columnKey as keyof Cage];
+  const renderCell = React.useCallback((data: Cage, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof Cage];
 
-      switch (columnKey) {
-        case "description":
-          return (
-            <Tooltip
-              showArrow={true}
-              content={cellValue}
-              color="primary"
-              delay={1000}
-            >
-              <p className="truncate cursor-default">{cellValue}</p>
-            </Tooltip>
-          );
-        // case "actions":
-        //   return (
-        //     <div className="flex justify-end items-center gap-2">
-        //       <Tooltip content="Chi tiết">
-        //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-        //           <EyeIcon />
-        //         </span>
-        //       </Tooltip>
-        //       <Tooltip content="Chỉnh sửa">
-        //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-        //           <EditIcon onClick={() => onEdit(data)} />
-        //         </span>
-        //       </Tooltip>
-        //       <Tooltip color="danger" content="Xóa">
-        //         <span className="text-lg text-danger cursor-pointer active:opacity-50">
-        //           <Trash2Icon onClick={() => onDelete(data)} />
-        //         </span>
-        //       </Tooltip>
-        //     </div>
-        //   );
-        default:
-          return cellValue;
-      }
-    },
-    []
-  );
+    switch (columnKey) {
+      case "description":
+        return (
+          <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
+            <p className="truncate cursor-default">{cellValue}</p>
+          </Tooltip>
+        );
+      // case "actions":
+      //   return (
+      //     <div className="flex justify-end items-center gap-2">
+      //       <Tooltip content="Chi tiết">
+      //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+      //           <EyeIcon />
+      //         </span>
+      //       </Tooltip>
+      //       <Tooltip content="Chỉnh sửa">
+      //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+      //           <EditIcon onClick={() => onEdit(data)} />
+      //         </span>
+      //       </Tooltip>
+      //       <Tooltip color="danger" content="Xóa">
+      //         <span className="text-lg text-danger cursor-pointer active:opacity-50">
+      //           <Trash2Icon onClick={() => onDelete(data)} />
+      //         </span>
+      //       </Tooltip>
+      //     </div>
+      //   );
+      default:
+        return cellValue;
+    }
+  }, []);
 
   const bottomContent = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">
-          {selectedKeys === "all"
-            ? "Đã chọn tất cả"
-            : `Đã chọn ${selectedKeys.size} kết quả`}
-        </span>
-        <Pagination
-          isCompact
-          showControls
-          showShadow
-          color="primary"
-          page={page}
-          total={totalPages}
-          onChange={setPage}
-        />
+        <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
+        <Pagination isCompact showControls showShadow color="primary" page={page} total={totalPages} onChange={setPage} />
         <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
       </div>
     );
@@ -320,26 +259,15 @@ export default function CageListReadOnly({setSelected}: any) {
       >
         <TableHeader columns={headerColumns}>
           {(column: any) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
-              allowsSorting={column.sortable}
-            >
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
               {column.name.toUpperCase()}
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody
-          emptyContent={"Không có kết quả"}
-          items={sortedItems}
-          loadingContent={<Spinner />}
-          loadingState={loadingState}
-        >
+        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loadingState}>
           {(item) => (
             <TableRow key={item.id} className="h-12">
-              {(columnKey) => (
-                <TableCell>{renderCell(item, columnKey)}</TableCell>
-              )}
+              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
             </TableRow>
           )}
         </TableBody>

@@ -23,15 +23,7 @@ import { toast } from "@oursrc/hooks/use-toast";
 import { Cage } from "@oursrc/lib/models/cage";
 import { Pig } from "@oursrc/lib/models/pig";
 import { pigService } from "@oursrc/lib/services/pigService";
-import {
-  CheckIcon,
-  CircleCheck,
-  CircleDashed,
-  CircleX,
-  Filter,
-  Plus,
-  Trash2Icon,
-} from "lucide-react";
+import { CheckIcon, CircleCheck, CircleDashed, CircleX, Filter, Plus, Trash2Icon } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import PopOverPigList from "./popover-pig-list";
@@ -50,8 +42,7 @@ const FirstVaccinationStep = () => {
   const [selectedPigNumber, setSelectedPigNumber] = React.useState<number>(0);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
   const [openBy, setOpenBy] = React.useState<string>("");
-  const [openSelectedPigsByHerdCage, setOpenSelectedPigsByHerdCage] =
-    React.useState<boolean>(false);
+  const [openSelectedPigsByHerdCage, setOpenSelectedPigsByHerdCage] = React.useState<boolean>(false);
   const [stages, setStages] = React.useState<Stages[]>([
     {
       title: "",
@@ -62,9 +53,7 @@ const FirstVaccinationStep = () => {
   ]);
   const [date, setDate] = React.useState<RangeValue<CalendarDate>>({
     start: parseDate(new Date().toJSON().slice(0, 10)),
-    end: parseDate(
-      new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)
-    ),
+    end: parseDate(new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)),
   });
 
   const {
@@ -94,11 +83,7 @@ const FirstVaccinationStep = () => {
 
   const fetchData = async () => {
     try {
-      const response = await pigService.getPigsByCageId(
-        selectedCage?.id ?? "",
-        1,
-        100
-      );
+      const response = await pigService.getPigsByCageId(selectedCage?.id ?? "", 1, 100);
       if (response.isSuccess) {
         setAllSelectedPigs(response.data.data);
       } else {
@@ -107,10 +92,7 @@ const FirstVaccinationStep = () => {
     } catch (e) {
       toast({
         variant: "destructive",
-        title:
-          e instanceof AggregateError
-            ? e.message
-            : "Lỗi hệ thống. Vui lòng thử lại sau!",
+        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     }
   };
@@ -173,13 +155,7 @@ const FirstVaccinationStep = () => {
       <div className="container mx-auto">
         <form onSubmit={handleSubmit(handleSubmitForm)}>
           <div className="flex justify-end">
-            <Button
-              color="primary"
-              variant="solid"
-              isDisabled={errors && Object.keys(errors).length > 0}
-              size="lg"
-              type="submit"
-            >
+            <Button color="primary" variant="solid" isDisabled={errors && Object.keys(errors).length > 0} size="lg" type="submit">
               <p className="text-white">Bước tiếp theo</p>
             </Button>
           </div>
@@ -250,44 +226,25 @@ const FirstVaccinationStep = () => {
               <Card className="mt-2" radius="sm">
                 <CardBody>
                   <div className="mb-1 flex justify-between">
-                    <h3>
-                      Chọn heo theo {openBy === "cage" ? "Chuồng" : "Đàn"}
-                    </h3>
+                    <h3>Chọn heo theo {openBy === "cage" ? "Chuồng" : "Đàn"}</h3>
                     <Popover key="select" placement="bottom">
                       <PopoverTrigger>
                         <Button startContent={<Filter size={20} />}></Button>
                       </PopoverTrigger>
                       <PopoverContent>
                         <div className="flex flex-col px-1 py-2">
-                          <Button
-                            className="mb-2"
-                            color="primary"
-                            variant="solid"
-                            isDisabled={false}
-                            size="sm"
-                            onClick={() => onOpenSelectedPigsByHerdCage("herd")}
-                          >
+                          <Button className="mb-2" color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("herd")}>
                             <p className="text-white">Chọn theo đàn</p>
                           </Button>
-                          <Button
-                            color="primary"
-                            variant="solid"
-                            isDisabled={false}
-                            size="sm"
-                            onClick={() => onOpenSelectedPigsByHerdCage("cage")}
-                          >
+                          <Button color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("cage")}>
                             <p className="text-white">Chọn theo chuồng</p>
                           </Button>
                         </div>
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <Divider orientation="horizontal"/>
-                  {openBy === "cage" ? (
-                    <CageListReadOnly setSelected={setSelectedCage} />
-                  ) : (
-                    ""
-                  )}
+                  <Divider orientation="horizontal" />
+                  {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCage} /> : ""}
                 </CardBody>
               </Card>
             </div>
@@ -306,7 +263,7 @@ const FirstVaccinationStep = () => {
           </div>
           {stages.map((stage, index) => {
             return (
-              <Card className="pt-4 px-4 mt-2">
+              <Card key={index} className="pt-4 px-4 mt-2">
                 <div className="flex flex-row justify-between">
                   <div className="w-full grid grid-cols-4 gap-4">
                     <Input
@@ -336,9 +293,7 @@ const FirstVaccinationStep = () => {
                   </div>
                   <div className="flex flex-row items-start">
                     <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                      {stages.length > 1 && (
-                        <Trash2Icon onClick={() => onDeleteStage(index)} />
-                      )}
+                      {stages.length > 1 && <Trash2Icon onClick={() => onDeleteStage(index)} />}
                     </span>
                   </div>
                 </div>

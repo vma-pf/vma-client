@@ -138,7 +138,7 @@ const Herd = () => {
       </div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-2xl font-bold mb-3">Danh sách heo</p>
-        <PigList herdId={selectedHerd?.id ?? ""} />
+        <PigList selectedHerd={selectedHerd as HerdInfo} />
       </div>
     </div>
   );

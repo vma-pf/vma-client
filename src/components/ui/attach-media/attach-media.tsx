@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { FaUpload } from "react-icons/fa6";
 import { LuImage } from "react-icons/lu";
 
@@ -32,7 +33,7 @@ const AttachMedia = ({
             <p className="text-sm text-default-400">Chọn ảnh từ máy tính</p>
           </label>
         ) : (
-          <img
+          <Image
             className="w-full h-fit p-2 object-cover cursor-pointer"
             onClick={handleRemoveImage}
             src={typeof selectedFile === "object" ? URL.createObjectURL(selectedFile) : selectedFile}

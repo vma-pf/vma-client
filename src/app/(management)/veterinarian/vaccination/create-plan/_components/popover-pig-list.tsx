@@ -7,7 +7,7 @@ const PopOverPigList = ({ pigs }: any) => {
       <div className="p-2">
         {pigs.map((x: Pig) => {
           return (
-            <div className="mt-2 flex justify-between items-center">
+            <div key={x.id} className="mt-2 flex justify-between items-center">
               <h2 className="mr-24 truncate">{x.pigCode}</h2>
               <Chip color="success">{x.breed}</Chip>
             </div>

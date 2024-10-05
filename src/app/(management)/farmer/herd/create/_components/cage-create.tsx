@@ -80,9 +80,6 @@ const CageCreate = () => {
             Bỏ qua bước này
           </Button>
         </div>
-        <div className="w-100">
-          <AttachMedia size="1/2" />
-        </div>
         <div className="mt-12">
           <h1 className="text-xl">Thông tin chuồng</h1>
         </div>
