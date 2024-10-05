@@ -138,7 +138,7 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
           ?.filter((vaccination) => vaccination.applyStageTime >= new Date().toISOString())
           ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
           ?.map((stage) => (
-            <div className="my-4 grid grid-cols-12 p-2 border-2 rounded-xl">
+            <div key={stage.id} className="my-4 grid grid-cols-12 p-2 border-2 rounded-xl">
               <div className="col-span-2 flex items-center justify-center border-r-2">
                 <p className="text-center text-lg p-2">{dateConverter(stage.applyStageTime)}</p>
               </div>
@@ -208,7 +208,7 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
                   <div className="grid grid-cols-2">
                     {medicineList?.length > 0 ? (
                       medicineList?.map((medicine) => (
-                        <div className="m-2 p-4 border-2 rounded-xl">
+                        <div key={medicine.id} className="m-2 p-4 border-2 rounded-xl">
                           <div className="grid grid-cols-12">
                             <Image className="my-auto col-span-2" src="/assets/vma-logo.png" alt="medicine" width={70} height={70} />
                             <div className="my-auto col-span-8">

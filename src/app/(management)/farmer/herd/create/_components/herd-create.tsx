@@ -109,9 +109,6 @@ const HerdCreate = () => {
         <div className="mt-12 mb-8">
           <h1 className="text-3xl">Tạo đàn mới</h1>
         </div>
-        <div className="w-100">
-          <AttachMedia size="1/2" />
-        </div>
         <div className="mt-12">
           <h1 className="text-xl">Thông tin đàn</h1>
         </div>

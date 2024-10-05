@@ -1,11 +1,8 @@
+import { ResponseObject } from "./models/response-object";
+import { decodeToken } from "./utils";
+
 // const SERVERURL = "https://hsc-sever-0r5m.onrender.com/api/v1"; // Replace with actual API URL
 const SERVERURL = "http://35.198.240.3:10000"; // Replace with actual API URL
-
-type ResponseObject = {
-  isSuccess: boolean;
-  data: any;
-  errorMessage: string | null;
-};
 
 type CustomOptions = RequestInit & {
   baseUrl?: string | undefined;

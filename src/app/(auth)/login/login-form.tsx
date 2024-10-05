@@ -25,10 +25,10 @@ const LoginForm = () => {
     try {
       setIsLoading(true);
       const res = await authService.login(data.username, data.password);
-      console.log(res);
       await authService.setTokenToCookie(res.data?.accessToken, res.data?.refreshToken);
       if (res.isSuccess === true) {
         localStorage.setItem("accessToken", res.data?.accessToken);
+        localStorage.setItem("refreshToken", res.data?.refreshToken);
         const role = decodeToken(res.data?.accessToken)?.role?.toLowerCase();
         if (role === ROLE.VETERINARIAN) {
           router.push("/veterinarian/dashboard");

@@ -54,9 +54,7 @@ const FirstVaccinationStep = ({setStep, setVaccinationPlanFirstStepResult}: any)
   ]);
   const [date, setDate] = React.useState<RangeValue<CalendarDate>>({
     start: parseDate(new Date().toJSON().slice(0, 10)),
-    end: parseDate(
-      new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)
-    ),
+    end: parseDate(new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)),
   });
 
   const {
@@ -124,10 +122,7 @@ const FirstVaccinationStep = ({setStep, setVaccinationPlanFirstStepResult}: any)
     } catch (e) {
       toast({
         variant: "destructive",
-        title:
-          e instanceof AggregateError
-            ? e.message
-            : "Lỗi hệ thống. Vui lòng thử lại sau!",
+        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     }
   };

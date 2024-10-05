@@ -31,6 +31,7 @@ import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
 import { Plus, Search } from "lucide-react";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { pigService } from "@oursrc/lib/services/pigService";
+import { HerdInfo } from "@oursrc/lib/models/herd";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   normal: "success",
@@ -59,7 +60,7 @@ const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export default function PigList({ herdId }: { herdId: string }) {
+export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
   const [pigList, setPigList] = React.useState<Pig[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
@@ -67,14 +68,14 @@ export default function PigList({ herdId }: { herdId: string }) {
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
-  const [pages, setPages] = React.useState(1);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [pages, setPages] = React.useState<number>(1);
+  const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "breed",
     direction: "ascending",
   });
 
-  const [page, setPage] = React.useState(1);
+  const [page, setPage] = React.useState<number>(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -98,8 +99,10 @@ export default function PigList({ herdId }: { herdId: string }) {
   }, [pigList, filterValue, statusFilter]);
 
   React.useEffect(() => {
-    fetchData();
-  }, [herdId, page, rowsPerPage]);
+    if (selectedHerd) {
+      fetchData();
+    }
+  }, [selectedHerd, page, rowsPerPage]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -121,14 +124,14 @@ export default function PigList({ herdId }: { herdId: string }) {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(herdId, 1, 5);
+      const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerd.id, 1, 5);
       console.log("response: ", response);
       if (response.isSuccess) {
         setPigList(response.data.data || []);
         setTotalRecords(response.data.totalRecords);
-        setPage(response.data?.pageIndex);
-        setPages(response.data?.totalPages);
-        setRowsPerPage(response.data?.pageSize);
+        setPage(response.data?.pageIndex || 1);
+        setPages(response.data?.totalPages || 1);
+        setRowsPerPage(response.data?.pageSize || 5);
       }
     } catch (error) {
       console.error("Error fetching pig data:", error);
