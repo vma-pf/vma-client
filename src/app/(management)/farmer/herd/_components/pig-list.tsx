@@ -32,6 +32,7 @@ import { Plus, Search } from "lucide-react";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { HerdInfo } from "@oursrc/lib/models/herd";
+import { Pig } from "@oursrc/lib/models/pig";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   normal: "success",
@@ -40,21 +41,6 @@ const statusColorMap: Record<string, ChipProps["color"]> = {
 };
 
 const INITIAL_VISIBLE_COLUMNS = ["breed", "pigCode", "cageCode", "herdId", "cageId", "vaccinationDate", "healthStatus", "actions"];
-
-type Pig = {
-  breed: string;
-  herdId: string;
-  cageId: string;
-  weight: number;
-  height: number;
-  width: number;
-  healthStatus: string | null;
-  lastUpdatedAt: Date;
-  vaccinationDate: Date;
-  pigCode: string;
-  cageCode: string | null;
-  id: string;
-};
 
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -124,14 +110,13 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerd.id, 1, 5);
+      const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerd.id, page, rowsPerPage);
       console.log("response: ", response);
       if (response.isSuccess) {
         setPigList(response.data.data || []);
         setTotalRecords(response.data.totalRecords);
-        setPage(response.data?.pageIndex || 1);
-        setPages(response.data?.totalPages || 1);
-        setRowsPerPage(response.data?.pageSize || 5);
+        setPages(response.data?.totalPages);
+        setRowsPerPage(response.data?.pageSize);
       }
     } catch (error) {
       console.error("Error fetching pig data:", error);

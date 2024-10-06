@@ -27,7 +27,7 @@ import React from "react";
 import { HiChevronDown } from "react-icons/hi";
 import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "./models/cage-table-data";
 
-export default function CageListReadOnly({setSelected}: any) {
+export default function CageListReadOnly({ setSelected }: any) {
   const { toast } = useToast();
 
   //Table field
@@ -54,12 +54,11 @@ export default function CageListReadOnly({setSelected}: any) {
   const [cageList, setCageList] = React.useState<Cage[]>([]);
 
   const [loading, setLoading] = React.useState(false);
-  const loadingState = loading || cageList?.length === 0 ? "loading" : "idle";
 
   //Use Effect
   React.useEffect(() => {
-    setSelected(cageList.filter(x => Array.from(selectedKeys).includes(x.id)))
-  },[selectedKeys])
+    setSelected(cageList.filter((x) => Array.from(selectedKeys).includes(x.id)));
+  }, [selectedKeys]);
 
   React.useEffect(() => {
     fetchData();
@@ -71,7 +70,7 @@ export default function CageListReadOnly({setSelected}: any) {
     try {
       const response = await cageService.getCages(page, rowsPerPage);
       if (response.isSuccess) {
-        setCageList(response.data.data);
+        setCageList(response.data.data || []);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
@@ -259,7 +258,7 @@ export default function CageListReadOnly({setSelected}: any) {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loadingState}>
+        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
           {(item) => (
             <TableRow key={item.id} className="h-12">
               {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}

@@ -19,6 +19,7 @@ const VetLayout = ({
     "/herd": "Quản lý đàn heo",
     "/medicine": "Quản lý thuốc",
     "/vaccination": "Lịch tiêm phòng",
+    "/vaccination/create-plan": "Tạo lịch tiêm phòng",
     "/treatment": "Kế hoạch điều trị",
     "/cage": "Quản lý chuồng",
     "/alert": "Cảnh báo",

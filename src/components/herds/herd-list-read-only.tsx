@@ -25,11 +25,7 @@ import { herdService } from "@oursrc/lib/services/herdService";
 import { Search } from "lucide-react";
 import React from "react";
 import { HiChevronDown } from "react-icons/hi";
-import {
-  columns,
-  INITIAL_VISIBLE_COLUMNS,
-  statusOptions,
-} from "./models/herd-table-data";
+import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "./models/herd-table-data";
 import { formatDate } from "@oursrc/lib/utils/datetime-utils";
 
 const HerdListReadOnly = ({ setSelected }: any) => {
@@ -37,12 +33,8 @@ const HerdListReadOnly = ({ setSelected }: any) => {
 
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
-  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
-    new Set([])
-  );
-  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
-    new Set(INITIAL_VISIBLE_COLUMNS)
-  );
+  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
+  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(1);
@@ -58,20 +50,15 @@ const HerdListReadOnly = ({ setSelected }: any) => {
   const headerColumns = React.useMemo(() => {
     if (visibleColumns === "all") return columns;
 
-    return columns.filter((column: any) =>
-      Array.from(visibleColumns).includes(column.uid)
-    );
+    return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
   const [herdList, setHerdList] = React.useState<Herd[]>([]);
 
   const [loading, setLoading] = React.useState(false);
-  const loadingState = loading || herdList?.length === 0 ? "loading" : "idle";
 
   //Use Effect
   React.useEffect(() => {
-    setSelected(
-      herdList.filter((x) => Array.from(selectedKeys).includes(x.id))
-    );
+    setSelected(herdList.filter((x) => Array.from(selectedKeys).includes(x.id)));
   }, [selectedKeys]);
 
   React.useEffect(() => {
@@ -99,10 +86,7 @@ const HerdListReadOnly = ({ setSelected }: any) => {
     } catch (e) {
       toast({
         variant: "destructive",
-        title:
-          e instanceof AggregateError
-            ? e.message
-            : "Lỗi hệ thống. Vui lòng thử lại sau!",
+        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     } finally {
       setLoading(false);
@@ -113,17 +97,10 @@ const HerdListReadOnly = ({ setSelected }: any) => {
     let cloneFilteredItems: Herd[] = [...herdList];
 
     if (hasSearchFilter) {
-      cloneFilteredItems = cloneFilteredItems.filter((item) =>
-        item.code.toLowerCase().includes(filterValue.toLowerCase())
-      );
+      cloneFilteredItems = cloneFilteredItems.filter((item) => item.code.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (
-      statusFilter !== "all" &&
-      Array.from(statusFilter).length !== statusOptions.length
-    ) {
-      cloneFilteredItems = cloneFilteredItems.filter((item) =>
-        Array.from(statusFilter).includes(item.code as string)
-      );
+    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
+      cloneFilteredItems = cloneFilteredItems.filter((item) => Array.from(statusFilter).includes(item.code as string));
     }
     return cloneFilteredItems;
   }, [herdList, filterValue, statusFilter]);
@@ -143,13 +120,10 @@ const HerdListReadOnly = ({ setSelected }: any) => {
   }, [sortDescriptor, items]);
 
   //call api
-  const onRowsPerPageChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setRowsPerPage(Number(e.target.value));
-      setPage(1);
-    },
-    []
-  );
+  const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRowsPerPage(Number(e.target.value));
+    setPage(1);
+  }, []);
   //call api
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
@@ -181,10 +155,7 @@ const HerdListReadOnly = ({ setSelected }: any) => {
           <div className="flex gap-3">
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<HiChevronDown className="text-small" />}
-                  variant="flat"
-                >
+                <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
                   Hiển thị cột
                 </Button>
               </DropdownTrigger>
@@ -209,15 +180,10 @@ const HerdListReadOnly = ({ setSelected }: any) => {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-default-400 text-small">
-            Tổng cộng {totalRecords} kết quả
-          </span>
+          <span className="text-default-400 text-small">Tổng cộng {totalRecords} kết quả</span>
           <label className="flex items-center text-default-400 text-small">
             Số hàng mỗi trang:
-            <select
-              className="bg-transparent outline-none text-default-400 text-small"
-              onChange={onRowsPerPageChange}
-            >
+            <select className="bg-transparent outline-none text-default-400 text-small" onChange={onRowsPerPageChange}>
               <option value="5">5</option>
               <option value="10">10</option>
               <option value="15">15</option>
@@ -226,15 +192,7 @@ const HerdListReadOnly = ({ setSelected }: any) => {
         </div>
       </div>
     );
-  }, [
-    filterValue,
-    statusFilter,
-    visibleColumns,
-    onSearchChange,
-    onRowsPerPageChange,
-    herdList.length,
-    hasSearchFilter,
-  ]);
+  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, herdList.length, hasSearchFilter]);
 
   const renderCell = React.useCallback((data: Herd, columnKey: React.Key) => {
     const cellValue = data[columnKey as keyof Herd];
@@ -242,12 +200,7 @@ const HerdListReadOnly = ({ setSelected }: any) => {
     switch (columnKey) {
       case "description":
         return (
-          <Tooltip
-            showArrow={true}
-            content={cellValue}
-            color="primary"
-            delay={1000}
-          >
+          <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
             <p className="truncate">{cellValue}</p>
           </Tooltip>
         );
@@ -279,20 +232,8 @@ const HerdListReadOnly = ({ setSelected }: any) => {
   const bottomContent = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">
-          {selectedKeys === "all"
-            ? "Đã chọn tất cả"
-            : `Đã chọn ${selectedKeys.size} kết quả`}
-        </span>
-        <Pagination
-          isCompact
-          showControls
-          showShadow
-          color="primary"
-          page={page}
-          total={totalPages}
-          onChange={setPage}
-        />
+        <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
+        <Pagination isCompact showControls showShadow color="primary" page={page} total={totalPages} onChange={setPage} />
         <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
       </div>
     );
@@ -318,26 +259,15 @@ const HerdListReadOnly = ({ setSelected }: any) => {
       >
         <TableHeader columns={headerColumns}>
           {(column: any) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
-              allowsSorting={column.sortable}
-            >
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
               {column.name.toUpperCase()}
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody
-          emptyContent={"Không có kết quả"}
-          items={sortedItems}
-          loadingContent={<Spinner />}
-          loadingState={loadingState}
-        >
+        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
           {(item) => (
             <TableRow key={item.id} className="h-12">
-              {(columnKey) => (
-                <TableCell>{renderCell(item, columnKey)}</TableCell>
-              )}
+              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
             </TableRow>
           )}
         </TableBody>
