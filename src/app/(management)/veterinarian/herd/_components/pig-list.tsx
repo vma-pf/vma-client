@@ -114,9 +114,9 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
       console.log("response: ", response);
       if (response.isSuccess) {
         setPigList(response.data.data || []);
-        setTotalRecords(response.data.totalRecords);
-        setPages(response.data?.totalPages);
-        setRowsPerPage(response.data?.pageSize);
+        setTotalRecords(response.data.totalRecords || 0);
+        setPages(response.data?.totalPages || 1);
+        setRowsPerPage(response.data?.pageSize || 5);
       }
     } catch (error) {
       console.error("Error fetching pig data:", error);

@@ -54,14 +54,14 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
-  const [pages, setPages] = React.useState<number>(1);
-  const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
+  const [pages, setPages] = React.useState(1);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "breed",
     direction: "ascending",
   });
 
-  const [page, setPage] = React.useState<number>(1);
+  const [page, setPage] = React.useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -114,9 +114,9 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
       console.log("response: ", response);
       if (response.isSuccess) {
         setPigList(response.data.data || []);
-        setTotalRecords(response.data.totalRecords);
-        setPages(response.data?.totalPages);
-        setRowsPerPage(response.data?.pageSize);
+        setTotalRecords(response.data?.totalRecords || 0);
+        setPages(response.data?.totalPages || 1);
+        setRowsPerPage(response.data?.pageSize || 5);
       }
     } catch (error) {
       console.error("Error fetching pig data:", error);
