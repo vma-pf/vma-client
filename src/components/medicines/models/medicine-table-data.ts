@@ -27,7 +27,4 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 const statusOptions = [{ name: "", uid: "" }];
 
-const medicines = [
-];
-
-export { columns, medicines, statusOptions, INITIAL_VISIBLE_COLUMNS };
+export { columns, statusOptions, INITIAL_VISIBLE_COLUMNS };

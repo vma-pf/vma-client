@@ -68,7 +68,7 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
       const res: ResponseObjectList<VaccinationData> = await vaccinationService.getAllVaccinationPlan(1, 500);
       console.log("res: ", res);
       if (res && res.isSuccess) {
-        setVaccinationList(res.data.data);
+        setVaccinationList(res.data.data || []);
       } else {
         console.log("Error: ", res.errorMessage);
       }
@@ -113,7 +113,7 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
           Tình trạng
         </TableColumn>
       </TableHeader>
-      <TableBody loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
+      <TableBody emptyContent={"Không có kết quả"} loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
         {vaccinationList.map((data: VaccinationData) => (
           <TableRow key={data.id}>
             <TableCell>{data.title}</TableCell>

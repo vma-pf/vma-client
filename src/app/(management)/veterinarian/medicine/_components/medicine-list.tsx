@@ -94,7 +94,6 @@ export default function MedicineList() {
   }, [medicineList, filterValue, statusFilter]);
 
   const [loading, setLoading] = React.useState(false);
-  const loadingState = loading || medicineList?.length === 0 ? "loading" : "idle";
 
   React.useEffect(() => {
     fetchData();
@@ -262,7 +261,7 @@ export default function MedicineList() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loadingState}>
+        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
           {(item) => (
             <TableRow key={item.id} className="h-12">
               {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}

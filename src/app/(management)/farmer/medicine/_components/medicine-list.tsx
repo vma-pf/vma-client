@@ -85,7 +85,6 @@ export default function MedicineList() {
   }, [medicineList, filterValue, statusFilter]);
 
   const [loading, setLoading] = React.useState(false);
-  const loadingState = loading || medicineList?.length === 0 ? "loading" : "idle";
 
   //Use Effect
   // React.useEffect(() => {
@@ -104,24 +103,22 @@ export default function MedicineList() {
 
   //API function
   const fetchData = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const response: ResponseObjectList<Medicine> = await medicineService.getMedicine(page, rowsPerPage);
       if (response.isSuccess) {
         setMedicineList(response.data.data);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
-        setLoading(false);
-      } else {
-        throw new AggregateError([response.errorMessage]);
       }
     } catch (e) {
-      setLoading(false);
       toast({
         variant: "destructive",
         title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -320,7 +317,7 @@ export default function MedicineList() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loadingState}>
+        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
           {(item) => (
             <TableRow key={item.id} className="h-12">
               {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}

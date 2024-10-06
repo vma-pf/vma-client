@@ -12,23 +12,18 @@ import {
   TableHeader,
   TableRow,
   Tooltip,
-  useDisclosure
+  useDisclosure,
 } from "@nextui-org/react";
 import { toast } from "@oursrc/hooks/use-toast";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { Plus, Trash2Icon } from "lucide-react";
 import React from "react";
-import AddMedicineToStageModal from "../_modals/add-medine-to-stage-modal";
-import {
-  MedicineEachStage,
-  MedicineInStage,
-} from "../_models/medicine-in-stage";
+import AddMedicineToStageModal from "./_modals/add-medine-to-stage-modal";
+import { MedicineEachStage, MedicineInStage, VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 
 const SecondVaccinationStep = ({ setStep, vaccinationPlan }: any) => {
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
-  const [medicinesInStage, setMedicinesInStage] = React.useState<
-    MedicineInStage[]
-  >([]);
+  const [medicinesInStage, setMedicinesInStage] = React.useState<MedicineInStage[]>([]);
   const [selectedMedicine, setSelectedMedicine] = React.useState<any>({});
   const [currentStageIndex, setCurrentStageIndex] = React.useState<number>(0);
 
@@ -59,14 +54,16 @@ const SecondVaccinationStep = ({ setStep, vaccinationPlan }: any) => {
   }, [selectedMedicine]);
 
   React.useEffect(() => {
-    console.log(vaccinationPlan);
+    console.log("vaccinationPlan", vaccinationPlan);
     setMedicinesInStage(
-      vaccinationPlan.vaccinationStages.map((x: any, index: number) => ({
-        vaccinationStageId: x.id,
-        title: `[Giai đoạn ${index + 1}] ${x.title}`,
-        description: "",
-        medicines: [],
-      }))
+      vaccinationPlan.vaccinationStages
+        .sort((a: any, b: any) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
+        .map((x: any, index: number) => ({
+          vaccinationStageId: x.id,
+          title: `[Giai đoạn ${index + 1}] ${x.title}`,
+          description: "",
+          medicines: [],
+        }))
     );
   }, []);
 
@@ -77,6 +74,15 @@ const SecondVaccinationStep = ({ setStep, vaccinationPlan }: any) => {
 
   const onSave = async () => {
     try {
+      if (medicinesInStage.some((x: any) => x.medicines.length === 0)) {
+        toast({
+          variant: "destructive",
+          title: "Có một số giai đoạn chưa có thuốc",
+          description: "Vui lòng thêm thuốc vào giai đoạn",
+        });
+        return;
+      }
+
       //prepare request
       const request = medicinesInStage.map((x: any) => {
         return {
@@ -107,8 +113,7 @@ const SecondVaccinationStep = ({ setStep, vaccinationPlan }: any) => {
         toast({
           variant: "success",
           title: "Thêm thuốc vào giai đoạn thành công",
-          description:
-            "Đã tạo thành công thuốc vào giai đoạn bước 2!",
+          description: "Đã tạo thành công thuốc vào giai đoạn bước 2!",
         });
         setStep(3);
       } else {
@@ -134,38 +139,35 @@ const SecondVaccinationStep = ({ setStep, vaccinationPlan }: any) => {
     { name: "", uid: "actions" },
   ];
 
-  const renderCell = React.useCallback(
-    (data: MedicineEachStage, columnKey: React.Key, index: number) => {
-      const cellValue = data[columnKey as keyof MedicineEachStage];
-      switch (columnKey) {
-        case "type":
-          return cellValue === "new" ? "Mới tạo" : "Có sẵn";
-        case "actions":
-          return (
-            <div className="relative flex justify-end items-center gap-2">
-              {data.medicineId !== "" && (
-                <Tooltip color="danger" content="Xóa thuốc">
-                  <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                    <Trash2Icon />
-                  </span>
-                </Tooltip>
-              )}
-            </div>
-          );
-        default:
-          return cellValue;
-      }
-    },
-    []
-  );
+  const renderCell = React.useCallback((data: MedicineEachStage, columnKey: React.Key, index: number) => {
+    const cellValue = data[columnKey as keyof MedicineEachStage];
+    switch (columnKey) {
+      case "type":
+        return cellValue === "new" ? "Mới tạo" : "Có sẵn";
+      case "actions":
+        return (
+          <div className="relative flex justify-end items-center gap-2">
+            {data.medicineId !== "" && (
+              <Tooltip color="danger" content="Xóa thuốc">
+                <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                  <Trash2Icon />
+                </span>
+              </Tooltip>
+            )}
+          </div>
+        );
+      default:
+        return cellValue;
+    }
+  }, []);
 
   return (
     <div className="container mx-auto mt-8">
       <Card>
         <CardBody>
           <div className="mb-1 flex justify-end">
-            <Button size="sm" color="primary" onClick={onSave}>
-              <span>Lưu</span>
+            <Button color="primary" onClick={onSave}>
+              Lưu
             </Button>
           </div>
           <Accordion variant="splitted" defaultExpandedKeys={[0]}>
@@ -174,11 +176,7 @@ const SecondVaccinationStep = ({ setStep, vaccinationPlan }: any) => {
                 <AccordionItem key={index} title={x.title}>
                   <div className="flex justify-end mb-2">
                     <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                      <Button
-                        size="sm"
-                        color="primary"
-                        onClick={() => onOpenModal(index)}
-                      >
+                      <Button color="primary" onClick={() => onOpenModal(index)}>
                         <span>Thêm thuốc</span>
                         <Plus />
                       </Button>
@@ -187,27 +185,13 @@ const SecondVaccinationStep = ({ setStep, vaccinationPlan }: any) => {
                   <Table>
                     <TableHeader columns={columns}>
                       {(column) => (
-                        <TableColumn
-                          key={column.uid}
-                          align={column.uid === "actions" ? "center" : "start"}
-                        >
+                        <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
                           {column.name}
                         </TableColumn>
                       )}
                     </TableHeader>
-                    <TableBody
-                      emptyContent={"Chưa chọn thuốc cho giai đoạn này"}
-                      items={x.medicines}
-                    >
-                      {(item) => (
-                        <TableRow key={item.medicineId}>
-                          {(columnKey) => (
-                            <TableCell>
-                              {renderCell(item, columnKey, index)}
-                            </TableCell>
-                          )}
-                        </TableRow>
-                      )}
+                    <TableBody emptyContent={"Chưa chọn thuốc cho giai đoạn này"} items={x.medicines}>
+                      {(item) => <TableRow key={item.medicineId}>{(columnKey) => <TableCell>{renderCell(item, columnKey, index)}</TableCell>}</TableRow>}
                     </TableBody>
                   </Table>
                 </AccordionItem>
@@ -216,12 +200,7 @@ const SecondVaccinationStep = ({ setStep, vaccinationPlan }: any) => {
           </Accordion>
         </CardBody>
       </Card>
-      <AddMedicineToStageModal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        onClose={onClose}
-        setSelectedMedicine={setSelectedMedicine}
-      />
+      <AddMedicineToStageModal isOpen={isOpen} onOpenChange={onOpenChange} onClose={onClose} setSelectedMedicine={setSelectedMedicine} />
     </div>
   );
 };

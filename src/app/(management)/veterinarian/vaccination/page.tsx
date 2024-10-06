@@ -4,12 +4,13 @@ import VaccinationList from "./_components/vaccination-list";
 import { FaRegCalendarPlus } from "react-icons/fa6";
 import { VaccinationData, VaccinationStageProps } from "../../../../lib/models/vaccination";
 import VaccinationStage from "./_components/vaccination-stage";
-import { Accordion, AccordionItem, Progress } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button, Progress } from "@nextui-org/react";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { herdService } from "@oursrc/lib/services/herdService";
 import { HerdInfo } from "@oursrc/lib/models/herd";
+import { useRouter } from "next/navigation";
 
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
@@ -19,6 +20,7 @@ const statusMap = [
 ];
 
 const Vaccination = () => {
+  const router = useRouter();
   const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(new Set<string>());
   const [vaccinationData, setVaccinationData] = React.useState<VaccinationData>();
   const [herd, setHerd] = React.useState<HerdInfo>();
@@ -65,7 +67,18 @@ const Vaccination = () => {
   return (
     <div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <p className="text-xl mb-3">Trước tiên, hãy chọn lịch tiêm phòng</p>
+        <div className="flex justify-between">
+          <p className="text-xl mb-3">Trước tiên, hãy chọn lịch tiêm phòng</p>
+          <Button
+            variant="solid"
+            color="primary"
+            onPress={() => {
+              router.push("/veterinarian/vaccination/create-plan");
+            }}
+          >
+            Tạo lịch tiêm phòng
+          </Button>
+        </div>
         <VaccinationList setSelectedVaccination={setSelectedVaccinationId} />
       </div>
       <div className="mb-3 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
@@ -118,9 +131,7 @@ const Vaccination = () => {
                 </div>
               </div>
             ) : (
-              <p className="text-center text-lg mt-3">
-                Chưa chọn lịch tiêm phòng
-              </p>
+              <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>
             )}
           </div>
           <div className="p-3 border-2 rounded-2xl w-1/2">
@@ -159,9 +170,7 @@ const Vaccination = () => {
                 </div> */}
               </div>
             ) : (
-              <p className="text-center text-lg mt-3">
-                Chưa chọn lịch tiêm phòng
-              </p>
+              <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>
             )}
           </div>
         </div>

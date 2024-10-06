@@ -57,7 +57,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken")?.toString();
     const connect = new HubConnectionBuilder()
-      .withUrl("http://35.198.240.3:10000/hubs/notification-hub", {
+      .withUrl("https://vma-server.io.vn/hubs/notification-hub", {
         // send access token here
         accessTokenFactory: () => accessToken || "",
       })
