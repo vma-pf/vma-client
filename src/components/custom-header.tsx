@@ -99,7 +99,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
   const toggleMode = () => setTheme(theme === "light" ? "dark" : "light");
   return (
     <div className="bg-slate-200 dark:bg-zinc-800 px-4 py-2 rounded-2xl flex justify-between">
-      <p className="font-bold text-4xl">{titleMap[filteredPath] || ""}</p>
+      <p className="text-slate-500 font-bold text-3xl">{titleMap[filteredPath] || ""}</p>
       <div className="flex items-center">
         <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "Farmer"}</p>
         <Avatar className="mx-2" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />

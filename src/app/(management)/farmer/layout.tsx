@@ -13,16 +13,17 @@ const FarmerLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const projectName = "VMA-PF";
   const titleMap: { [key: string]: string } = {
-    "/dashboard": "Tổng quan",
-    "/herd": "Quản lý đàn heo",
-    "/herd/create": "Tạo đàn mới",
-    "/medicine": "Quản lý thuốc",
-    "/medicine/new-batch": "Tạo lô mới",
-    "/vaccination": "Lịch tiêm phòng",
-    "/treatment": "Kế hoạch điều trị",
-    "/cage": "Quản lý chuồng",
-    "/alert": "Cảnh báo",
+    "/dashboard": projectName + " - " + "Tổng quan",
+    "/herd": projectName + " - " + "Quản lý đàn heo",
+    "/herd/create": projectName + " - " + "Tạo đàn mới",
+    "/medicine": projectName + " - " + "Quản lý thuốc",
+    "/medicine/new-batch": projectName + " - " + "Tạo lô mới",
+    "/vaccination": projectName + " - " + "Lịch tiêm phòng",
+    "/treatment": projectName + " - " + "Kế hoạch điều trị",
+    "/cage": projectName + " - " + "Quản lý chuồng",
+    "/alert": projectName + " - " + "Cảnh báo",
   };
   const navbarItems: NavbarItem[] = [
     {
