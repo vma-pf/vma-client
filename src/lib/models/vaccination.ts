@@ -18,9 +18,7 @@ export type VaccinationStageProps = {
   applyStageTime: string;
   timeSpan: string;
   isDone?: boolean;
-  vaccinationToDos?: [
-    { description: string; }
-  ]
+  vaccinationToDos: { description: string }[]
 };
 
 export type CreateVaccinationRequest = {

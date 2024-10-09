@@ -3,7 +3,7 @@ import { ResponseObject } from "./models/response-object";
 import { decodeToken } from "./utils";
 
 // const SERVERURL = "https://hsc-sever-0r5m.onrender.com/api/v1"; // Replace with actual API URL
-const SERVERURL = "https://vma-server.io.vn"; // Replace with actual API URL
+const SERVERURL = "https://ourproject.io.vn"; // Replace with actual API URL
 
 type CustomOptions = RequestInit & {
   baseUrl?: string | undefined;

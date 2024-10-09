@@ -1,10 +1,13 @@
 "use client";
 import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import {
+  Accordion,
+  AccordionItem,
   Button,
   CalendarDate,
   Card,
   CardBody,
+  CardHeader,
   DatePicker,
   DateRangePicker,
   DateValue,
@@ -15,6 +18,7 @@ import {
   PopoverTrigger,
   RangeValue,
   Textarea,
+  Tooltip,
 } from "@nextui-org/react";
 import CageListReadOnly from "@oursrc/components/cages/cage-list-read-only";
 import HerdListReadOnly from "@oursrc/components/herds/herd-list-read-only";
@@ -25,7 +29,15 @@ import { Pig } from "@oursrc/lib/models/pig";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { pluck } from "@oursrc/lib/utils/dev-utils";
-import { ChevronRight, Filter, Plus, Trash2Icon } from "lucide-react";
+import {
+  ChevronRight,
+  Filter,
+  Plus,
+  PlusSquare,
+  SquarePlus,
+  Trash,
+  Trash2Icon,
+} from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
 import SelectedPigsList from "./selected-pigs-list";
@@ -147,7 +159,7 @@ const FirstVaccinationStep = ({
           title: x.title,
           timeSpan: x.timeSpan,
           applyStageTime: x.applyStageTime,
-          vaccinationToDos: x.vaccinationToDos,
+          vaccinationToDosDto: x.vaccinationToDos,
         };
       });
 
@@ -157,20 +169,21 @@ const FirstVaccinationStep = ({
         isApplyToAll: false,
         pigIds: pluck("id", allSelectedPigs),
       };
+      console.log(request);
 
-      const response = await vaccinationService.createVaccinationPlan(request);
-      if (response && response.isSuccess) {
-        toast({
-          variant: "success",
-          title: "Tạo thành công bước 1",
-          description:
-            "Đã tạo thành công lịch tiêm phòng bước 1! Vui lòng qua bước 2 để thêm thuốc cho giai đoạn",
-        });
-        setStep(2);
-        setVaccinationPlanFirstStepResult(response.data);
-      } else {
-        throw new AggregateError([new Error()], response.errorMessage);
-      }
+      // const response = await vaccinationService.createVaccinationPlan(request);
+      // if (response && response.isSuccess) {
+      //   toast({
+      //     variant: "success",
+      //     title: "Tạo thành công bước 1",
+      //     description:
+      //       "Đã tạo thành công lịch tiêm phòng bước 1! Vui lòng qua bước 2 để thêm thuốc cho giai đoạn",
+      //   });
+      //   setStep(2);
+      //   setVaccinationPlanFirstStepResult(response.data);
+      // } else {
+      //   throw new AggregateError([new Error()], response.errorMessage);
+      // }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -226,6 +239,63 @@ const FirstVaccinationStep = ({
       ...stages.filter((x: VaccinationStageProps) => x.id !== stage.id),
     ]);
   };
+  const onAddTodoInStage = (stageIndex: number) => {
+    const newStages = stages.map(
+      (stage: VaccinationStageProps, index: number) => {
+        if (index === stageIndex) {
+          return {
+            ...stage,
+            vaccinationToDos: [...stage.vaccinationToDos, { description: "" }],
+          };
+        }
+        return stage; // No need for a shallow copy if not updating
+      }
+    );
+
+    setStages(newStages);
+  };
+
+  const onDeleteTodoInStage = (stageIndex: number, todoIndex: number) => {
+    const newStages = stages.map(
+      (stage: VaccinationStageProps, index: number) => {
+        if (index === stageIndex) {
+          return {
+            ...stage,
+            vaccinationToDos: stage.vaccinationToDos.filter(
+              (_, i) => i !== todoIndex
+            ),
+          };
+        }
+        return stage;
+      }
+    );
+
+    setStages(newStages);
+  };
+
+  const handleToDoChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    stageIndex: number,
+    todoIndex: number
+  ) => {
+    const newStages = stages.map((stage, sIndex) => {
+      if (sIndex === stageIndex) {
+        return {
+          ...stage,
+          vaccinationToDos: stage.vaccinationToDos.map((todo, tIndex) => {
+            if (tIndex === todoIndex) {
+              return { ...todo, description: e.target.value };
+            }
+            return todo;
+          }),
+        };
+      }
+      return stage;
+    });
+
+    setStages(newStages);
+  };
+
   return (
     <div>
       <div className="container mx-auto">
@@ -318,119 +388,215 @@ const FirstVaccinationStep = ({
                   Thêm giai đoạn
                 </Button>
               </div>
-              {stages.map((stage) => {
-                return (
-                  <div key={stage.id} className="flex flex-row justify-between">
-                    <div className="w-full grid grid-cols-3 gap-4">
-                      <div className="col-span-2">
-                        <div className="w-full grid grid-cols-3 gap-4">
-                          <Input
-                            className="mb-5"
-                            type="text"
-                            radius="sm"
-                            size="lg"
-                            label="Tên giai đoạn"
-                            placeholder="Nhập tên giai đoạn"
-                            labelPlacement="outside"
-                            isRequired
-                            value={stage.title}
-                            isInvalid={stage.title ? false : true}
-                            errorMessage="Tên giai đoạn không được để trống"
-                            onValueChange={(event) =>
-                              onStageChange(event, "title", stage.id || "")
-                            }
-                          />
-                          <DatePicker
-                            className="mb-5"
-                            radius="sm"
-                            size="lg"
-                            label="Ngày tiêm"
-                            value={
-                              stage.applyStageTime
-                                ? parseDate(stage.applyStageTime)
-                                : undefined
-                            }
-                            isDateUnavailable={(date: DateValue) =>
-                              stages.some(
-                                (x: VaccinationStageProps) =>
-                                  x.applyStageTime === date.toString() &&
-                                  x.id !== stage.id
-                              )
-                            }
-                            minValue={date.start}
-                            maxValue={date.end}
-                            labelPlacement="outside"
-                            isRequired
-                            isInvalid={stage.applyStageTime ? false : true}
-                            errorMessage="Ngày tiêm không được để trống"
-                            onChange={(event) =>
-                              onStageChange(
-                                event.toString(),
-                                "applyStageTime",
-                                stage.id || ""
-                              )
-                            }
-                          />
-                          <Input
-                            className="mb-5"
-                            type="number"
-                            min={1}
-                            max={50}
-                            radius="sm"
-                            size="lg"
-                            label="Số ngày thực hiện (dự kiến)"
-                            placeholder="Nhập số ngày thực hiện (dự kiến)"
-                            labelPlacement="outside"
-                            isRequired
-                            onKeyDown={(e) => e.preventDefault()}
-                            value={stage.timeSpan}
-                            isInvalid={stage.timeSpan ? false : true}
-                            errorMessage="Số ngày thực hiện không được để trống"
-                            onValueChange={(event) =>
-                              onStageChange(event, "timeSpan", stage.id || "")
-                            }
-                          />
+              <Accordion>
+                {stages.map((stage, stageIndex: number) => {
+                  return (
+                    <AccordionItem
+                      title={`Giai đoạn ${stageIndex + 1}`}
+                      startContent={
+                        <div className="flex flex-row items-start mr-2">
+                          <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                            {stages.length > 1 && (
+                              <Tooltip color="danger" content="Xóa giai đoạn">
+                                <Button
+                                  isIconOnly
+                                  color="danger"
+                                  size="sm"
+                                  onClick={() => onDeleteStage(stage)}
+                                >
+                                  <Trash size={20} color="#ffffff" />
+                                </Button>
+                              </Tooltip>
+                            )}
+                          </span>
                         </div>
-                      </div>
-                      {/* todo */}
-                      <div className="">
-                        <label className="mb-2">
-                          <span>Các bước cần thực hiện</span>
-                        </label>
-                        {stage.vaccinationToDos?.map(
-                          (
-                            vacinationTodo: { description: string },
-                            index: number
-                          ) => {
-                            return (
-                              <div className="grid grid-cols-5 gap-2">
+                      }
+                    >
+                      <Card className="mb-2" radius="sm">
+                        <CardBody>
+                          <div
+                            key={stage.id}
+                            className="flex flex-row justify-between"
+                          >
+                            <div className="w-full">
+                              <div className="w-full grid grid-cols-3 gap-4">
                                 <Input
-                                  className="mb-5 col-span-4"
+                                  className="mb-5"
                                   type="text"
                                   radius="sm"
                                   size="lg"
-                                  label={`Bước ${index + 1}`}
-                                  labelPlacement="inside"
-                                  onKeyDown={(e) => e.preventDefault()}
-                                  value={vacinationTodo.description}
+                                  label="Tên giai đoạn"
+                                  placeholder="Nhập tên giai đoạn"
+                                  labelPlacement="outside"
+                                  isRequired
+                                  value={stage.title}
+                                  isInvalid={stage.title ? false : true}
+                                  errorMessage="Tên giai đoạn không được để trống"
+                                  onValueChange={(event) =>
+                                    onStageChange(
+                                      event,
+                                      "title",
+                                      stage.id || ""
+                                    )
+                                  }
                                 />
-
+                                <DatePicker
+                                  className="mb-5"
+                                  radius="sm"
+                                  size="lg"
+                                  label="Ngày tiêm"
+                                  value={
+                                    stage.applyStageTime
+                                      ? parseDate(stage.applyStageTime)
+                                      : undefined
+                                  }
+                                  isDateUnavailable={(date: DateValue) =>
+                                    stages.some(
+                                      (x: VaccinationStageProps) =>
+                                        x.applyStageTime === date.toString() &&
+                                        x.id !== stage.id
+                                    )
+                                  }
+                                  minValue={date.start}
+                                  maxValue={date.end}
+                                  labelPlacement="outside"
+                                  isRequired
+                                  isInvalid={
+                                    stage.applyStageTime ? false : true
+                                  }
+                                  errorMessage="Ngày tiêm không được để trống"
+                                  onChange={(event) =>
+                                    onStageChange(
+                                      event.toString(),
+                                      "applyStageTime",
+                                      stage.id || ""
+                                    )
+                                  }
+                                />
+                                <Input
+                                  className="mb-5"
+                                  type="number"
+                                  min={1}
+                                  max={50}
+                                  radius="sm"
+                                  size="lg"
+                                  label="Số ngày thực hiện (dự kiến)"
+                                  placeholder="Nhập số ngày thực hiện (dự kiến)"
+                                  labelPlacement="outside"
+                                  isRequired
+                                  onKeyDown={(e) => e.preventDefault()}
+                                  value={stage.timeSpan}
+                                  isInvalid={stage.timeSpan ? false : true}
+                                  errorMessage="Số ngày thực hiện không được để trống"
+                                  onValueChange={(event) =>
+                                    onStageChange(
+                                      event,
+                                      "timeSpan",
+                                      stage.id || ""
+                                    )
+                                  }
+                                />
                               </div>
-                            );
-                          }
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-row items-start">
-                      <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                        {stages.length > 1 && (
-                          <Trash2Icon onClick={() => onDeleteStage(stage)} />
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+                              {/* todo */}
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="col-span-2"></div>
+                                <div>
+                                  <Tooltip
+                                    color="primary"
+                                    content={`Các bước cần thực hiện trong giai đoạn ${
+                                      stageIndex + 1
+                                    }`}
+                                  >
+                                    <Card className="" radius="sm">
+                                      <CardBody>
+                                        {stage.vaccinationToDos?.map(
+                                          (
+                                            vacinationTodo: {
+                                              description: string;
+                                            },
+                                            index: number
+                                          ) => {
+                                            return (
+                                              <div className="mb-2">
+                                                <div className="p-0 grid grid-cols-11 gap-2">
+                                                  <Input
+                                                    className="mb-5 col-span-9 w-full"
+                                                    type="text"
+                                                    radius="sm"
+                                                    size="sm"
+                                                    label={`Bước ${index + 1}`}
+                                                    labelPlacement="inside"
+                                                    value={
+                                                      vacinationTodo.description
+                                                    }
+                                                    onChange={(e) =>
+                                                      handleToDoChange(
+                                                        e,
+                                                        stageIndex,
+                                                        index
+                                                      )
+                                                    }
+                                                  />
+                                                  <div className="flex gap-2">
+                                                    {stage?.vaccinationToDos &&
+                                                      stage.vaccinationToDos
+                                                        ?.length > 1 && (
+                                                        <Button
+                                                          isIconOnly
+                                                          color="danger"
+                                                          size="sm"
+                                                          onClick={() =>
+                                                            onDeleteTodoInStage(
+                                                              stageIndex,
+                                                              index
+                                                            )
+                                                          }
+                                                        >
+                                                          <Trash
+                                                            size={20}
+                                                            color="#ffffff"
+                                                          />
+                                                        </Button>
+                                                      )}
+                                                    {index ===
+                                                      stage.vaccinationToDos
+                                                        .length -
+                                                        1 && (
+                                                      <Button
+                                                        isIconOnly
+                                                        color="primary"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                          onAddTodoInStage(
+                                                            stageIndex
+                                                          )
+                                                        }
+                                                      >
+                                                        <Plus
+                                                          size={20}
+                                                          color="#ffffff"
+                                                        />
+                                                      </Button>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          }
+                                        )}
+                                      </CardBody>
+                                    </Card>
+                                  </Tooltip>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </CardBody>
+                      </Card>
+                    </AccordionItem>
+                  );
+                })}
+              </Accordion>
             </CardBody>
           </Card>
           <Card>
