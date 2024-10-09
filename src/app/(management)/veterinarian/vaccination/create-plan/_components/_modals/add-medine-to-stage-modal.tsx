@@ -1,14 +1,29 @@
 "use client";
-import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Tab, Tabs } from "@nextui-org/react";
+import {
+  Button,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Tab,
+  Tabs,
+} from "@nextui-org/react";
 import MedicinesListReadOnly from "@oursrc/components/medicines/medicines-list-read-only";
+import { toast } from "@oursrc/hooks/use-toast";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 
-const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: any) => {
+const AddMedicineToStageModal = ({
+  isOpen,
+  onOpenChange,
+  setSelectedMedicine,
+}: any) => {
   const [currentTab, setCurrentTab] = React.useState<React.Key>("existed");
-  const [selectedMed, setSelectedMed] = React.useState<{}>();
-  const [portionEachPig, setPortionEachPig] = React.useState<string>();
+  const [selectedMed, setSelectedMed] = React.useState<{}>({});
+  const [portionEachPig, setPortionEachPig] = React.useState<number>(1);
   const {
     register,
     handleSubmit,
@@ -25,10 +40,17 @@ const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: 
     if (parseInt(numericValue) > 100000) {
       numericValue = "100000";
     }
-    setPortionEachPig(numericValue);
+    setPortionEachPig(Number(numericValue));
   };
 
   const onSubmitNewMedicine = (data: any) => {
+    if (selectedMed === null || !selectedMed) {
+      toast({
+        variant: "destructive",
+        title: "Vui lòng chọn thuốc và thử lại",
+      });
+      return;
+    }
     switch (currentTab) {
       case "existed":
         setSelectedMedicine({
@@ -64,24 +86,30 @@ const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: 
   }, [portionEachPig]);
   return (
     <div>
-      <Modal backdrop="opaque" isOpen={isOpen} size="5xl" placement="top" onOpenChange={onOpenChange}>
+      <Modal
+        backdrop="opaque"
+        isOpen={isOpen}
+        size="5xl"
+        placement="top"
+        onOpenChange={onOpenChange}
+      >
         <ModalContent>
           {isOpen && (
             <>
               <form onSubmit={handleSubmit(onSubmitNewMedicine)}>
-                <ModalHeader className="flex flex-col gap-1">Chọn thuốc cho giai đoạn</ModalHeader>
+                <ModalHeader className="flex flex-col gap-1">
+                  Chọn thuốc cho giai đoạn
+                </ModalHeader>
                 <ModalBody>
                   <Tabs onSelectionChange={(e) => setCurrentTab(e)}>
                     <Tab key="existed" title="Thuốc trong kho">
                       <Input
                         type="text"
                         label="Số lượng liều mỗi con"
-                        isRequired
-                        value={portionEachPig || ""}
+                        value={portionEachPig.toString()}
                         onValueChange={(event) => handlePortionChange(event)}
-                        isInvalid={errors.newMedicineName ? true : false}
                         errorMessage="Số lượng liều mỗi con không được để trống"
-                        {...register("portionEachPig", { required: true })}
+                        {...register("portionEachPig")}
                       />
                       <MedicinesListReadOnly setSelected={setSelectedMed} />
                     </Tab>
@@ -90,10 +118,9 @@ const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: 
                         <Input
                           type="text"
                           label="Tên thuốc mới"
-                          isRequired
                           isInvalid={errors.newMedicineName ? true : false}
                           errorMessage="Tên thuốc mới không được để trống"
-                          {...register("newMedicineName", { required: true })}
+                          {...register("newMedicineName")}
                         />
                         {/* <Switch
                           defaultSelected
@@ -105,12 +132,11 @@ const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: 
                         <Input
                           type="text"
                           label="Số lượng liều mỗi con"
-                          isRequired
-                          value={portionEachPig || ""}
+                          value={portionEachPig.toString()}
                           onValueChange={(event) => handlePortionChange(event)}
                           isInvalid={errors.portionEachPig ? true : false}
                           errorMessage="Số lượng liều mỗi con không được để trống"
-                          {...register("portionEachPig", { required: true, valueAsNumber: true })}
+                          {...register("portionEachPig")}
                         />
                       </div>
                     </Tab>
@@ -118,7 +144,12 @@ const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: 
                 </ModalBody>
                 <ModalFooter>
                   <div className="flex justify-end">
-                    <Button variant="solid" color="primary" size="lg" type="submit" isDisabled={(errors && Object.keys(errors).length > 0) || !portionEachPig}>
+                    <Button
+                      variant="solid"
+                      color="primary"
+                      size="lg"
+                      type="submit"
+                    >
                       <p className="text-white">Xác nhận</p>
                     </Button>
                   </div>

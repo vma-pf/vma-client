@@ -18,7 +18,8 @@ export type VaccinationStageProps = {
   applyStageTime: string;
   timeSpan: string;
   isDone?: boolean;
-  vaccinationToDos: { description: string }[]
+  vaccinationToDos: { description: string }[];
+  inventoryRequest: MedicineInStage;
 };
 
 export type CreateVaccinationRequest = {
@@ -29,24 +30,24 @@ export type CreateVaccinationRequest = {
   note: string;
   createVaccinationStages: [
     {
-      title: string,
-      timeSpan: string,
-      applyStageTime: string,
-      isDone: boolean,
+      title: string;
+      timeSpan: string;
+      applyStageTime: string;
+      isDone: boolean;
       vaccinationToDos: [
         {
-          description: string
+          description: string;
         }
-      ]
+      ];
     }
-  ],
-  isApplyToAll: boolean,
-  herdId: string,
-  pigIds: []
-}
+  ];
+  isApplyToAll: boolean;
+  herdId: string;
+  pigIds: [];
+};
 
 export type MedicineInStage = {
-  vaccinationStageId: string;
+  id: string;
   title: string;
   description: string;
   medicines: MedicineEachStage[];
@@ -56,7 +57,7 @@ export type MedicineEachStage = {
   medicineId: string;
   medicineName: string;
   quantity: number;
-  netWeight: string,
-  unit: string,
+  netWeight: string;
+  unit: string;
   portionEachPig: number;
 };

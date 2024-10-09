@@ -43,6 +43,8 @@ import { useForm } from "react-hook-form";
 import SelectedPigsList from "./selected-pigs-list";
 import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import MedicineListInStage from "./medine-list-in-stage";
+import { v4 } from "uuid";
 
 const FirstVaccinationStep = ({
   setStep,
@@ -63,6 +65,12 @@ const FirstVaccinationStep = ({
       timeSpan: "1",
       applyStageTime: "",
       vaccinationToDos: [{ description: "" }],
+      inventoryRequest: {
+        id: v4(),
+        title: "",
+        description: "",
+        medicines: []
+      }
     },
   ]);
   const [date, setDate] = React.useState<RangeValue<CalendarDate>>({
@@ -231,6 +239,12 @@ const FirstVaccinationStep = ({
         timeSpan: "1",
         applyStageTime: "",
         vaccinationToDos: [{ description: "" }],
+        inventoryRequest: {
+          id: v4(),
+          title: "",
+          description: "",
+          medicines: []
+        }
       },
     ]);
   };
@@ -295,6 +309,10 @@ const FirstVaccinationStep = ({
 
     setStages(newStages);
   };
+  const updateMedicine = (e: any, stageIndex: number) => {
+    console.log(e);
+    console.log(stageIndex);
+  }
 
   return (
     <div>
@@ -388,10 +406,11 @@ const FirstVaccinationStep = ({
                   Thêm giai đoạn
                 </Button>
               </div>
-              <Accordion>
+              <Accordion variant="splitted">
                 {stages.map((stage, stageIndex: number) => {
                   return (
                     <AccordionItem
+                      key={stageIndex}
                       title={`Giai đoạn ${stageIndex + 1}`}
                       startContent={
                         <div className="flex flex-row items-start mr-2">
@@ -499,7 +518,9 @@ const FirstVaccinationStep = ({
                               </div>
                               {/* todo */}
                               <div className="grid grid-cols-3 gap-4">
-                                <div className="col-span-2"></div>
+                                <div className="col-span-2">
+                                  <MedicineListInStage medicineInStageProp={stage.inventoryRequest} updateMedicines={(e: any) => updateMedicine(e, stageIndex)} />
+                                </div>
                                 <div>
                                   <Tooltip
                                     color="primary"
