@@ -2,6 +2,7 @@
 import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { Avatar, Badge, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
+import { SERVERURL } from "@oursrc/lib/http";
 import { NotificationType } from "@oursrc/lib/models/notification";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { notificationService } from "@oursrc/lib/services/notificationService";
@@ -57,7 +58,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken")?.toString();
     const connect = new HubConnectionBuilder()
-      .withUrl("https://vma-server.io.vn/hubs/notification-hub", {
+      .withUrl(`${SERVERURL}/hubs/notification-hub`, {
         // send access token here
         accessTokenFactory: () => accessToken || "",
       })

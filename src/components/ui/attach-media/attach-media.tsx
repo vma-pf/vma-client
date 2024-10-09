@@ -34,6 +34,8 @@ const AttachMedia = ({
           </label>
         ) : (
           <Image
+            width={200}
+            height={200}
             className="w-full h-fit p-2 object-cover cursor-pointer"
             onClick={handleRemoveImage}
             src={typeof selectedFile === "object" ? URL.createObjectURL(selectedFile) : selectedFile}

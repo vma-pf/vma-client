@@ -2,8 +2,8 @@ import { decode } from "punycode";
 import { ResponseObject } from "./models/response-object";
 import { decodeToken } from "./utils";
 
-// const SERVERURL = "https://hsc-sever-0r5m.onrender.com/api/v1"; // Replace with actual API URL
-const SERVERURL = "https://vma-server.io.vn"; // Replace with actual API URL
+// const SERVERURL = "https://vma-server.io.vn"; // Replace with actual API URL
+export const SERVERURL = "https://ourproject.io.vn"; // Replace with actual API URL
 
 type CustomOptions = RequestInit & {
   baseUrl?: string | undefined;
@@ -50,18 +50,18 @@ const request = async <Response>(
   options: CustomOptions | undefined
 ): Promise<any> => {
   const token = localStorage.getItem("accessToken") || "";
-  const body = options?.body ? JSON.stringify(options.body) : undefined;
-  const params = options?.params || undefined;
-  const baseHeaders = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
+  const isFormData = options?.body instanceof FormData;
+
+  const body = isFormData ? options?.body : options?.body ? JSON.stringify(options.body) : undefined;
+
+  const baseHeaders = { Authorization: `Bearer ${token}` };
+
   const baseUrl = options?.baseUrl === undefined ? SERVERURL : options.baseUrl;
   let fullUrl = url.startsWith("/") ? baseUrl + url : baseUrl + "/" + url;
 
-  const searchParams = new URLSearchParams(params);
+  const searchParams = new URLSearchParams(options?.params || {});
 
-  if (params) {
+  if (options?.params) {
     fullUrl += "?" + searchParams.toString();
   }
 
@@ -69,7 +69,7 @@ const request = async <Response>(
     ...options,
     headers: {
       ...baseHeaders,
-      ...options?.headers,
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
     },
     body,
     method,
@@ -77,13 +77,16 @@ const request = async <Response>(
 
   // check if token is expired before 10 minutes
   if (token && decodeToken(token).exp - Date.now() / 1000 < 600) {
-    const res = await fetch(`${SERVERURL}/api/auth/refresh-token?refreshToken=${localStorage.getItem("refreshToken") || ""}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      method: "POST",
-    });
+    const res = await fetch(
+      `${SERVERURL}/api/auth/refresh-token?refreshToken=${localStorage.getItem("refreshToken") || ""}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        method: "POST",
+      }
+    );
     const newToken = await res.json();
     if (newToken.isSuccess) {
       localStorage.setItem("accessToken", newToken.data.accessToken);
@@ -105,6 +108,7 @@ const request = async <Response>(
   // }
   return payload;
 };
+
 
 const http = {
   get<Response>(

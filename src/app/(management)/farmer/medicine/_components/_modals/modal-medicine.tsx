@@ -89,18 +89,18 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
       if (response && response.isSuccess) {
         toast({
           variant: "success",
-          title: context === "create" ? 'Tạo thuốc thành công': 'Cập nhật thành công',
+          title: context === "create" ? "Tạo thuốc thành công" : "Cập nhật thành công",
         });
+        onClose();
       } else {
-        throw new AggregateError(response.errorMessage);
+        toast({
+          variant: "destructive",
+          title: response.errorMessage,
+        });
       }
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: error instanceof AggregateError ? error.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
-      });
+      console.log(error);
     } finally {
-      onClose();
       setLoading(false);
     }
   };
