@@ -177,7 +177,7 @@ const FirstVaccinationStep = ({
           timeSpan: x.timeSpan,
           applyStageTime: x.applyStageTime,
           vaccinationToDosDto: x.vaccinationToDos,
-          inventoryRequest: x.inventoryRequest,
+          inventoryRequestDto: x.inventoryRequest,
         };
       });
 
@@ -187,21 +187,18 @@ const FirstVaccinationStep = ({
         isApplyToAll: false,
         pigIds: pluck("id", allSelectedPigs),
       };
-      console.log(request);
 
-      // const response = await vaccinationService.createVaccinationPlan(request);
-      // if (response && response.isSuccess) {
-      //   toast({
-      //     variant: "success",
-      //     title: "Tạo thành công bước 1",
-      //     description:
-      //       "Đã tạo thành công lịch tiêm phòng bước 1! Vui lòng qua bước 2 để thêm thuốc cho giai đoạn",
-      //   });
-      //   setStep(2);
-      //   setVaccinationPlanFirstStepResult(response.data);
-      // } else {
-      //   throw new AggregateError([new Error()], response.errorMessage);
-      // }
+      const response = await vaccinationService.createVaccinationPlan(request);
+      if (response && response.isSuccess) {
+        toast({
+          variant: "success",
+          title: "Tạo thành công bước 1",
+          description:
+            "Đã tạo thành công lịch tiêm phòng bước 1! Vui lòng qua bước 2 để thêm thuốc cho giai đoạn",
+        });
+      } else {
+        throw new AggregateError([new Error()], response.errorMessage);
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",

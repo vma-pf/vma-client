@@ -1,7 +1,7 @@
 import http from "@oursrc/lib/http";
 import { ResponseObject } from "../models/response-object";
 import { CreateVaccinationRequest, MedicineInStage } from "../models/vaccination";
-
+const endpoint = 'api/vaccination'
 export const vaccinationService = {
   getAllVaccinationPlan: (page: number, pageSize: number) =>
     http.get<ResponseObject<any>>("get-all-vaccination-plans", {
@@ -15,14 +15,13 @@ export const vaccinationService = {
   getMedicineInStage: (id: string) =>
     http.get<ResponseObject<any>>(`vaccination-stages/${id}/medicines`),
   createVaccinationPlan: (model: CreateVaccinationRequest) =>
-    http.post<ResponseObject<any>>("make-vaccination-plan", {
+    http.post<ResponseObject<any>>(endpoint+"/create-vaccination-plan-and-stage", {
       title: model.title,
       startDate: model.startDate,
       expectedEndDate: model.expectedEndDate,
       actualEndDate: model.actualEndDate,
       note: model.note,
       createVaccinationStages: model.createVaccinationStages,
-      isApplyToAll: model.isApplyToAll,
       herdId: model.herdId,
       pigIds: model.pigIds,
     }),
