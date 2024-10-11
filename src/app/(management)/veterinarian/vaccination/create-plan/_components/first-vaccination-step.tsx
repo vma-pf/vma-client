@@ -30,10 +30,12 @@ import { pigService } from "@oursrc/lib/services/pigService";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { pluck } from "@oursrc/lib/utils/dev-utils";
 import {
+  Check,
   ChevronRight,
   Filter,
   Plus,
   PlusSquare,
+  SaveAll,
   SquarePlus,
   Trash,
   Trash2Icon,
@@ -55,6 +57,7 @@ const FirstVaccinationStep = ({
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
   const [openBy, setOpenBy] = React.useState<string>("");
+  const [templateName, setTemplateName] = React.useState("");
 
   const [stages, setStages] = React.useState<VaccinationStageProps[]>([
     {
@@ -69,8 +72,8 @@ const FirstVaccinationStep = ({
         id: v4(),
         title: "",
         description: "",
-        medicines: []
-      }
+        medicines: [],
+      },
     },
   ]);
   const [date, setDate] = React.useState<RangeValue<CalendarDate>>({
@@ -154,6 +157,12 @@ const FirstVaccinationStep = ({
     }
   };
 
+  const handleCreateTemplate = () => {
+    console.log(templateName);
+    console.log(stages);
+    console.log(allSelectedPigs);
+  };
+
   const handleSubmitForm = async (data: any) => {
     try {
       data.startDate = new Date(date.start.toString()).toISOString();
@@ -168,6 +177,7 @@ const FirstVaccinationStep = ({
           timeSpan: x.timeSpan,
           applyStageTime: x.applyStageTime,
           vaccinationToDosDto: x.vaccinationToDos,
+          inventoryRequest: x.inventoryRequest,
         };
       });
 
@@ -243,8 +253,8 @@ const FirstVaccinationStep = ({
           id: v4(),
           title: "",
           description: "",
-          medicines: []
-        }
+          medicines: [],
+        },
       },
     ]);
   };
@@ -309,26 +319,90 @@ const FirstVaccinationStep = ({
 
     setStages(newStages);
   };
+
   const updateMedicine = (e: any, stageIndex: number) => {
-    console.log(e);
-    console.log(stageIndex);
-  }
+    setStages((prevStages) => {
+      const updatedStages = [...prevStages];
+      const selectedStage = updatedStages[stageIndex];
+
+      if (!selectedStage) {
+        console.error(`Stage at index ${stageIndex} not found`);
+        return prevStages;
+      }
+
+      const currentMedicines = selectedStage.inventoryRequest.medicines;
+      const updatedMedicines = [...currentMedicines]; // Start with a copy of current medicines
+
+      e.medicines.forEach((newMedicine: any) => {
+        const existingMedicineIndex = updatedMedicines.findIndex(
+          (medicine) => medicine.medicineId === newMedicine.medicineId
+        );
+        if (existingMedicineIndex !== -1) {
+          updatedMedicines[existingMedicineIndex] = newMedicine;
+        } else {
+          updatedMedicines.push(newMedicine);
+        }
+      });
+
+      selectedStage.inventoryRequest = {
+        ...selectedStage.inventoryRequest,
+        medicines: updatedMedicines,
+      };
+      updatedStages[stageIndex] = selectedStage;
+      return updatedStages;
+    });
+  };
 
   return (
     <div>
       <div className="container mx-auto">
         <form onSubmit={handleSubmit(handleSubmitForm)}>
-          <div className="flex justify-end">
-            <Button
-              color="primary"
-              variant="solid"
-              isDisabled={errors && Object.keys(errors).length > 0}
-              type="submit"
-              endContent={<ChevronRight />}
-            >
-              Tiếp theo
-            </Button>
-          </div>
+          <Card className="w-full">
+            <CardBody>
+              <div className="flex justify-end">
+                <div className="mr-2">
+                  <Popover placement="bottom">
+                    <PopoverTrigger>
+                      <Button color="default" variant="solid" isIconOnly>
+                        <Tooltip
+                          placement="bottom"
+                          content="Lưu lịch tiêm phòng thành mẫu"
+                        >
+                          <SaveAll size={20} />
+                        </Tooltip>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <div className="flex flex-row items-center gap-2">
+                        <Input
+                          className="my-2"
+                          type="text"
+                          radius="sm"
+                          size="sm"
+                          label="Tên mẫu"
+                          labelPlacement="inside"
+                          isRequired
+                          value={templateName}
+                          onChange={(e) => setTemplateName(e.target.value)}
+                        />
+                        <Button color="primary" type="submit" isIconOnly onClick={handleCreateTemplate}>
+                          <Check />
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <Button
+                  color="primary"
+                  variant="solid"
+                  isDisabled={errors && Object.keys(errors).length > 0}
+                  type="submit"
+                >
+                  Xác nhận lịch tiêm phòng
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
           <Card className="p-4 mt-4">
             <p className="text-2xl mb-2 font-semibold">
               Thông tin kế hoạch tiêm phòng
@@ -406,7 +480,7 @@ const FirstVaccinationStep = ({
                   Thêm giai đoạn
                 </Button>
               </div>
-              <Accordion variant="splitted">
+              <Accordion defaultExpandedKeys={["0"]} variant="splitted">
                 {stages.map((stage, stageIndex: number) => {
                   return (
                     <AccordionItem
@@ -519,7 +593,12 @@ const FirstVaccinationStep = ({
                               {/* todo */}
                               <div className="grid grid-cols-3 gap-4">
                                 <div className="col-span-2">
-                                  <MedicineListInStage medicineInStageProp={stage.inventoryRequest} updateMedicines={(e: any) => updateMedicine(e, stageIndex)} />
+                                  <MedicineListInStage
+                                    medicineInStageProp={stage.inventoryRequest}
+                                    updateMedicines={(e: any) =>
+                                      updateMedicine(e, stageIndex)
+                                    }
+                                  />
                                 </div>
                                 <div>
                                   <Tooltip
