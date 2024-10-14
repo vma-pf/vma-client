@@ -1,16 +1,18 @@
-import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
-import "./globals.css";
 import { NextUIProvider } from "@nextui-org/react";
 import { ThemeProvider } from "@oursrc/components/theme-provider";
 import { Toaster } from "@oursrc/components/ui/toaster";
+import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
+import "./globals.css";
 import StoreProvider from "./StoreProvider";
 
-const roboto = Roboto({
+const font = Nunito({
+  preload: true,
   weight: "400",
+  style: ["normal", "italic"],
   subsets: ["vietnamese"],
   display: "swap",
-  variable: "--font-roboto",
+  variable: "--font-nunito",
 });
 
 export const metadata: Metadata = {
@@ -24,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={roboto.className} suppressHydrationWarning>
+    <html lang="en" className={font.className} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />

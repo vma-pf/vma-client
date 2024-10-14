@@ -37,6 +37,16 @@ const Vaccination = () => {
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
   const [selectedVaccination, setSelectedVaccination] = React.useState<VaccinationStageProps>();
 
+  const filterValue = React.useMemo(() => {
+    if (filterStatus === "all") {
+      return "Tất cả";
+    } else if (filterStatus === "done") {
+      return "Đã tiêm";
+    } else {
+      return "Chưa tiêm";
+    }
+  }, [filterStatus]);
+
   const filterVaccination = (status: string) => {
     const data = vaccinationData?.vaccinationStages || [];
     if (status === "all") {
@@ -236,7 +246,7 @@ const Vaccination = () => {
                   <Dropdown>
                     <DropdownTrigger>
                       <Button variant="bordered" className="capitalize">
-                        Tình trạng tiêm phòng
+                        {filterValue}
                       </Button>
                     </DropdownTrigger>
                     <DropdownMenu

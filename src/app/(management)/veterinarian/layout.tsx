@@ -13,16 +13,17 @@ const VetLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const projectName = "VMA";
   const titleMap: { [key: string]: string } = {
-    "/dashboard": "Tổng quan",
-    "/pig": "Quản lý heo",
-    "/herd": "Quản lý đàn heo",
-    "/medicine": "Quản lý thuốc",
-    "/vaccination": "Lịch tiêm phòng",
-    "/vaccination/create-plan": "Tạo lịch tiêm phòng",
-    "/treatment": "Kế hoạch điều trị",
-    "/cage": "Quản lý chuồng",
-    "/alert": "Cảnh báo",
+    "/dashboard": projectName + " - " + "Tổng quan",
+    "/pig": projectName + " - " + "Quản lý heo",
+    "/herd": projectName + " - " + "Quản lý đàn heo",
+    "/medicine": projectName + " - " + "Quản lý thuốc",
+    "/vaccination": projectName + " - " + "Lịch tiêm phòng",
+    "/vaccination/create-plan": projectName + " - " + "Tạo lịch tiêm phòng",
+    "/treatment": projectName + " - " + "Kế hoạch điều trị",
+    "/cage": projectName + " - " + "Quản lý chuồng",
+    "/alert": projectName + " - " + "Cảnh báo",
   };
   const navbarItems: NavbarItem[] = [
     {
