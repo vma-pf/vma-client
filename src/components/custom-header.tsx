@@ -7,7 +7,7 @@ import { NotificationType } from "@oursrc/lib/models/notification";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { notificationService } from "@oursrc/lib/services/notificationService";
 import { useTheme } from "next-themes";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { connected } from "process";
 import React, { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa6";
@@ -16,6 +16,7 @@ import { LuDot } from "react-icons/lu";
 
 const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string }; prefix: string }) => {
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
   const pathname = usePathname();
   const filteredPath = pathname
     .split(prefix)
@@ -53,6 +54,12 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
     } catch (error: any) {
       console.error("Error while getting notification:", error);
     }
+  };
+
+  const navigateTo = (message: NotificationType) => {
+    console.log(message.notificationType);
+    // const path = message.notificationType === 1 ? "/farmer/medicine" : "/farmer/disease-report";
+    // router.push(path);
   };
 
   useEffect(() => {
@@ -125,7 +132,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
           </DropdownTrigger>
           <DropdownMenu className="max-h-[300px] overflow-auto">
             {messages.map((msg: NotificationType, index) => (
-              <DropdownItem key={index}>
+              <DropdownItem key={index} onClick={() => navigateTo(msg)}>
                 {msg.isRead ? (
                   <div>
                     <p className="text-lg font-semibold">{msg.title}</p>

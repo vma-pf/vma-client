@@ -76,20 +76,25 @@ const request = async <Response>(
   });
 
   // check if token is expired before 10 minutes
-  if (token && decodeToken(token).exp - Date.now() / 1000 < 600) {
+  if (token && decodeToken(token).exp - Date.now() / 1000 < 60 * 10) {
     const res = await fetch(
-      `${SERVERURL}/api/auth/refresh-token?refreshToken=${localStorage.getItem("refreshToken") || ""}`,
+      `${SERVERURL}/api/auth/refresh-token`,
       {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         method: "POST",
+        body: JSON.stringify({ refreshToken: localStorage.getItem("refreshToken"), accessToken: token }),
       }
     );
     const newToken = await res.json();
     if (newToken.isSuccess) {
       localStorage.setItem("accessToken", newToken.data.accessToken);
+      await fetch("/api/auth", {
+        method: "POST",
+        body: JSON.stringify({ sessionToken: newToken.data.accessToken, refreshToken: localStorage.getItem("refreshToken") }),
+      });
     }
   }
 
