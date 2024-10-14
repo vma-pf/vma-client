@@ -14,28 +14,30 @@ type ScheduleProps = {
   title: string;
   start: Date;
   end: Date;
+  backgroundColor?: string;
 };
 
 const eventData: ScheduleProps[] = [
   {
     id: "1",
     title: "Board Meeting",
-    start: new Date(2024, 10, 1, 9, 0),
-    end: new Date(2024, 10, 1, 11, 0),
+    start: new Date(2024, 9, 11, 15, 0),
+    end: new Date(2024, 9, 11, 16, 0),
     allDay: false,
+    backgroundColor: "#0ea5e9",
   },
   {
     id: "2",
     title: "Training session",
-    start: new Date(2024, 10, 2, 14, 0),
-    end: new Date(2024, 10, 2, 16, 0),
+    start: new Date(2024, 9, 12, 14, 0),
+    end: new Date(2024, 9, 12, 16, 0),
     allDay: false,
   },
   {
     id: "3",
     title: "Conference",
-    start: new Date(2024, 10, 3, 10, 0),
-    end: new Date(2024, 10, 3, 12, 0),
+    start: new Date(2024, 9, 13, 10, 0),
+    end: new Date(2024, 9, 13, 12, 0),
     allDay: false,
   },
 ];
@@ -52,17 +54,19 @@ const Schedule = () => {
     if (typeof window !== "undefined") {
       const savedEvents = localStorage.getItem("events");
       if (savedEvents) {
-        setCurrentEvents(JSON.parse(savedEvents));
+        // setCurrentEvents(JSON.parse(savedEvents));
+        setCurrentEvents(eventData as EventApi[]);
       }
+      localStorage.setItem("events", JSON.stringify(eventData));
     }
   }, []);
 
-  useEffect(() => {
-    // Save events to local storage whenever they change
-    if (typeof window !== "undefined") {
-      localStorage.setItem("events", JSON.stringify(currentEvents));
-    }
-  }, [currentEvents]);
+  // useEffect(() => {
+  //   // Save events to local storage whenever they change
+  //   if (typeof window !== "undefined") {
+  //     localStorage.setItem("events", JSON.stringify(currentEvents));
+  //   }
+  // }, [currentEvents]);
 
   const handleDateClick = (selected: DateSelectArg) => {
     setSelectedDate(selected);
@@ -134,18 +138,24 @@ const Schedule = () => {
             height={"85vh"}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} // Initialize calendar with required plugins.
             headerToolbar={{
-              left: "prev,next today",
+              left: "prev,next,today",
               center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+              right: "dayGridMonth,timeGridWeek,timeGridDay",
             }} // Set header toolbar options.
+            eventColor={"#10b981"} // Set event color.
             initialView="timeGridWeek" // Initial view mode of the calendar.
-            editable={true} // Allow events to be edited.
-            selectable={true} // Allow dates to be selectable.
+            // editable={true} // Allow events to be edited.
+            // selectable={true} // Allow dates to be selectable.
             selectMirror={true} // Mirror selections visually.
             dayMaxEvents={true} // Limit the number of events displayed per day.
             select={handleDateClick} // Handle date selection to create new events.
-            eventClick={handleEventClick} // Handle clicking on events (e.g., to delete them).
+            // eventClick={handleEventClick} // Handle clicking on events (e.g., to delete them).
             eventsSet={(events) => setCurrentEvents(events)} // Update state with current events whenever they change.
+            eventDidMount={(event) => {
+              // Add a tooltip to each event with its title.
+              console.log(event);
+              event.el.setAttribute("title", event.event.title);
+            }}
             initialEvents={typeof window !== "undefined" ? JSON.parse(localStorage.getItem("events") || "[]") : []} // Initial events loaded from local storage.
           />
         </div>

@@ -1,5 +1,5 @@
 "use client";
-import { Button, Tab, Tabs } from "@nextui-org/react";
+import { Button, ResizablePanel, Tab, Tabs } from "@nextui-org/react";
 import MedicineList from "./_components/medicine-list";
 import RequestMedicineList from "./_components/request-medicine-list";
 import { useRouter } from "next/navigation";

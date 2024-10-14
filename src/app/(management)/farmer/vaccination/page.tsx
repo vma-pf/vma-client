@@ -386,9 +386,9 @@ const Vaccination = () => {
                   <p
                     className={`text-lg mt-3 font-semibold ${
                       statusMap.find((status) => status.value === vaccinationData.status)?.value === 1
-                        ? "text-green-500"
-                        : statusMap.find((status) => status.value === vaccinationData.status)?.value === 2
                         ? "text-blue-500"
+                        : statusMap.find((status) => status.value === vaccinationData.status)?.value === 2
+                        ? "text-green-500"
                         : "text-red-500"
                     }`}
                   >

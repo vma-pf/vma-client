@@ -25,14 +25,33 @@ import {
   ModalBody,
   ModalFooter,
   Spinner,
+  SharedSelection,
 } from "@nextui-org/react";
-import { columns, statusOptions } from "../data";
 import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
 import { Plus, Search } from "lucide-react";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { pigService } from "@oursrc/lib/services/pigService";
-import { HerdInfo } from "@oursrc/lib/models/herd";
-import { Pig } from "@oursrc/lib/models/pig";
+import { Pig, VaccinationPig } from "@oursrc/lib/models/pig";
+import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
+import { Cage } from "@oursrc/lib/models/cage";
+import { cageService } from "@oursrc/lib/services/cageService";
+import { vaccinationStageService } from "@oursrc/lib/services/vaccinationStageService";
+import { set } from "date-fns";
+
+const columns = [
+  { name: "pigCode", uid: "pigCode", sortable: true },
+  { name: "cageCode", uid: "cageCode", sortable: true },
+  { name: "breed", uid: "breed", sortable: true },
+  { name: "vaccinationStageId", uid: "vaccinationStageId", sortable: true },
+  { name: "vaccinationStageTitle", uid: "vaccinationStageTitle", sortable: true },
+  { name: "isDone", uid: "isDone" },
+];
+
+const statusOptions = [
+  { name: "Khỏe mạnh", uid: "Alive" },
+  { name: "Bệnh", uid: "sick" },
+  { name: "Chết", uid: "dead" },
+];
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   normal: "success",
@@ -40,13 +59,27 @@ const statusColorMap: Record<string, ChipProps["color"]> = {
   dead: "danger",
 };
 
-const INITIAL_VISIBLE_COLUMNS = ["breed", "pigCode", "cageCode", "herdId", "cageId", "vaccinationDate", "healthStatus", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["pigCode", "cageCode", "breed", "vaccinationStageId", "vaccinationStageTitle", "isDone"];
 
-export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
-  const [pigList, setPigList] = React.useState<Pig[]>([]);
+const PigVaccinationStage = ({
+  vaccinationStage,
+  //   selectedPigs,
+  setSelectedPigs,
+  cages,
+  setCages,
+}: {
+  vaccinationStage: VaccinationStageProps;
+  //   selectedPigs: Pig[];
+  setSelectedPigs: (pigs: VaccinationPig[]) => void;
+  cages: Cage[];
+  setCages: React.Dispatch<React.SetStateAction<Cage[]>>;
+}) => {
+  const [pigList, setPigList] = React.useState<VaccinationPig[]>([]);
+  // const [cages, setCages] = React.useState<Cage[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
+  const [selectedCage, setSelectedCage] = React.useState<Selection>(new Set(["all"]));
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
@@ -56,6 +89,7 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
     column: "breed",
     direction: "ascending",
   });
+  const selectedValue = React.useMemo(() => selectedCage !== "all" && Array.from(selectedCage).join(", ").replaceAll("_", " "), [selectedCage]);
 
   const [page, setPage] = React.useState<number>(1);
 
@@ -68,7 +102,7 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
   }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredPigs: Pig[] = [...pigList];
+    let filteredPigs: VaccinationPig[] = [...pigList];
 
     if (hasSearchFilter) {
       filteredPigs = filteredPigs.filter((pig) => pig.breed.toLowerCase().includes(filterValue.toLowerCase()));
@@ -76,15 +110,34 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
     if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
       filteredPigs = filteredPigs.filter((pig) => Array.from(statusFilter).includes(pig.healthStatus as string));
     }
+    if (selectedValue && selectedValue !== "all") {
+      filteredPigs = filteredPigs.filter((pig) => selectedValue === pig.cageCode);
+    }
 
     return filteredPigs;
-  }, [pigList, filterValue, statusFilter]);
+  }, [pigList, filterValue, statusFilter, selectedValue]);
 
   React.useEffect(() => {
-    if (selectedHerd) {
+    if (vaccinationStage) {
       fetchData();
     }
-  }, [selectedHerd, page, rowsPerPage]);
+  }, [vaccinationStage, page, rowsPerPage]);
+
+  React.useEffect(() => {
+    setSelectedPigs(
+      pigList.filter((pig) => {
+        return selectedKeys !== "all" ? selectedKeys.has(pig.pigId) : true;
+      })
+    );
+  }, [selectedKeys]);
+
+  // React.useEffect(() => {
+  //   if (selectedValue) {
+  //     console.log(selectedValue);
+  //     console.log(pigList.filter((pig) => selectedValue === pig.cageCode));
+  //     setPigList(pigList.filter((pig) => selectedValue === pig.cageCode));
+  //   }
+  // }, [selectedValue]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -94,9 +147,9 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
   }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
-    return [...filteredItems].sort((a: Pig, b: Pig) => {
-      const first = a[sortDescriptor.column as keyof Pig] as number;
-      const second = b[sortDescriptor.column as keyof Pig] as number;
+    return [...filteredItems].sort((a: VaccinationPig, b: VaccinationPig) => {
+      const first = a[sortDescriptor.column as keyof VaccinationPig];
+      const second = b[sortDescriptor.column as keyof VaccinationPig];
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -106,14 +159,30 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerd.id, page, rowsPerPage);
-      console.log("response: ", response);
+      const response: ResponseObjectList<any> = await vaccinationStageService.getPigsInStage(vaccinationStage.id || "", page, rowsPerPage);
       if (response.isSuccess) {
-        setPigList(response.data.data || []);
+        const pigs = response.data.data || [];
+        setPigList(
+          pigs.map((pig: any) => ({
+            ...pig,
+            pigId: pig.pig.id,
+            pigCode: pig.pig.pigCode,
+            breed: pig.pig.breed,
+            cageCode: pig.pig.cageCode,
+            healthStatus: pig.pig.healthStatus,
+            vaccinationStageId: pig.vaccinationStageId,
+            vaccinationStageTitle: pig.vaccinationStageTitle,
+            isDone: pig.isDone,
+          }))
+        );
         setTotalRecords(response.data.totalRecords || 0);
         setPages(response.data?.totalPages || 1);
         setRowsPerPage(response.data?.pageSize || 5);
       }
+      // const res: ResponseObjectList<Cage> = await cageService.getCages(1, 500);
+      // if (res.isSuccess) {
+      //   setCages(res.data.data || []);
+      // }
     } catch (error) {
       console.error("Error fetching pig data:", error);
     } finally {
@@ -121,41 +190,15 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
     }
   };
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [selectedPig, setSelectedPig] = React.useState<Pig>();
-  const renderCell = React.useCallback((pig: Pig, columnKey: React.Key) => {
-    const cellValue = pig[columnKey as keyof Pig];
+  const renderCell = React.useCallback((pig: VaccinationPig, columnKey: React.Key) => {
+    const cellValue = pig[columnKey as keyof VaccinationPig];
 
     switch (columnKey) {
       case "status":
         return (
-          <Chip className="capitalize" color={statusColorMap[pig.healthStatus as string]} size="sm" variant="flat">
-            {cellValue === "active" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
+          <Chip className="capitalize" color={statusColorMap[pig.healthStatus]} size="sm" variant="flat">
+            {cellValue === "Alive" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
           </Chip>
-        );
-      case "actions":
-        return (
-          <div className="relative flex justify-center items-center gap-2">
-            <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <HiDotsVertical className="text-default-300" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  onClick={() => {
-                    setSelectedPig(pig);
-                    onOpen();
-                  }}
-                >
-                  View
-                </DropdownItem>
-                <DropdownItem>Edit</DropdownItem>
-                <DropdownItem>Delete</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </div>
         );
       default:
         return cellValue?.toString();
@@ -198,22 +241,21 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
-                  Tình trạng
+                  {/* Chọn chuồng */}
+                  {selectedValue}
                 </Button>
               </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={statusFilter}
-                selectionMode="multiple"
-                onSelectionChange={setStatusFilter}
-              >
-                {statusOptions.map((status: any) => (
-                  <DropdownItem key={status.uid} className="capitalize">
-                    {status.name.toUpperCase()}
+              <DropdownMenu aria-label="Table Columns" selectedKeys={selectedCage} selectionMode="single" onSelectionChange={setSelectedCage} items={cages}>
+                {/* {cages.map((cage: Cage) => (
+                  <DropdownItem key={cage.id} className="capitalize">
+                    <p>{cage.code}</p>
                   </DropdownItem>
-                ))}
+                ))} */}
+                {(item) => (
+                  <DropdownItem key={item.code} className="capitalize">
+                    <p>{item.code}</p>
+                  </DropdownItem>
+                )}
               </DropdownMenu>
             </Dropdown>
             <Dropdown>
@@ -237,9 +279,6 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button color="primary" endContent={<Plus />}>
-              Thêm heo
-            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -255,62 +294,19 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
         </div>
       </div>
     );
-  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, pigList.length, hasSearchFilter]);
+  }, [filterValue, statusFilter, visibleColumns, selectedCage, onSearchChange, onRowsPerPageChange, pigList.length, hasSearchFilter]);
 
   const bottomContent = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
         <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
         <Pagination isCompact showControls showShadow color="primary" page={page} total={pages} onChange={setPage} />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2">
-          {/* <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onPreviousPage}
-          >
-            Previous
-          </Button>
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onNextPage}
-          >
-            Next
-          </Button> */}
-        </div>
+        <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
       </div>
     );
   }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
   return (
     <div>
-      {isOpen && (
-        <Modal backdrop="opaque" isOpen={isOpen} onOpenChange={onOpenChange}>
-          <ModalContent>
-            {() => (
-              <>
-                <ModalHeader className="flex flex-col gap-1">Pig {selectedPig?.id}</ModalHeader>
-                <ModalBody>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis. Pellentesque sit amet hendrerit risus,
-                    sed porttitor quam.
-                  </p>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis. Pellentesque sit amet hendrerit risus,
-                    sed porttitor quam.
-                  </p>
-                  <p>
-                    Magna exercitation reprehenderit magna aute tempor cupidatat consequat elit dolor adipisicing. Mollit dolor eiusmod sunt ex incididunt cillum quis.
-                    Velit duis sit officia eiusmod Lorem aliqua enim laboris do dolor eiusmod. Et mollit incididunt nisi consectetur esse laborum eiusmod pariatur
-                    proident Lorem eiusmod et. Culpa deserunt nostrud ad veniam.
-                  </p>
-                </ModalBody>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
-      )}
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
@@ -335,9 +331,11 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
           )}
         </TableHeader>
         <TableBody emptyContent={"Không có kết quả"} loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
-          {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
+          {(item) => <TableRow key={item.pigId}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
         </TableBody>
       </Table>
     </div>
   );
-}
+};
+
+export default PigVaccinationStage;

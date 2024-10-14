@@ -25,8 +25,8 @@ const LoginForm = () => {
     try {
       setIsLoading(true);
       const res = await authService.login(data.username, data.password);
-      await authService.setTokenToCookie(res.data?.accessToken, res.data?.refreshToken);
       if (res.isSuccess === true) {
+        await authService.setTokenToCookie(res.data?.accessToken, res.data?.refreshToken);
         localStorage.setItem("accessToken", res.data?.accessToken);
         localStorage.setItem("refreshToken", res.data?.refreshToken);
         const role = decodeToken(res.data?.accessToken)?.role?.toLowerCase();

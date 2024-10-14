@@ -198,15 +198,15 @@ export default function MedicineList({
     const cellValue = data[columnKey as keyof Medicine];
 
     switch (columnKey) {
-      case "mainIngredient":
-      case "name":
-      case "unit":
-      case "usage":
-        return (
-          <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
-            <p className="truncate">{cellValue}</p>
-          </Tooltip>
-        );
+      // case "mainIngredient":
+      // case "name":
+      // case "unit":
+      // case "usage":
+      //   return (
+      //     <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
+      //       <p className="truncate">{cellValue}</p>
+      //     </Tooltip>
+      //   );
       default:
         return cellValue;
     }
@@ -232,13 +232,13 @@ export default function MedicineList({
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
-          wrapper: "max-h-[300px] overflow-auto",
+          wrapper: "max-h-[400px] w-full overflow-auto",
         }}
         selectionMode="single"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        // selectedKeys={selectedMedicine}
+        selectedKeys={selectedMedicine && selectedMedicine.id ? new Set([selectedMedicine.id]) : new Set<string>()}
         onSelectionChange={(selectedKeys: Selection) => {
           const selectedKeysArray = Array.from(selectedKeys);
           const selectedMedicines = medicineList.filter((medicine) => medicine.id && selectedKeysArray.includes(medicine.id));
@@ -254,11 +254,7 @@ export default function MedicineList({
           )}
         </TableHeader>
         <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
-          {(item) => (
-            <TableRow key={item.id} className="h-12">
-              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-            </TableRow>
-          )}
+          {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
         </TableBody>
       </Table>
     </div>

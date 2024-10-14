@@ -26,9 +26,9 @@ const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; pref
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      await authService.logoutFromNextClientToNextServer();
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+      await authService.logoutFromNextClientToNextServer();
       router.push("/login");
       toast({
         title: "Đăng xuất thành công",

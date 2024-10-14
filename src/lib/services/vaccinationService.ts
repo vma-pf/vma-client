@@ -1,7 +1,7 @@
 import http from "@oursrc/lib/http";
 import { ResponseObject } from "../models/response-object";
 import { CreateVaccinationRequest } from "../models/vaccination";
-import { MedicineInStage } from "@oursrc/app/(management)/veterinarian/vaccination/create-plan/_models/medicine-in-stage";
+import { MedicineInStage } from "@oursrc/lib/models/vaccination";
 
 export const vaccinationService = {
   getAllVaccinationPlan: (page: number, pageSize: number) =>

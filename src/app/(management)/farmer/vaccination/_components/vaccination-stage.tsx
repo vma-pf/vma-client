@@ -81,6 +81,16 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
   const [medicineList, setMedicineList] = React.useState<MedicineListProps[]>([]);
   const [selectedVaccination, setSelectedVaccination] = React.useState<VaccinationStageProps>();
 
+  const filterValue = React.useMemo(() => {
+    if (filterStatus === "all") {
+      return "Tất cả";
+    } else if (filterStatus === "done") {
+      return "Đã tiêm";
+    } else {
+      return "Chưa tiêm";
+    }
+  }, [filterStatus]);
+
   const filterVaccination = (status: string) => {
     if (status === "all") {
       return data;
@@ -112,7 +122,7 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
         <Dropdown>
           <DropdownTrigger>
             <Button variant="bordered" className="capitalize">
-              Tình trạng tiêm phòng
+              {filterValue}
             </Button>
           </DropdownTrigger>
           <DropdownMenu
@@ -161,7 +171,7 @@ const VaccinationStage = ({ data }: { data: VaccinationStageProps[] }) => {
                   endContent={<HiMiniPencilSquare size={20} />}
                   onPress={() => {
                     setSelectedVaccination(stage);
-                    getMedicineInStage(stage.id);
+                    getMedicineInStage(stage.id || "");
                     onOpen();
                   }}
                 >

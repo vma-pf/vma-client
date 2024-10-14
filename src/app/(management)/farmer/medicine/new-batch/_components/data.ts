@@ -17,11 +17,9 @@ const columns = [
 const INITIAL_VISIBLE_COLUMNS = [
   "unit",
   "name",
-  "mainIngredient",
   "quantity",
   "registerNumber",
   "netWeight",
-  "usage",
 ];
 
 const statusOptions = [{ name: "", uid: "" }];

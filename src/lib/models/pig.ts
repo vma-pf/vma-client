@@ -39,4 +39,16 @@ type UpdatePigRequest = {
   cageCode?: string;
 };
 
-export type { Pig, CreatePigRequest, UpdatePigRequest };
+type VaccinationPig = {
+  vaccinationStageId: string;
+  vaccinationStageTitle: string;
+  isDone: boolean;
+  pigId: string;
+  pigCode: string;
+  breed: string;
+  cageCode: string;
+  healthStatus: string;
+  herdId: string;
+};
+
+export type { Pig, CreatePigRequest, UpdatePigRequest, VaccinationPig };
