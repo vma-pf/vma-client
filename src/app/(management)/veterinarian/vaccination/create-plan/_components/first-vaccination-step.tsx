@@ -7,7 +7,6 @@ import {
   CalendarDate,
   Card,
   CardBody,
-  CardHeader,
   DatePicker,
   DateRangePicker,
   DateValue,
@@ -17,6 +16,8 @@ import {
   PopoverContent,
   PopoverTrigger,
   RangeValue,
+  Select,
+  SelectItem,
   Textarea,
   Tooltip,
 } from "@nextui-org/react";
@@ -26,22 +27,24 @@ import { toast } from "@oursrc/hooks/use-toast";
 import { Cage } from "@oursrc/lib/models/cage";
 import { Herd } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
+import { VaccinationTemplate } from "@oursrc/lib/models/vaccination-template";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
+import { vaccinationTemplateService } from "@oursrc/lib/services/vaccinationTemplateService";
 import { pluck } from "@oursrc/lib/utils/dev-utils";
-import { Check, ChevronRight, Filter, Plus, PlusSquare, SaveAll, SquarePlus, Trash, Trash2Icon } from "lucide-react";
+import { Check, Filter, Plus, SaveAll, Trash } from "lucide-react";
 import React from "react";
 import { useForm } from "react-hook-form";
-import SelectedPigsList from "./selected-pigs-list";
-import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
-import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import MedicineListInStage from "./medine-list-in-stage";
 import { v4 } from "uuid";
-import { useRouter } from "next/navigation";
+import MedicineListInStage from "./medine-list-in-stage";
+import SelectedPigsList from "./selected-pigs-list";
 
-const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: any) => {
-  const router = useRouter();
+const FirstVaccinationStep = () => {
   //State
+  const [vaccinationTemplatesOptions, setVaccinationTemplatesOptions] =
+    React.useState<{ key: string; label: string }[]>([]);
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
@@ -72,10 +75,18 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
     register,
     handleSubmit,
     control,
+    setValue,
+    getValues,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    shouldUnregister: false,
+  });
 
   //Use Effect
+  React.useEffect(() => {
+    fetchTemplates();
+  }, []);
+
   React.useEffect(() => {
     if (selectedHerds.length > 0) {
       fetchPigs("herd");
@@ -91,6 +102,23 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
       setAllSelectedPigs([]);
     }
   }, [selectedCages]);
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await vaccinationTemplateService.getVaccinationTemplate(
+        1,
+        1000
+      );
+      if (response.isSuccess) {
+        setVaccinationTemplatesOptions(
+          response.data.data.map((x: VaccinationTemplate) => ({
+            key: x.contentTemplate,
+            label: x.titleTemplate,
+          }))
+        );
+      }
+    } catch (error) {}
+  };
 
   const fetchPigs = async (fetchBy: string) => {
     try {
@@ -143,10 +171,63 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
     }
   };
 
-  const handleCreateTemplate = () => {
-    console.log(templateName);
-    console.log(stages);
-    console.log(allSelectedPigs);
+  const onApplyTemplate = async (event: any) => {
+    const data = JSON.parse(event.target.value);
+    setValue("title", data.title);
+    setValue("note", data.note);
+    setValue("description", data.description);
+    setStages(data.stages);
+    setDate({
+      start: parseDate(data.startDate.split("T")[0]),
+      end: parseDate(data.expectedEndDate.split("T")[0]),
+    });
+  };
+
+  const handleCreateTemplate = async () => {
+    const templateRequest = stages.map(
+      (x: VaccinationStageProps, index: number) => ({
+        ...x,
+        numberOfDays:
+          index === 0
+            ? 0
+            : Math.round(
+                (new Date(x.applyStageTime).valueOf() -
+                  new Date(stages[index - 1].applyStageTime).valueOf()) /
+                  (1000 * 3600 * 24)
+              ),
+      })
+    );
+    checkStep1Completed();
+    const request = {
+      ...getValues(),
+      startDate: new Date(date.start.toString()).toISOString(),
+      expectedEndDate: new Date(date.end.toString()).toISOString(),
+      stages: templateRequest,
+    };
+    try {
+      const response =
+        await vaccinationTemplateService.createVaccinationTemplate({
+          titleTemplate: templateName,
+          createVaccinationPlanIncludeStageRequest: JSON.stringify(request),
+        });
+      if (response && response.isSuccess) {
+        toast({
+          variant: "success",
+          title: "Lưu mẫu lịch tiêm phòng thành công!!!",
+          description:
+            "Đã tạo thành công mẫu lịch tiêm phòng! Vui lòng hoàn thành các bước còn lại để kết thúc",
+        });
+      } else {
+        throw new AggregateError([new Error()], response.errorMessage);
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi hệ thống! Vui lòng thử lại",
+        description: error.message,
+      });
+    } finally {
+    }
   };
 
   const handleSubmitForm = async (data: any) => {
@@ -180,10 +261,10 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
       if (response && response.isSuccess) {
         toast({
           variant: "success",
-          title: "Tạo thành công bước 1",
-          description: "Đã tạo thành công lịch tiêm phòng bước 1! Vui lòng qua bước 2 để thêm thuốc cho giai đoạn",
+          title: "Tạo thành công lịch tiêm phòng",
+          description:
+            "Đã tạo thành công lịch tiêm phòng! Xem chi tiết tại màn hình thống kê",
         });
-        router.push("/veterinarian/vaccination");
       } else {
         throw new AggregateError([new Error()], response.errorMessage);
       }
@@ -329,6 +410,21 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
           <Card className="w-full">
             <CardBody>
               <div className="flex justify-end">
+                <div className="w-2/5 mr-2 flex justify-end">
+                  <Select
+                    items={vaccinationTemplatesOptions}
+                    label="Chọn mẫu tiêm phòng"
+                    className="max-w-xs"
+                    onChange={(e) => onApplyTemplate(e)}
+                  >
+                    {(vaccinationTemplate) => (
+                      <SelectItem key={vaccinationTemplate.key}>
+                        {vaccinationTemplate.label}
+                      </SelectItem>
+                    )}
+                  </Select>
+                </div>
+
                 <div className="mr-2">
                   <Popover placement="bottom">
                     <PopoverTrigger>
@@ -351,7 +447,12 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
                           value={templateName}
                           onChange={(e) => setTemplateName(e.target.value)}
                         />
-                        <Button color="primary" type="submit" isIconOnly onClick={handleCreateTemplate}>
+                        <Button
+                          color="primary"
+                          type="submit"
+                          isIconOnly
+                          onClick={handleCreateTemplate}
+                        >
                           <Check />
                         </Button>
                       </div>
@@ -376,6 +477,7 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
                   label="Tiêu đề"
                   placeholder="Nhập tiêu đề"
                   labelPlacement="outside"
+                  value={getValues("title")}
                   isRequired
                   isInvalid={errors.title ? true : false}
                   errorMessage="Tiêu đề không được để trống"
@@ -403,6 +505,7 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
                   label="Ghi chú"
                   placeholder="Nhập ghi chú"
                   labelPlacement="outside"
+                  value={getValues("note")}
                   isRequired
                   isInvalid={errors.note ? true : false}
                   errorMessage="Ghi chú không được để trống"
@@ -418,6 +521,7 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
                   label="Mô tả"
                   placeholder="Nhập mô tả"
                   labelPlacement="outside"
+                  value={getValues("description")}
                   cacheMeasurements
                   isRequired
                   isInvalid={errors.description ? true : false}
@@ -484,7 +588,7 @@ const FirstVaccinationStep = ({ setStep, setVaccinationPlanFirstStepResult }: an
                                     stages.some((x: VaccinationStageProps) => x.applyStageTime === date.toString() && x.id !== stage.id)
                                   }
                                   minValue={date.start}
-                                  maxValue={date.end}
+                                  // maxValue={date.end}
                                   labelPlacement="outside"
                                   isRequired
                                   isInvalid={stage.applyStageTime ? false : true}
