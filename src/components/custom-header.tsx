@@ -2,11 +2,12 @@
 import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { Avatar, Badge, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
+import { SERVERURL } from "@oursrc/lib/http";
 import { NotificationType } from "@oursrc/lib/models/notification";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { notificationService } from "@oursrc/lib/services/notificationService";
 import { useTheme } from "next-themes";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { connected } from "process";
 import React, { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa6";
@@ -15,6 +16,7 @@ import { LuDot } from "react-icons/lu";
 
 const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string }; prefix: string }) => {
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
   const pathname = usePathname();
   const filteredPath = pathname
     .split(prefix)
@@ -54,10 +56,16 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
     }
   };
 
+  const navigateTo = (message: NotificationType) => {
+    console.log(message.notificationType);
+    // const path = message.notificationType === 1 ? "/farmer/medicine" : "/farmer/disease-report";
+    // router.push(path);
+  };
+
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken")?.toString();
     const connect = new HubConnectionBuilder()
-      .withUrl("https://vma-server.io.vn/hubs/notification-hub", {
+      .withUrl(`${SERVERURL}/hubs/notification-hub`, {
         // send access token here
         accessTokenFactory: () => accessToken || "",
       })
@@ -99,7 +107,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
   const toggleMode = () => setTheme(theme === "light" ? "dark" : "light");
   return (
     <div className="bg-slate-200 dark:bg-zinc-800 px-4 py-2 rounded-2xl flex justify-between">
-      <p className="text-slate-500 font-bold text-3xl">{titleMap[filteredPath] || ""}</p>
+      <p className="font-bold text-3xl">{titleMap[filteredPath] || ""}</p>
       <div className="flex items-center">
         <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "Farmer"}</p>
         <Avatar className="mx-2" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
@@ -124,7 +132,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
           </DropdownTrigger>
           <DropdownMenu className="max-h-[300px] overflow-auto">
             {messages.map((msg: NotificationType, index) => (
-              <DropdownItem key={index}>
+              <DropdownItem key={index} onClick={() => navigateTo(msg)}>
                 {msg.isRead ? (
                   <div>
                     <p className="text-lg font-semibold">{msg.title}</p>

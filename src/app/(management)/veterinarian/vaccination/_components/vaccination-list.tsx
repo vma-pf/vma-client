@@ -8,18 +8,18 @@ import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
 
 const statusMapColor = [
   { name: "red", value: 0 },
-  { name: "green", value: 1 },
-  { name: "blue", value: 2 },
+  { name: "blue", value: 1 },
+  { name: "green", value: 2 },
   { name: "red", value: 3 },
 ];
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
   { name: "Đang thực hiện", value: 1 },
-  { name: "Chưa thực hiện", value: 2 },
+  { name: "Đã hoàn thành", value: 2 },
   { name: "Đã hủy", value: 3 },
 ];
 
-const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: any }) => {
+const VaccinationList = ({ selectedVaccination, setSelectedVaccination }: { selectedVaccination: Set<string>; setSelectedVaccination: any }) => {
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "title",
     direction: "ascending",
@@ -78,6 +78,7 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
       setIsLoading(false);
     }
   };
+  // console.log(selectedKeys);
 
   React.useEffect(() => {
     getAllVaccinationPlan();
@@ -93,6 +94,7 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
       sortDescriptor={sortDescriptor}
       onSortChange={setSortDescriptor}
       //   align="center"
+      // selectedKeys={selectedKeys}
       onSelectionChange={setSelectedVaccination}
       aria-label="Example static collection table"
     >

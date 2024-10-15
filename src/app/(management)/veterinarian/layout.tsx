@@ -13,7 +13,7 @@ const VetLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const projectName = "[VMA-PF]";
+  const projectName = "VMA";
   const titleMap: { [key: string]: string } = {
     "/dashboard": projectName + " - " + "Tổng quan",
     "/pig": projectName + " - " + "Quản lý heo",

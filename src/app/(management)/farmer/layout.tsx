@@ -13,7 +13,7 @@ const FarmerLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const projectName = "VMA-PF";
+  const projectName = "VMA";
   const titleMap: { [key: string]: string } = {
     "/dashboard": projectName + " - " + "Tổng quan",
     "/herd": projectName + " - " + "Quản lý đàn heo",

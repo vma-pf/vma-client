@@ -37,12 +37,7 @@ export default function RootLayout({
       </head>
       <StoreProvider>
         <body>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
             <Toaster />
             <NextUIProvider>{children}</NextUIProvider>
           </ThemeProvider>
