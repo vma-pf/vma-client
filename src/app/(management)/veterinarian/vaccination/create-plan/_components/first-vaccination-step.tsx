@@ -183,18 +183,6 @@ const FirstVaccinationStep = () => {
     });
   };
 
-  const onApplyTemplate = async (event: any) => {
-    const data = JSON.parse(event.target.value);
-    setValue("title", data.title);
-    setValue("note", data.note);
-    setValue("description", data.description);
-    setStages(data.stages);
-    setDate({
-      start: parseDate(data.startDate.split("T")[0]),
-      end: parseDate(data.expectedEndDate.split("T")[0]),
-    });
-  };
-
   const handleCreateTemplate = async () => {
     const templateRequest = stages.map(
       (x: VaccinationStageProps, index: number) => ({
@@ -277,7 +265,6 @@ const FirstVaccinationStep = () => {
           description:
             "Đã tạo thành công lịch tiêm phòng! Xem chi tiết tại màn hình thống kê",
         });
-        router.push("/veterinarian/vaccination");
       } else {
         throw new AggregateError([new Error()], response.errorMessage);
       }
