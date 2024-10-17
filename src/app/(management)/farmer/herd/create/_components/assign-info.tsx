@@ -9,8 +9,19 @@ import { Cage } from "@oursrc/lib/models/cage";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { cageService } from "@oursrc/lib/services/cageService";
 import { Pig } from "@oursrc/lib/models/pig";
+import { SensorData } from "./assign-tag";
 
-const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onClose: () => void; setAssignedPigs: React.Dispatch<React.SetStateAction<Pig[]>> }) => {
+const AssignInfo = ({
+  isOpen,
+  onClose,
+  setAssignedPigs,
+  pigInfo,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  setAssignedPigs: React.Dispatch<React.SetStateAction<Pig[]>>;
+  pigInfo: SensorData;
+}) => {
   const { toast } = useToast();
   const {
     register,
@@ -19,9 +30,9 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
     formState: { errors },
   } = useForm();
   // const [pig, setPig] = React.useState<Pig>();
-  const [tag, setTag] = React.useState<string>(
-    Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-  );
+  // const [tag, setTag] = React.useState<string>(
+  //   Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+  // );
   const [cages, setCages] = React.useState<Cage[]>([]);
   const [selectedCage, setSelectedCage] = React.useState<Cage>();
   const [height, setHeight] = React.useState<string | undefined>();
@@ -29,9 +40,11 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
   const [weight, setWeight] = React.useState<string | undefined>();
   const [gender, setGender] = React.useState<string | undefined>(undefined);
 
+  // console.log(pigInfo.Weight, pigInfo.Uid);
+
   const handleHeightChange = (event: string) => {
     let numericValue = event.replace(/[^0-9.]/g, "");
-    if (numericValue[0] === "-" || numericValue[0] === "0") {
+    if (numericValue[0] === "-") {
       numericValue = numericValue.slice(1);
     }
     if (parseFloat(numericValue) > 10000) {
@@ -42,7 +55,7 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
 
   const handleWidthChange = (event: string) => {
     let numericValue = event.replace(/[^0-9.]/g, "");
-    if (numericValue[0] === "-" || numericValue[0] === "0") {
+    if (numericValue[0] === "-") {
       numericValue = numericValue.slice(1);
     }
     if (parseFloat(numericValue) > 10000) {
@@ -53,7 +66,7 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
 
   const handleWeightChange = (event: string) => {
     let numericValue = event.replace(/[^0-9.]/g, "");
-    if (numericValue[0] === "-" || numericValue[0] === "0") {
+    if (numericValue[0] === "-") {
       numericValue = numericValue.slice(1);
     }
     if (parseFloat(numericValue) > 10000) {
@@ -71,7 +84,7 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
         weight: data.weight,
         height: data.height,
         width: data.width,
-        code: tag,
+        code: pigInfo.Uid,
         gender: gender,
         note: data.note || "",
       };
@@ -144,7 +157,10 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
   React.useEffect(() => {
     if (isOpen === true) {
       getCages();
-      setTag(Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+      // setTag(Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+      setWeight(pigInfo.Weight ? pigInfo.Weight.toString() : undefined);
+      setHeight(pigInfo.Height ? pigInfo.Height.toString() : undefined);
+      setWidth(pigInfo.Width ? pigInfo.Width.toString() : undefined);
     }
   }, [isOpen]);
 
@@ -169,7 +185,8 @@ const AssignInfo = ({ isOpen, onClose, setAssignedPigs }: { isOpen: boolean; onC
             <ModalBody>
               <div className="mb-4 flex items-center">
                 <IoMdPricetags className="text-primary" size={30} />
-                <p className="ml-2 text-lg">{tag}</p>
+                {/* <p className="ml-2 text-lg">{tag}</p> */}
+                <p className="ml-2 text-lg">{pigInfo.Uid}</p>
               </div>
               <div className="mb-5 flex">
                 <Input

@@ -83,7 +83,7 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
       filteredHerds = filteredHerds.filter((herd) => herd.breed.toLowerCase().includes(filterValue.toLowerCase()));
     }
     if (statusFilter) {
-      filteredHerds = filteredHerds.filter((herd) => Array.from(statusFilter).includes(herd.status.toString()));
+      filteredHerds = filteredHerds.filter((herd) => Array.from(statusFilter).includes(herd.status?.toString() || ""));
     }
     return filteredHerds;
   }, [herdList, filterValue, statusFilter]);

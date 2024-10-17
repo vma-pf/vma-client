@@ -18,6 +18,9 @@ import { Cage } from "@oursrc/lib/models/cage";
 import { cageService } from "@oursrc/lib/services/cageService";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { Pig } from "@oursrc/lib/models/pig";
+import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { SERVERURL } from "@oursrc/lib/http";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 
 // const pigList: Pig[] = [
 //   { id: 1, name: "Heo 001", pigCode: "HEO001" },
@@ -36,6 +39,12 @@ import { Pig } from "@oursrc/lib/models/pig";
 //   { id: "5", name: "Chuồng 005", capacity: 10, currentQuantity: 0 },
 //   { id: "6", name: "Chuồng 006", capacity: 10, currentQuantity: 10 },
 // ];
+export type SensorData = {
+  Uid: string;
+  Weight: number;
+  Height?: number | null;
+  Width?: number | null;
+};
 
 const AssignTag = () => {
   const dispatch = useAppDispatch();
@@ -44,6 +53,9 @@ const AssignTag = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = React.useState<boolean>(false);
   const [cages, setCages] = React.useState<Cage[]>([]);
+  const [pigInfo, setPigInfo] = React.useState<SensorData | undefined>(undefined);
+
+  const [connection, setConnection] = useState<HubConnection | null>(null);
 
   const handleSubmit = async () => {
     try {
@@ -106,6 +118,47 @@ const AssignTag = () => {
     getAllPigs();
     getCages();
   }, []);
+
+  React.useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken")?.toString();
+    const connect = new HubConnectionBuilder()
+      .withUrl(`${SERVERURL}/hubs/sensor-hub`, {
+        // send access token here
+        accessTokenFactory: () => accessToken || "",
+      })
+      .withAutomaticReconnect()
+      .withHubProtocol(
+        new MessagePackHubProtocol({
+          // encoder: encode,
+        })
+      )
+      .configureLogging(LogLevel.Information)
+      .build();
+    setConnection(connect);
+    connect
+      .start()
+      .then(() => {
+        console.log("Connected to Sensor Hub");
+        // getNotificationList();
+        connect.on("ConsumeSensorData", (data: SensorData) => {
+          // console.log("ConsumeSensorData", data);
+          data && setPigInfo(data);
+          onOpen();
+          // const newMessages = [...messages];
+          // newMessages.push(message);
+          // setMessages(newMessages);
+        });
+        // connect.invoke("RetrieveMessageHistory");
+      })
+
+      .catch((err) => console.error("Error while connecting to SignalR Hub:", err));
+
+    return () => {
+      if (connection) {
+        connection.off("ReceiveMessage");
+      }
+    };
+  }, []);
   return (
     <div className="container mx-auto">
       <div className="mt-12 mb-8">
@@ -125,7 +178,7 @@ const AssignTag = () => {
               repeatDelay: 2,
             }}
           >
-            <RiRfidLine className="mx-auto text-primary" size={150} onClick={onOpen} />
+            <RiRfidLine className="mx-auto text-primary" size={150} />
           </motion.div>
           <p className="text-center text-lg mt-4">Quét tag bằng thiết bị RFID để gắn tag cho heo</p>
         </div>
@@ -269,7 +322,7 @@ const AssignTag = () => {
             </div>
           )}
         </div>
-        <AssignInfo isOpen={isOpen} onClose={onClose} setAssignedPigs={setAssignedPigs} />
+        {pigInfo && <AssignInfo isOpen={isOpen} onClose={onClose} setAssignedPigs={setAssignedPigs} pigInfo={pigInfo} />}
         <div className="flex justify-end">
           <Button color="primary" variant="solid" isLoading={loading} size="lg" isDisabled={assignedPigs?.length <= 0} type="submit" onPress={handleSubmit}>
             Bước tiếp theo

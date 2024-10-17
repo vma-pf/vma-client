@@ -163,17 +163,19 @@ const PigVaccinationStage = ({
       if (response.isSuccess) {
         const pigs = response.data.data || [];
         setPigList(
-          pigs.map((pig: any) => ({
-            ...pig,
-            pigId: pig.pig.id,
-            pigCode: pig.pig.pigCode,
-            breed: pig.pig.breed,
-            cageCode: pig.pig.cageCode,
-            healthStatus: pig.pig.healthStatus,
-            vaccinationStageId: pig.vaccinationStageId,
-            vaccinationStageTitle: pig.vaccinationStageTitle,
-            isDone: pig.isDone,
-          }))
+          pigs
+            .filter((pig: VaccinationPig) => pig.isDone === false)
+            .map((pig: any) => ({
+              ...pig,
+              pigId: pig.pig.id,
+              pigCode: pig.pig.pigCode,
+              breed: pig.pig.breed,
+              cageCode: pig.pig.cageCode,
+              healthStatus: pig.pig.healthStatus,
+              vaccinationStageId: pig.vaccinationStageId,
+              vaccinationStageTitle: pig.vaccinationStageTitle,
+              isDone: pig.isDone,
+            }))
         );
         setTotalRecords(response.data.totalRecords || 0);
         setPages(response.data?.totalPages || 1);

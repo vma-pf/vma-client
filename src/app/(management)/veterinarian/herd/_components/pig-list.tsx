@@ -237,9 +237,6 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button color="primary" endContent={<Plus />}>
-              Thêm heo
-            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">

@@ -6,6 +6,7 @@ import { SERVERURL } from "@oursrc/lib/http";
 import { NotificationType } from "@oursrc/lib/models/notification";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { notificationService } from "@oursrc/lib/services/notificationService";
+import { ROLE, decodeToken } from "@oursrc/lib/utils";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
 import { connected } from "process";
@@ -58,6 +59,16 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
 
   const navigateTo = (message: NotificationType) => {
     console.log(message.notificationType);
+    const role = decodeToken(localStorage.getItem("accessToken") || "").role.toLowerCase();
+    if (role === ROLE.FARMER) {
+      switch (message.notificationType) {
+        case "Yêu cầu tiêm phòng":
+          router.push("/farmer/medicine");
+          break;
+        default:
+          break;
+      }
+    }
     // const path = message.notificationType === 1 ? "/farmer/medicine" : "/farmer/disease-report";
     // router.push(path);
   };

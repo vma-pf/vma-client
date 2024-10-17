@@ -46,7 +46,7 @@ const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
+export default function PigList({ selectedHerd, setSelectedPig }: { selectedHerd: HerdInfo; setSelectedPig: React.Dispatch<React.SetStateAction<Pig | undefined>> }) {
   const [pigList, setPigList] = React.useState<Pig[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
@@ -126,7 +126,7 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
   };
 
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [selectedPig, setSelectedPig] = React.useState<Pig>();
+  // const [selectedPig, setSelectedPig] = React.useState<Pig>();
   const renderCell = React.useCallback((pig: Pig, columnKey: React.Key) => {
     const cellValue = pig[columnKey as keyof Pig];
 
@@ -241,9 +241,6 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button color="primary" endContent={<Plus />}>
-              Thêm heo
-            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -289,7 +286,7 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
   }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
   return (
     <div>
-      {isOpen && (
+      {/* {isOpen && (
         <Modal backdrop="opaque" isOpen={isOpen} onOpenChange={onOpenChange}>
           <ModalContent>
             {() => (
@@ -314,21 +311,26 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
             )}
           </ModalContent>
         </Modal>
-      )}
+      )} */}
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
+        color="primary"
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
           wrapper: "max-h-[750px]",
         }}
         selectedKeys={selectedKeys}
-        selectionMode="multiple"
+        selectionMode="single"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        onSelectionChange={setSelectedKeys}
+        onSelectionChange={(keys) => {
+          setSelectedKeys(keys);
+          // setSelectedPigs(keys === "all" ? pigList : pigList.filter((pig) => Array.from(keys).includes(pig.id)));
+          setSelectedPig(pigList.find((pig) => pig.id === Array.from(keys)[0]));
+        }}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>
