@@ -98,4 +98,5 @@ export const dateArrayConverter = (dates: string[]): string[] => {
 export const ROLE = {
   VETERINARIAN: "veterinarian",
   FARMER: "farmer",
+  FARMERASSISTANT: "farmerassistant",
 };

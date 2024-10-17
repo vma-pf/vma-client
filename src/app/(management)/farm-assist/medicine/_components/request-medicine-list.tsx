@@ -1,5 +1,9 @@
 import {
+  Accordion,
+  AccordionItem,
   Button,
+  Card,
+  CardBody,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -9,21 +13,29 @@ import {
   Selection,
   SortDescriptor,
   Spinner,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
+  Tabs,
   Tooltip,
+  useDisclosure,
 } from "@nextui-org/react";
-import { Search } from "lucide-react";
-import React from "react";
+import { EyeIcon, Search } from "lucide-react";
+import ReplyRequest from "./_modals/reply-request";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useToast } from "@oursrc/hooks/use-toast";
 import { MedicineRequest } from "@oursrc/lib/models/medicine-request";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
 import { HiChevronDown } from "react-icons/hi2";
-import { IoMdCheckmark, IoMdClose } from "react-icons/io";
+import { IoMdCheckmark, IoMdClose, IoMdCloseCircle } from "react-icons/io";
+import { FaCheckCircle } from "react-icons/fa";
+import { FaRegThumbsDown, FaRegThumbsUp } from "react-icons/fa6";
 
 const columns = [
   { uid: "medicineId", name: "Mã thuốc", sortable: true },
@@ -31,13 +43,17 @@ const columns = [
   { uid: "quantity", name: "Số lượng", sortable: true },
   { uid: "status", name: "Trạng thái", sortable: true },
   { uid: "isPurchaseNeeded", name: "Cần mua" },
+  { uid: "actions", name: "Hành động" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["medicineId", "newMedicineName", "quantity", "status", "isPurchaseNeeded"];
+const INITIAL_VISIBLE_COLUMNS = ["medicineId", "newMedicineName", "quantity", "status", "isPurchaseNeeded", "actions"];
 
 const statusOptions = ["Đã duyệt", "Chờ xử lý", "Từ chối"];
 
 const RequestMedicineList = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [answer, setAnswer] = useState<"accept" | "reject">();
+
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
   // const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
@@ -50,6 +66,8 @@ const RequestMedicineList = () => {
     column: "lastUpdatedAt",
     direction: "ascending",
   });
+  const [selectedMedicine, setSelectedMedicine] = React.useState<MedicineRequest | null>(null);
+
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
 
@@ -75,8 +93,10 @@ const RequestMedicineList = () => {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    fetchData();
-  }, [page, rowsPerPage]);
+    if (!isOpen) {
+      fetchData();
+    }
+  }, [page, rowsPerPage, isOpen]);
 
   //API function
   const fetchData = async () => {
@@ -209,6 +229,37 @@ const RequestMedicineList = () => {
         return cellValue ? <IoMdCheckmark size={20} className="text-primary" /> : <IoMdClose size={20} className="text-danger-500" />;
       case "status":
         return <p className={`${cellValue === "Đã duyệt" ? "text-primary" : cellValue === "Chờ xử lý" ? "text-warning" : "text-danger-500"}`}>{cellValue}</p>;
+      case "actions":
+        return (
+          <div className="flex justify-center items-center gap-4">
+            <Tooltip content="Chấp nhận" color="primary">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <FaRegThumbsUp
+                  size={20}
+                  className="text-primary cursor-pointer"
+                  onClick={() => {
+                    setAnswer("accept");
+                    setSelectedMedicine(data);
+                    onOpen();
+                  }}
+                />
+              </span>
+            </Tooltip>
+            <Tooltip content="Từ chối" color="danger">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <FaRegThumbsDown
+                  size={20}
+                  className="text-danger-500 cursor-pointer"
+                  onClick={() => {
+                    setAnswer("reject");
+                    setSelectedMedicine(data);
+                    onOpen();
+                  }}
+                />
+              </span>
+            </Tooltip>
+          </div>
+        );
       default:
         return cellValue;
     }
@@ -258,6 +309,8 @@ const RequestMedicineList = () => {
           )}
         </TableBody>
       </Table>
+      {isOpen && selectedMedicine && answer === "accept" && <ReplyRequest isOpen={isOpen} onClose={onClose} selectedMedicine={selectedMedicine} answer={answer} />}
+      {isOpen && selectedMedicine && answer === "reject" && <ReplyRequest isOpen={isOpen} onClose={onClose} selectedMedicine={selectedMedicine} answer={answer} />}
     </div>
   );
 };

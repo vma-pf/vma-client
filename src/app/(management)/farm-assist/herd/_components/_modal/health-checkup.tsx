@@ -3,6 +3,9 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Button, Input
 import { useForm } from "react-hook-form";
 import { IoMdPricetags } from "react-icons/io";
 import { Pig } from "@oursrc/lib/models/pig";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { monitorDevelopmentLogService } from "@oursrc/lib/services/monitorDevelopmentLogService";
+import { toast } from "@oursrc/hooks/use-toast";
 
 const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () => void; pigInfo: Pig }) => {
   const { register, handleSubmit, setValue } = useForm();
@@ -49,9 +52,29 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
     setWeight(undefined);
   };
 
-  const onSubmit = (data: any) => {
-    console.log(data);
-    onClose();
+  const onSubmit = async (data: any) => {
+    try {
+      const res: ResponseObject<any> = await monitorDevelopmentLogService.createMonitoringLog({
+        pigId: pigInfo.id,
+        cageId: pigInfo.cageId,
+        weight: Number(weight || ""),
+        height: Number(height || ""),
+        width: Number(width || ""),
+        note: data.note,
+        status: 0,
+      });
+      if (res.isSuccess) {
+        resetData();
+        onClose();
+      } else {
+        toast({
+          title: res.errorMessage || "Nhập thông tin không thành công",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   React.useEffect(() => {
@@ -114,6 +137,16 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
                 errorMessage="Chiều rộng không được để trống"
                 value={width || ""}
                 onValueChange={(e) => handleWidthChange(e)}
+              />
+              <Input
+                type="text"
+                radius="sm"
+                size="lg"
+                label="Ghi chú"
+                placeholder="Nhập ghi chú"
+                labelPlacement="outside"
+                isRequired
+                {...register("note", { required: true })}
               />
             </ModalBody>
             <ModalFooter>

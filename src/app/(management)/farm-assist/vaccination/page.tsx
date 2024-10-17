@@ -15,6 +15,7 @@ import { StageMedicine } from "@oursrc/lib/models/medicine";
 import { TbMedicineSyrup } from "react-icons/tb";
 import { CiEdit } from "react-icons/ci";
 import DetailPlan from "./_components/_modals/detail-plan";
+import UpdatePlanStatus from "./_components/_modals/update-plan-status";
 
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
@@ -32,6 +33,7 @@ const Vaccination = () => {
   const [herd, setHerd] = React.useState<HerdInfo>();
   const [filterStatus, setFilterStatus] = React.useState("not-done");
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
+  const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
   const [selectedVaccination, setSelectedVaccination] = React.useState<VaccinationStageProps>();
 
@@ -279,12 +281,33 @@ const Vaccination = () => {
                           >
                             Xem thuốc
                           </Button>
+                          {!stage.isDone && (
+                            <Button
+                              variant="solid"
+                              color="primary"
+                              endContent={<CiEdit size={20} />}
+                              onPress={() => {
+                                setSelectedVaccination(stage);
+                                onOpenUpdate();
+                              }}
+                            >
+                              Cập nhật kết quả
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))
                 )}
                 {isOpenDetail && selectedVaccination && medicineList && (
                   <DetailPlan isOpen={isOpenDetail} onClose={onCloseDetail} selectedVaccination={selectedVaccination} medicineList={medicineList} />
+                )}
+                {isOpenUpdate && selectedVaccination && (
+                  <UpdatePlanStatus
+                    isOpen={isOpenUpdate}
+                    onClose={onCloseUpdate}
+                    selectedVaccination={selectedVaccination}
+                    setSelectedVaccination={setSelectedVaccination}
+                  />
                 )}
               </div>
             )}

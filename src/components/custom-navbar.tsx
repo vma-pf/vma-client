@@ -47,7 +47,7 @@ const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; pref
   return (
     <div className={`${open ? "w-56" : "w-20"} h-full duration-300`}>
       <div className={`flex flex-col py-3 bg-slate-200 dark:bg-zinc-800 items-center rounded-2xl ${open ? "w-56" : "w-20"} h-fit duration-300 fixed left-4 top-3 z-50`}>
-        <Link href="/veterinarian/dashboard">
+        <Link href={prefix + "/dashboard"}>
           <Image className="duration-300" src="/assets/vma-logo.png" alt="logo" width={open ? 80 : 50} height={open ? 80 : 50} />
         </Link>
         <BsFillArrowLeftCircleFill size={25} className={`relative ${open ? "left-28" : "left-10 rotate-180"} duration-300`} onClick={() => setOpen(!open)} />

@@ -60,12 +60,18 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
   const navigateTo = (message: NotificationType) => {
     console.log(message.notificationType);
     const role = decodeToken(localStorage.getItem("accessToken") || "").role.toLowerCase();
-    if (role === ROLE.FARMER) {
+    if (role === ROLE.FARMERASSISTANT) {
       switch (message.notificationType) {
         case "Yêu cầu tiêm phòng":
-          router.push("/farmer/medicine");
+          router.push("/farm-assist/medicine");
           break;
         default:
+          break;
+      }
+    } else if (role === ROLE.VETERINARIAN) {
+      switch (message.notificationType) {
+        case "Nhắc nhở tiêm phòng":
+          router.push("/veterinarian/vaccination");
           break;
       }
     }
@@ -120,7 +126,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
     <div className="bg-slate-200 dark:bg-zinc-800 px-4 py-2 rounded-2xl flex justify-between">
       <p className="font-bold text-3xl">{titleMap[filteredPath] || ""}</p>
       <div className="flex items-center">
-        <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "Farmer"}</p>
+        <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "/farmer" ? "Farmer" : "FarmAssistant"}</p>
         <Avatar className="mx-2" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
         <Dropdown
           placement="bottom-end"

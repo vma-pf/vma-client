@@ -1,5 +1,7 @@
+"use client";
 import {
   Button,
+  ChipProps,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -16,33 +18,44 @@ import {
   TableHeader,
   TableRow,
   Tooltip,
+  useDisclosure,
 } from "@nextui-org/react";
-import { Search } from "lucide-react";
+import { capitalize } from "@oursrc/components/utils";
+import { useToast } from "@oursrc/hooks/use-toast";
+import { Medicine } from "@oursrc/lib/models/medicine";
+import { EditIcon, EyeIcon, Plus, Search, Trash2Icon } from "lucide-react";
 import React from "react";
-import { MedicineRequest } from "@oursrc/lib/models/medicine-request";
+import { HiChevronDown } from "react-icons/hi";
+import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "../data";
+import MedicineModal from "./_modals/modal-medicine";
+import { medicineService } from "@oursrc/lib/services/medicineService";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
-import { HiChevronDown } from "react-icons/hi2";
-import { IoMdCheckmark, IoMdClose } from "react-icons/io";
+import BatchList from "./_modals/batch-list";
 
-const columns = [
-  { uid: "medicineId", name: "Mã thuốc", sortable: true },
-  { uid: "newMedicineName", name: "Tên thuốc", sortable: true },
-  { uid: "quantity", name: "Số lượng", sortable: true },
-  { uid: "status", name: "Trạng thái", sortable: true },
-  { uid: "isPurchaseNeeded", name: "Cần mua" },
-];
+const statusColorMap: Record<string, ChipProps["color"]> = {
+  active: "success",
+  sick: "warning",
+  dead: "danger",
+};
 
-const INITIAL_VISIBLE_COLUMNS = ["medicineId", "newMedicineName", "quantity", "status", "isPurchaseNeeded"];
+export default function MedicineList() {
+  const { toast } = useToast();
 
-const statusOptions = ["Đã duyệt", "Chờ xử lý", "Từ chối"];
+  //Modal field
+  const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
+  // const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
+  // const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure();
+  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
+  // const [updateId, setUpdateId] = React.useState<string>("");
+  const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | null>(null);
+  const [context, setContext] = React.useState<"create" | "edit" | "detail">("create");
+  const [submitDone, setSubmitDone] = React.useState<boolean>(false);
 
-const RequestMedicineList = () => {
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
-  // const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
+  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
-  const [statusFilter, setStatusFilter] = React.useState<Selection>(new Set(statusOptions));
+  const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -50,6 +63,7 @@ const RequestMedicineList = () => {
     column: "lastUpdatedAt",
     direction: "ascending",
   });
+
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
 
@@ -58,62 +72,101 @@ const RequestMedicineList = () => {
 
     return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
-  const [medicineList, setMedicineList] = React.useState<MedicineRequest[]>([]);
+  const [medicineList, setMedicineList] = React.useState<Medicine[]>([]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredMedicines: MedicineRequest[] = [...medicineList];
+    let filteredMedicines: Medicine[] = [...medicineList];
 
     if (hasSearchFilter) {
-      filteredMedicines = filteredMedicines.filter((medicine) => medicine.id.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredMedicines = filteredMedicines.filter((medicine) => medicine.name.toLowerCase().includes(filterValue.toLowerCase()));
     }
     if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-      filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.status));
+      filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.name as string));
     }
     return filteredMedicines;
   }, [medicineList, filterValue, statusFilter]);
 
   const [loading, setLoading] = React.useState(false);
 
+  //Use Effect
+  // React.useEffect(() => {
+  //   if (submitDone) {
+  //     onClose();
+  //     fetchData();
+  //     setSubmitDone(false);
+  //   }
+  // }, [submitDone]);
+
   React.useEffect(() => {
-    fetchData();
-  }, [page, rowsPerPage]);
+    if (!isOpenAdd) {
+      fetchData();
+    }
+  }, [page, rowsPerPage, isOpenAdd]);
 
   //API function
   const fetchData = async () => {
-    setLoading(true);
     try {
-      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(page, rowsPerPage);
+      setLoading(true);
+      const response: ResponseObjectList<Medicine> = await medicineService.getMedicine(page, rowsPerPage);
       if (response.isSuccess) {
         setMedicineList(response.data.data);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
-        setLoading(false);
-      } else {
-        console.log(response.errorMessage);
       }
     } catch (e) {
-      console.log(e);
+      toast({
+        variant: "destructive",
+        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  // const onEdit = async (data: Medicine) => {
+  //   setContext("edit");
+  //   setUpdateId(data.id);
+  //   onOpen();
+  // };
+
+  // const onDelete = async (data: Medicine) => {
+  //   try {
+  //     const response = await medicineService.deleteMedicine(data.id);
+  //     if (response.isSuccess) {
+  //       fetchData();
+  //     } else {
+  //       throw new AggregateError(response.errorMessage);
+  //     }
+  //   } catch (e) {
+  //     setLoading(false);
+  //     toast({
+  //       variant: "destructive",
+  //       title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
+  //     });
+  //   }
+  // };
+
+  const items = React.useMemo(() => {
+    return filteredItems;
+  }, [filteredItems]);
+
   const sortedItems = React.useMemo(() => {
-    return [...filteredItems].sort((a: MedicineRequest, b: MedicineRequest) => {
-      const first = a[sortDescriptor.column as keyof MedicineRequest] ?? "";
-      const second = b[sortDescriptor.column as keyof MedicineRequest] ?? "";
+    return [...items].sort((a: Medicine, b: Medicine) => {
+      const first = a[sortDescriptor.column as keyof Medicine] as number;
+      const second = b[sortDescriptor.column as keyof Medicine] as number;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
-  }, [sortDescriptor, filteredItems]);
+  }, [sortDescriptor, items]);
 
+  //call api
   const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(Number(e.target.value));
     setPage(1);
   }, []);
-
+  //call api
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
       setFilterValue(value);
@@ -158,25 +211,14 @@ const RequestMedicineList = () => {
               >
                 {columns.map((column) => (
                   <DropdownItem key={column.uid} className="capitalize">
-                    {column.name.toUpperCase()}
+                    {capitalize(column.name)}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
-                  Trạng thái
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu disallowEmptySelection selectedKeys={statusFilter} selectionMode="multiple" closeOnSelect={false} onSelectionChange={setStatusFilter}>
-                {statusOptions.map((status) => (
-                  <DropdownItem key={status} className="capitalize">
-                    {status}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
+            <Button color="primary" endContent={<Plus />} onPress={onOpenAdd}>
+              Tạo mới
+            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -194,21 +236,34 @@ const RequestMedicineList = () => {
     );
   }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, medicineList.length, hasSearchFilter]);
 
-  const renderCell = React.useCallback((data: MedicineRequest, columnKey: React.Key) => {
-    const cellValue = data[columnKey as keyof MedicineRequest];
+  const renderCell = React.useCallback((data: Medicine, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof Medicine];
 
     switch (columnKey) {
-      case "medicineId":
-      case "newMedicineName":
+      case "mainIngredient":
+      case "name":
+      case "unit":
+      case "usage":
         return (
-          <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
+          <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={300}>
             <p className="truncate">{cellValue}</p>
           </Tooltip>
         );
-      case "isPurchaseNeeded":
-        return cellValue ? <IoMdCheckmark size={20} className="text-primary" /> : <IoMdClose size={20} className="text-danger-500" />;
-      case "status":
-        return <p className={`${cellValue === "Đã duyệt" ? "text-primary" : cellValue === "Chờ xử lý" ? "text-warning" : "text-danger-500"}`}>{cellValue}</p>;
+      case "actions":
+        return (
+          <div className="flex justify-end items-center gap-2">
+            <Tooltip content="Chi tiết" color="primary">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <EyeIcon
+                  onClick={() => {
+                    onOpenDetail();
+                    setSelectedMedicine(data);
+                  }}
+                />
+              </span>
+            </Tooltip>
+          </div>
+        );
       default:
         return cellValue;
     }
@@ -216,31 +271,30 @@ const RequestMedicineList = () => {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-center items-center">
-        {/* <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span> */}
+      <div className="py-2 px-2 flex justify-between items-center">
+        <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
         <Pagination isCompact showControls showShadow color="primary" page={page} total={totalPages} onChange={setPage} />
-        {/* <div className="hidden sm:flex w-[30%] justify-end gap-2"></div> */}
+        <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
       </div>
     );
-  }, [filteredItems.length, page, totalPages, hasSearchFilter]);
+  }, [selectedKeys, items.length, page, totalPages, hasSearchFilter]);
 
   return (
     <div>
       <Table
-        aria-label="Example table with custom cells, pagination and sorting"
+        color="primary"
         layout="fixed"
-        isHeaderSticky
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
           wrapper: "max-h-[750px]",
         }}
-        // selectedKeys={selectedKeys}
+        selectedKeys={selectedKeys}
         // selectionMode="multiple"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        // onSelectionChange={setSelectedKeys}
+        onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>
@@ -258,8 +312,10 @@ const RequestMedicineList = () => {
           )}
         </TableBody>
       </Table>
+      {isOpenAdd && <MedicineModal isOpen={isOpenAdd} onClose={onCloseAdd} context="create" />}
+      {isOpenDetail && selectedMedicine && <BatchList isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine || undefined} />}
+      {/* {isOpenEdit && <MedicineModal isOpen={isOpenEdit} onClose={onCloseEdit} context="edit" medicine={selectedMedicine || undefined} />} */}
+      {/* {isOpenDelete && <MedicineModal isOpen={isOpenDelete} onClose={onCloseDelete} context="delete" medicine={selectedMedicine || undefined} />} */}
     </div>
   );
-};
-
-export default RequestMedicineList;
+}

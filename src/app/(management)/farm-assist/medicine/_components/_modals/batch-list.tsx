@@ -23,29 +23,30 @@ import {
   ModalBody,
 } from "@nextui-org/react";
 import { toast } from "@oursrc/hooks/use-toast";
-import { Batch } from "@oursrc/lib/models/batch";
 import { Medicine } from "@oursrc/lib/models/medicine";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { batchService } from "@oursrc/lib/services/batchService";
-import { dateTimeConverter } from "@oursrc/lib/utils";
 import { EyeIcon, Plus, Search } from "lucide-react";
 import React from "react";
 import { HiChevronDown } from "react-icons/hi2";
 
 const columns = [
-  { name: "TÊN THUỐC", uid: "medicineId", sortable: true },
+  { name: "TÊN", uid: "name", sortable: true },
   {
-    name: "HÓA ĐƠN",
-    uid: "invoiceId",
+    name: "THÀNH PHẦN CHÍNH",
+    uid: "mainIngredient",
     sortable: true,
   },
   { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
-  { name: "CÒN LẠI", uid: "remainingQuantity", sortable: true },
-  { name: "NGÀY NHẬP", uid: "importedDate", sortable: true },
-  { name: "NGÀY HẾT HẠN", uid: "expiredAt", sortable: true },
+  { name: "SỐ ĐĂNG KÝ", uid: "registerNumber", sortable: true },
+  { name: "TRỌNG LƯỢNG", uid: "netWeight", sortable: true },
+  { name: "CÁCH SỬ DỤNG", uid: "usage", sortable: true },
+  { name: "ĐƠN VỊ", uid: "unit", sortable: true },
+  { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
+  { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
+  { name: "ACTIONS", uid: "actions" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["invoiceId", "quantity", "remainingQuantity", "importedDate", "expiredAt"];
+const INITIAL_VISIBLE_COLUMNS = ["unit", "name", "mainIngredient", "quantity", "registerNumber", "netWeight", "usage", "actions"];
 
 const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: () => void; medicine: Medicine | undefined }) => {
   //Table field
@@ -69,48 +70,51 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
 
     return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
-  const [batchList, setBatchList] = React.useState<Batch[]>([]);
+  const [medicineList, setMedicineList] = React.useState<Medicine[]>([]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredBatches: Batch[] = [...batchList];
+    let filteredMedicines: Medicine[] = [...medicineList];
 
     if (hasSearchFilter) {
-      filteredBatches = filteredBatches.filter((batch) => batch.importedDate.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredMedicines = filteredMedicines.filter((medicine) => medicine.name.toLowerCase().includes(filterValue.toLowerCase()));
     }
     // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
     //   filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.name as string));
     // }
-    return filteredBatches;
-  }, [batchList, filterValue]);
+    return filteredMedicines;
+  }, [medicineList, filterValue]);
 
   const [loading, setLoading] = React.useState(false);
 
-  // Use Effect
-  React.useEffect(() => {
-    // onClose();
-    fetchData();
-  }, [page, rowsPerPage]);
+  //Use Effect
+  // React.useEffect(() => {
+  //   if (submitDone) {
+  //     onClose();
+  //     fetchData();
+  //     setSubmitDone(false);
+  //   }
+  // }, [submitDone]);
 
-  // API function
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const response: ResponseObjectList<Batch> = await batchService.getBatchByMedicineId(medicine?.id || "", page, rowsPerPage);
-      if (response.isSuccess) {
-        setBatchList(response.data.data);
-        setRowsPerPage(response.data.pageSize);
-        setTotalPages(response.data.totalPages);
-        setTotalRecords(response.data.totalRecords);
-      }
-    } catch (e) {
-      toast({
-        variant: "destructive",
-        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  //API function
+  //   const fetchData = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const response: ResponseObjectList<Medicine> = await medicineService.getMedicine(page, rowsPerPage);
+  //       if (response.isSuccess) {
+  //         setMedicineList(response.data.data);
+  //         setRowsPerPage(response.data.pageSize);
+  //         setTotalPages(response.data.totalPages);
+  //         setTotalRecords(response.data.totalRecords);
+  //       }
+  //     } catch (e) {
+  //       toast({
+  //         variant: "destructive",
+  //         title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
+  //       });
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
   React.useEffect(() => {
     // fetchData();
@@ -121,9 +125,9 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
   }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: Batch, b: Batch) => {
-      const first = a[sortDescriptor.column as keyof Batch] as number;
-      const second = b[sortDescriptor.column as keyof Batch] as number;
+    return [...items].sort((a: Medicine, b: Medicine) => {
+      const first = a[sortDescriptor.column as keyof Medicine] as number;
+      const second = b[sortDescriptor.column as keyof Medicine] as number;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -200,51 +204,60 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
         </div>
       </div>
     );
-  }, [filterValue, visibleColumns, onSearchChange, onRowsPerPageChange, batchList.length, hasSearchFilter]);
+  }, [filterValue, visibleColumns, onSearchChange, onRowsPerPageChange, medicineList.length, hasSearchFilter]);
 
-  const renderCell = React.useCallback((data: Batch, columnKey: React.Key) => {
-    const cellValue = data[columnKey as keyof Batch];
+  const renderCell = React.useCallback((data: Medicine, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof Medicine];
 
     switch (columnKey) {
-      case "medicineId":
-      case "invoiceId":
+      case "mainIngredient":
+      case "name":
+      case "unit":
+      case "usage":
         return (
-          <Tooltip showArrow={true} content={String(cellValue)} color="primary" closeDelay={300}>
-            <p className="truncate">{String(cellValue)}</p>
+          <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={300}>
+            <p className="truncate">{cellValue}</p>
           </Tooltip>
         );
-      case "importedDate":
-      case "expiredAt":
-        return dateTimeConverter(cellValue as string);
+      case "actions":
+        return (
+          <div className="flex justify-end items-center gap-2">
+            <Tooltip content="Chi tiết" color="primary">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <EyeIcon />
+              </span>
+            </Tooltip>
+          </div>
+        );
       default:
-        return cellValue?.toString();
+        return cellValue;
     }
   }, []);
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-center items-center">
+      <div className="py-2 px-2 flex justify-between items-center">
         {/* <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span> */}
         <Pagination isCompact showControls showShadow color="primary" page={page} total={totalPages} onChange={setPage} />
-        {/* <div className="hidden sm:flex w-[30%] justify-end gap-2"></div> */}
+        <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
       </div>
     );
   }, [selectedKeys, items.length, page, totalPages, hasSearchFilter]);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="4xl">
+    <Modal isOpen={isOpen} onClose={onClose} size="2xl">
       <ModalContent>
         <ModalHeader>
           <p className="text-2xl font-bold">Danh sách các lô của thuốc {medicine?.name || ""}</p>
         </ModalHeader>
         <ModalBody>
-          <Table
+          {/* <Table
             color="primary"
             layout="fixed"
             bottomContent={bottomContent}
             bottomContentPlacement="outside"
             classNames={{
-              wrapper: "max-h-[750px] w-fit overflow-auto",
+              wrapper: "max-h-[750px]",
             }}
             selectedKeys={selectedKeys}
             // selectionMode="multiple"
@@ -263,12 +276,12 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
             </TableHeader>
             <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
               {(item) => (
-                <TableRow key={item.invoiceId} className="h-12">
+                <TableRow key={item.id} className="h-12">
                   {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
                 </TableRow>
               )}
             </TableBody>
-          </Table>
+          </Table> */}
         </ModalBody>
       </ModalContent>
     </Modal>

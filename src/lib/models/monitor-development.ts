@@ -7,3 +7,13 @@ export type MonitorDevelopment = {
     healthStatus: string;
     checkupAt: string;
 }
+
+export type CreateMonitorDevelopment = {
+    pigId: string;
+    cageId: string;
+    weight: number;
+    height: number;
+    width: number;
+    note: string;
+    status: number;
+}
