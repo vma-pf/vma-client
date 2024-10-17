@@ -5,5 +5,5 @@ export type NotificationType = {
     content: string;
     createdAt: string;
     isRead: boolean;
-    notificationType: number;
+    notificationType: string;
 };

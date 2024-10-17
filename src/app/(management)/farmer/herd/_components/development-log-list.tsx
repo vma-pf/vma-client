@@ -1,97 +1,108 @@
-"use client";
-import React from "react";
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
   Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
   Chip,
-  Pagination,
-  Selection,
-  ChipProps,
-  SortDescriptor,
-  useDisclosure,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
   Modal,
+  ModalBody,
   ModalContent,
   ModalHeader,
-  ModalBody,
-  ModalFooter,
+  Pagination,
+  Selection,
+  SortDescriptor,
   Spinner,
-  SharedSelection,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  Tooltip,
+  useDisclosure,
 } from "@nextui-org/react";
-import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
-import { Plus, Search } from "lucide-react";
+import { MonitorDevelopment } from "@oursrc/lib/models/monitor-development";
+import { Pig } from "@oursrc/lib/models/pig";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { pigService } from "@oursrc/lib/services/pigService";
-import { Pig, VaccinationPig } from "@oursrc/lib/models/pig";
-import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
-import { Cage } from "@oursrc/lib/models/cage";
-import { cageService } from "@oursrc/lib/services/cageService";
-import { vaccinationStageService } from "@oursrc/lib/services/vaccinationStageService";
-import { set } from "date-fns";
-
-const columns = [
-  { name: "pigCode", uid: "pigCode", sortable: true },
-  { name: "cageCode", uid: "cageCode", sortable: true },
-  { name: "breed", uid: "breed", sortable: true },
-  { name: "vaccinationStageId", uid: "vaccinationStageId", sortable: true },
-  { name: "vaccinationStageTitle", uid: "vaccinationStageTitle", sortable: true },
-  { name: "isDone", uid: "isDone" },
-];
+import { EyeIcon, Plus, Search } from "lucide-react";
+import React from "react";
+import { HiChevronDown } from "react-icons/hi";
+import { HiMiniPencilSquare } from "react-icons/hi2";
 
 const statusOptions = [
-  { name: "Khỏe mạnh", uid: "Alive" },
+  { name: "Khỏe mạnh", uid: "normal" },
   { name: "Bệnh", uid: "sick" },
   { name: "Chết", uid: "dead" },
 ];
 
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  normal: "success",
-  sick: "warning",
-  dead: "danger",
+const statusColorMap = {
+  normal: "primary",
+  sick: "danger",
+  dead: "warning",
 };
 
-const INITIAL_VISIBLE_COLUMNS = ["pigCode", "cageCode", "breed", "vaccinationStageId", "vaccinationStageTitle", "isDone"];
+const columns = [
+  { name: "Tiêu đề", uid: "title", sortable: true },
+  { name: "Cân nặng", uid: "weight", sortable: true },
+  { name: "Chiều cao", uid: "height", sortable: true },
+  { name: "Chiều rộng", uid: "width", sortable: true },
+  { name: "Tình trạng", uid: "healthStatus", sortable: true },
+  { name: "Ngày kiểm tra", uid: "checkupAt", sortable: true },
+  // { name: "Hành động", uid: "actions" },
+];
 
-const PigVaccinationStage = ({
-  vaccinationStage,
-  //   selectedPigs,
-  setSelectedPigs,
-  cages,
-  setCages,
-}: {
-  vaccinationStage: VaccinationStageProps;
-  //   selectedPigs: Pig[];
-  setSelectedPigs: (pigs: VaccinationPig[]) => void;
-  cages: Cage[];
-  setCages: React.Dispatch<React.SetStateAction<Cage[]>>;
-}) => {
-  const [pigList, setPigList] = React.useState<VaccinationPig[]>([]);
-  // const [cages, setCages] = React.useState<Cage[]>([]);
+const INITIAL_VISIBLE_COLUMNS = ["title", "weight", "height", "width", "healthStatus", "checkupAt"];
+
+const data: MonitorDevelopment[] = [
+  {
+    id: "1",
+    title: "Đánh giá sức khỏe",
+    weight: "100",
+    height: "100",
+    width: "100",
+    healthStatus: "normal",
+    checkupAt: "2024-09-30T01:57:49.49+00:00",
+  },
+  {
+    id: "2",
+    title: "Đánh giá sức khỏe",
+    weight: "100",
+    height: "100",
+    width: "100",
+    healthStatus: "sick",
+    checkupAt: "2024-09-30T01:57:49.49+00:00",
+  },
+  {
+    id: "3",
+    title: "Đánh giá sức khỏe",
+    weight: "100",
+    height: "100",
+    width: "100",
+    healthStatus: "dead",
+    checkupAt: "2024-09-30T01:57:49.49+00:00",
+  },
+];
+
+const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
+  const [developmentLogList, setDevelopmentLogList] = React.useState<MonitorDevelopment[]>(data);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
-  const [selectedCage, setSelectedCage] = React.useState<Selection>(new Set(["all"]));
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
-  const [pages, setPages] = React.useState<number>(1);
-  const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
+  const [pages, setPages] = React.useState(1);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "breed",
     direction: "ascending",
   });
-  const selectedValue = React.useMemo(() => selectedCage !== "all" && Array.from(selectedCage).join(", ").replaceAll("_", " "), [selectedCage]);
+  const [selectedLog, setSelectedLog] = React.useState<MonitorDevelopment>();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const [page, setPage] = React.useState<number>(1);
+  const [page, setPage] = React.useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -102,42 +113,24 @@ const PigVaccinationStage = ({
   }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredPigs: VaccinationPig[] = [...pigList];
+    let filteredLogs: MonitorDevelopment[] = [...developmentLogList];
 
     if (hasSearchFilter) {
-      filteredPigs = filteredPigs.filter((pig) => pig.breed.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredLogs = filteredLogs.filter((log) => log.title.toLowerCase().includes(filterValue.toLowerCase()));
     }
     if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-      filteredPigs = filteredPigs.filter((pig) => Array.from(statusFilter).includes(pig.healthStatus as string));
-    }
-    if (selectedValue && selectedValue !== "all") {
-      filteredPigs = filteredPigs.filter((pig) => selectedValue === pig.cageCode);
+      filteredLogs = filteredLogs.filter((log) => Array.from(statusFilter).includes(log.healthStatus as string));
     }
 
-    return filteredPigs;
-  }, [pigList, filterValue, statusFilter, selectedValue]);
+    return filteredLogs;
+  }, [developmentLogList, filterValue, statusFilter]);
 
   React.useEffect(() => {
-    if (vaccinationStage) {
+    console.log("selectedPig: ", selectedPig);
+    if (selectedPig) {
       fetchData();
     }
-  }, [vaccinationStage, page, rowsPerPage]);
-
-  React.useEffect(() => {
-    setSelectedPigs(
-      pigList.filter((pig) => {
-        return selectedKeys !== "all" ? selectedKeys.has(pig.pigId) : true;
-      })
-    );
-  }, [selectedKeys]);
-
-  // React.useEffect(() => {
-  //   if (selectedValue) {
-  //     console.log(selectedValue);
-  //     console.log(pigList.filter((pig) => selectedValue === pig.cageCode));
-  //     setPigList(pigList.filter((pig) => selectedValue === pig.cageCode));
-  //   }
-  // }, [selectedValue]);
+  }, [selectedPig, page, rowsPerPage]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -147,9 +140,9 @@ const PigVaccinationStage = ({
   }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
-    return [...filteredItems].sort((a: VaccinationPig, b: VaccinationPig) => {
-      const first = a[sortDescriptor.column as keyof VaccinationPig];
-      const second = b[sortDescriptor.column as keyof VaccinationPig];
+    return [...filteredItems].sort((a: MonitorDevelopment, b: MonitorDevelopment) => {
+      const first = a[sortDescriptor.column as keyof MonitorDevelopment];
+      const second = b[sortDescriptor.column as keyof MonitorDevelopment];
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -158,33 +151,15 @@ const PigVaccinationStage = ({
 
   const fetchData = async () => {
     try {
-      setIsLoading(true);
-      const response: ResponseObjectList<any> = await vaccinationStageService.getPigsInStage(vaccinationStage.id || "", page, rowsPerPage);
-      if (response.isSuccess) {
-        const pigs = response.data.data || [];
-        setPigList(
-          pigs
-            .filter((pig: VaccinationPig) => pig.isDone === false)
-            .map((pig: any) => ({
-              ...pig,
-              pigId: pig.pig.id,
-              pigCode: pig.pig.pigCode,
-              breed: pig.pig.breed,
-              cageCode: pig.pig.cageCode,
-              healthStatus: pig.pig.healthStatus,
-              vaccinationStageId: pig.vaccinationStageId,
-              vaccinationStageTitle: pig.vaccinationStageTitle,
-              isDone: pig.isDone,
-            }))
-        );
-        setTotalRecords(response.data.totalRecords || 0);
-        setPages(response.data?.totalPages || 1);
-        setRowsPerPage(response.data?.pageSize || 5);
-      }
-      // const res: ResponseObjectList<Cage> = await cageService.getCages(1, 500);
-      // if (res.isSuccess) {
-      //   setCages(res.data.data || []);
-      // }
+      //   setIsLoading(true);
+      //   const response: ResponseObjectList<MonitorDevelopment> = await pigService.getPigsByHerdId(selectedHerd.id, page, rowsPerPage);
+      //   console.log("response: ", response);
+      //   if (response.isSuccess) {
+      //     setDevelopmentLogList(response.data.data || []);
+      //     setTotalRecords(response.data?.totalRecords || 0);
+      //     setPages(response.data?.totalPages || 1);
+      //     setRowsPerPage(response.data?.pageSize || 5);
+      //   }
     } catch (error) {
       console.error("Error fetching pig data:", error);
     } finally {
@@ -192,16 +167,37 @@ const PigVaccinationStage = ({
     }
   };
 
-  const renderCell = React.useCallback((pig: VaccinationPig, columnKey: React.Key) => {
-    const cellValue = pig[columnKey as keyof VaccinationPig];
+  const renderCell = React.useCallback((log: MonitorDevelopment, columnKey: React.Key) => {
+    const cellValue = log[columnKey as keyof MonitorDevelopment];
 
     switch (columnKey) {
       case "status":
         return (
-          <Chip className="capitalize" color={statusColorMap[pig.healthStatus]} size="sm" variant="flat">
-            {cellValue === "Alive" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
+          <Chip
+            className="capitalize"
+            color={statusColorMap[log.healthStatus as keyof typeof statusColorMap] as "primary" | "danger" | "warning" | "default" | "secondary" | "success" | undefined}
+            size="lg"
+            variant="flat"
+          >
+            {cellValue === "active" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
           </Chip>
         );
+      // case "actions":
+      //   return (
+      //     <div className="flex justify-canter items-center gap-2">
+      //       <Tooltip content="Chi tiết" color="primary">
+      //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+      //           <HiMiniPencilSquare
+      //             size={25}
+      //             onClick={() => {
+      //               onOpen();
+      //               setSelectedLog(log);
+      //             }}
+      //           />
+      //         </span>
+      //       </Tooltip>
+      //     </div>
+      //   );
       default:
         return cellValue?.toString();
     }
@@ -243,21 +239,22 @@ const PigVaccinationStage = ({
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
-                  {/* Chọn chuồng */}
-                  {selectedValue}
+                  Tình trạng
                 </Button>
               </DropdownTrigger>
-              <DropdownMenu aria-label="Table Columns" selectedKeys={selectedCage} selectionMode="single" onSelectionChange={setSelectedCage} items={cages}>
-                {/* {cages.map((cage: Cage) => (
-                  <DropdownItem key={cage.id} className="capitalize">
-                    <p>{cage.code}</p>
+              <DropdownMenu
+                disallowEmptySelection
+                aria-label="Table Columns"
+                closeOnSelect={false}
+                selectedKeys={statusFilter}
+                selectionMode="multiple"
+                onSelectionChange={setStatusFilter}
+              >
+                {statusOptions.map((status: any) => (
+                  <DropdownItem key={status.uid} className="capitalize">
+                    {status.name.toUpperCase()}
                   </DropdownItem>
-                ))} */}
-                {(item) => (
-                  <DropdownItem key={item.code} className="capitalize">
-                    <p>{item.code}</p>
-                  </DropdownItem>
-                )}
+                ))}
               </DropdownMenu>
             </Dropdown>
             <Dropdown>
@@ -296,7 +293,7 @@ const PigVaccinationStage = ({
         </div>
       </div>
     );
-  }, [filterValue, statusFilter, visibleColumns, selectedCage, onSearchChange, onRowsPerPageChange, pigList.length, hasSearchFilter]);
+  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, developmentLogList.length, hasSearchFilter]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -312,17 +309,21 @@ const PigVaccinationStage = ({
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
+        color="primary"
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
-          wrapper: "max-h-[750px]",
+          wrapper: "max-h-[500px]",
         }}
-        selectedKeys={selectedKeys}
-        selectionMode="multiple"
+        // selectedKeys={selectedKeys}
+        // selectionMode="single"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        onSelectionChange={setSelectedKeys}
+        // onSelectionChange={(keys) => {
+        //   setSelectedKeys(keys);
+        //   // setSelectedPig(pigList.find((pig) => pig.id === Array.from(keys)[0]));
+        // }}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>
@@ -333,11 +334,25 @@ const PigVaccinationStage = ({
           )}
         </TableHeader>
         <TableBody emptyContent={"Không có kết quả"} loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
-          {(item) => <TableRow key={item.pigId}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
+          {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
         </TableBody>
       </Table>
+      {isOpen && selectedLog && (
+        <Modal isOpen={isOpen} onClose={onClose} size="3xl">
+          <ModalContent>
+            <ModalHeader>
+              <p className="text-2xl font-bold">Chi tiết</p>
+            </ModalHeader>
+            <ModalBody>
+              <div className="p-4">
+                <p>{selectedLog.title}</p>
+              </div>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </div>
   );
 };
 
-export default PigVaccinationStage;
+export default DevelopmentLogList;

@@ -1,5 +1,5 @@
 "use client";
-import { Accordion, AccordionItem, Divider } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button, Divider, useDisclosure } from "@nextui-org/react";
 import Image from "next/image";
 import React from "react";
 import Chart from "./_components/chart";
@@ -13,9 +13,20 @@ import HerdList from "./_components/herd-list";
 import { BiDetail } from "react-icons/bi";
 import { FaChartPie } from "react-icons/fa6";
 import { AiFillAlert } from "react-icons/ai";
+import { Pig } from "@oursrc/lib/models/pig";
+import DevelopmentLogList from "./_components/development-log-list";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@oursrc/components/ui/resizable";
+import HealthCheckUp from "./_components/_modal/health-checkup";
+import DevelopmentLineChart from "./_components/development-line-chart";
 
 const Herd = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
+  const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
+
+  React.useEffect(() => {
+    !selectedHerd && setSelectedPig(undefined);
+  }, [selectedHerd]);
   return (
     <div>
       <div className="grid grid-cols-2 gap-3">
@@ -138,8 +149,38 @@ const Herd = () => {
       </div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-2xl font-bold mb-3">Danh sách heo</p>
-        <PigList selectedHerd={selectedHerd as HerdInfo} />
+        <Button color="primary" onPress={onOpen}>
+          Kiểm tra sức khỏe
+        </Button>
+        {selectedHerd ? (
+          <PigList selectedHerd={selectedHerd as HerdInfo} setSelectedPig={setSelectedPig} />
+        ) : (
+          <p className="text-center">Chọn đàn để xem danh sách heo</p>
+        )}
       </div>
+      <div className="flex gap-x-3">
+        <div className="p-5 w-1/2 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+          {/* <ResizablePanelGroup direction="horizontal" className="w-screen">
+          <ResizablePanel className="pr-3" defaultSize={60} minSize={30}>
+          <div>
+              <p className="text-2xl font-bold mb-3">Lịch sử quá trình phát triển</p>
+              {selectedPig ? <DevelopmentLogList selectedPig={selectedPig} /> : <p className="text-center">Chọn heo để xem lịch sử phát triển</p>}
+            </div>
+            </ResizablePanel>
+          <ResizableHandle withHandle className="min-h-[400px] " />
+          <ResizablePanel className="pl-3" defaultSize={40} minSize={20}>
+          <p className="text-2xl font-bold mb-3">Báo cáo bệnh tật</p>
+          {selectedPig ? <p>Chưa có dữ liệu</p> : <p className="text-center">Chọn heo để xem báo cáo bệnh tật</p>}
+          </ResizablePanel>
+        </ResizablePanelGroup> */}
+          <p className="text-2xl font-bold mb-3">Lịch sử quá trình phát triển</p>
+          {selectedHerd && selectedPig ? <DevelopmentLogList selectedPig={selectedPig} /> : <p className="text-center">Chọn heo để xem lịch sử phát triển</p>}
+        </div>
+        <div className="p-5 w-1/2 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+          <DevelopmentLineChart />
+        </div>
+      </div>
+      {isOpen && selectedPig && <HealthCheckUp isOpen={isOpen} onClose={onClose} pigInfo={selectedPig} />}
     </div>
   );
 };

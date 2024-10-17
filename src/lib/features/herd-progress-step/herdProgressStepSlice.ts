@@ -6,7 +6,7 @@ export interface IHerdProgressStep {
   isCurrentTab: boolean;
 }
 
-const initialState: any = {
+export const initialState: any = {
   herdProgressSteps: [
     {
       id: 1,

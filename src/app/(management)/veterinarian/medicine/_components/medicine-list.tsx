@@ -28,6 +28,7 @@ import React from "react";
 import { HiChevronDown } from "react-icons/hi";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import BatchList from "./_modals/batch-list";
 
 const columns = [
   { name: "TÊN", uid: "name", sortable: true },
@@ -43,9 +44,10 @@ const columns = [
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
   { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
   { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
+  { name: "ACTIONS", uid: "actions" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["unit", "name", "mainIngredient", "quantity", "registerNumber", "netWeight", "usage"];
+const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "registerNumber", "netWeight", "usage", "actions"];
 
 const statusOptions = [{ name: "", uid: "" }];
 
@@ -70,6 +72,8 @@ export default function MedicineList() {
     column: "lastUpdatedAt",
     direction: "ascending",
   });
+  const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | null>(null);
+  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
 
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -220,6 +224,21 @@ export default function MedicineList() {
             <p className="truncate">{cellValue}</p>
           </Tooltip>
         );
+      case "actions":
+        return (
+          <div className="flex justify-end items-center gap-2">
+            <Tooltip content="Chi tiết" color="primary">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <EyeIcon
+                  onClick={() => {
+                    onOpenDetail();
+                    setSelectedMedicine(data);
+                  }}
+                />
+              </span>
+            </Tooltip>
+          </div>
+        );
       default:
         return cellValue;
     }
@@ -269,6 +288,7 @@ export default function MedicineList() {
           )}
         </TableBody>
       </Table>
+      {isOpenDetail && selectedMedicine && <BatchList isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine} />}
     </div>
   );
 }

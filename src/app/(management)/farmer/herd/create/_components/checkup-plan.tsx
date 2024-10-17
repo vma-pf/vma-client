@@ -7,7 +7,7 @@ import { useToast } from "@oursrc/hooks/use-toast";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@oursrc/lib/hooks";
-import { setHerdProgressSteps } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
+import { initialState, setHerdProgressSteps, setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
 import { checkupPlanService } from "@oursrc/lib/services/checkupPlanService";
 import { HerdInfo } from "@oursrc/lib/models/herd";
 
@@ -135,7 +135,7 @@ const CheckUpPlan = () => {
       if (res.isSuccess) {
         clearData();
         router.push("/farmer/herd");
-        // dispatch(setHerdProgressSteps([]));
+        dispatch(setHerdProgressSteps(initialState.herdProgressSteps));
         toast({
           title: "Tạo đàn thành công",
           variant: "success",

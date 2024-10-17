@@ -11,12 +11,15 @@ import {
   Selection,
   SortDescriptor,
   Spinner,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
+  Tabs,
+  Textarea,
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react";
@@ -28,7 +31,10 @@ import React from "react";
 import { HiChevronDown } from "react-icons/hi";
 import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "./data";
 import { medicineService } from "@oursrc/lib/services/medicineService";
-import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { CiViewList } from "react-icons/ci";
+import { FaRegListAlt } from "react-icons/fa";
+import { useForm } from "react-hook-form";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -44,6 +50,13 @@ export default function MedicineList({
   setSelectedMedicine: React.Dispatch<React.SetStateAction<Medicine | undefined>>;
 }) {
   const { toast } = useToast();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
+  const [registerNumber, setRegisterNumber] = React.useState<string>("");
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
   //   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
@@ -85,6 +98,10 @@ export default function MedicineList({
     fetchData();
   }, [page, rowsPerPage]);
 
+  React.useEffect(() => {
+    setValue("registerNumber", registerNumber || "");
+  }, [registerNumber]);
+
   //API function
   const fetchData = async () => {
     try {
@@ -106,6 +123,37 @@ export default function MedicineList({
     } finally {
       setLoading(false);
     }
+  };
+
+  const createNewMedicine = async (data: any) => {
+    try {
+      const res: ResponseObject<Medicine> = await medicineService.createMedicine(data);
+      if (res.isSuccess) {
+        toast({
+          variant: "success",
+          title: "Thêm thuốc mới thành công",
+        });
+        setSelectedMedicine(res.data);
+      } else {
+        toast({
+          variant: "destructive",
+          title: res.errorMessage || "Tạo mới thuốc thất bại",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleRegisterNumberChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9]/g, "");
+    if (numericValue[0] === "-") {
+      numericValue = numericValue.slice(1);
+    }
+    // if (parseInt(numericValue) > 10000) {
+    //   numericValue = "10000";
+    // }
+    setRegisterNumber(numericValue);
   };
 
   const items = React.useMemo(() => {
@@ -224,39 +272,153 @@ export default function MedicineList({
 
   return (
     <div>
-      <Table
-        aria-label="Example table with custom cells, pagination and sorting"
-        layout="fixed"
-        color="primary"
-        isHeaderSticky
-        bottomContent={bottomContent}
-        bottomContentPlacement="outside"
-        classNames={{
-          wrapper: "max-h-[400px] w-full overflow-auto",
-        }}
-        selectionMode="single"
-        sortDescriptor={sortDescriptor}
-        topContent={topContent}
-        topContentPlacement="outside"
-        selectedKeys={selectedMedicine && selectedMedicine.id ? new Set([selectedMedicine.id]) : new Set<string>()}
-        onSelectionChange={(selectedKeys: Selection) => {
-          const selectedKeysArray = Array.from(selectedKeys);
-          const selectedMedicines = medicineList.filter((medicine) => medicine.id && selectedKeysArray.includes(medicine.id));
-          setSelectedMedicine(selectedMedicines[0]);
-        }}
-        onSortChange={setSortDescriptor}
-      >
-        <TableHeader columns={headerColumns}>
-          {(column: any) => (
-            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
-              {column.name.toUpperCase()}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
-          {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
-        </TableBody>
-      </Table>
+      <Tabs size="lg" color="primary">
+        <Tab
+          title={
+            <div className="flex items-center">
+              <FaRegListAlt size={20} />
+              <span className="ml-2">Danh sách thuốc</span>
+            </div>
+          }
+        >
+          <Table
+            aria-label="Example table with custom cells, pagination and sorting"
+            layout="fixed"
+            color="primary"
+            isHeaderSticky
+            bottomContent={bottomContent}
+            bottomContentPlacement="outside"
+            classNames={{
+              wrapper: "max-h-[400px] w-full overflow-auto",
+            }}
+            selectionMode="single"
+            sortDescriptor={sortDescriptor}
+            topContent={topContent}
+            topContentPlacement="outside"
+            selectedKeys={selectedMedicine && selectedMedicine.id ? new Set([selectedMedicine.id]) : new Set<string>()}
+            onSelectionChange={(selectedKeys: Selection) => {
+              const selectedKeysArray = Array.from(selectedKeys);
+              const selectedMedicines = medicineList.filter((medicine) => medicine.id && selectedKeysArray.includes(medicine.id));
+              setSelectedMedicine(selectedMedicines[0]);
+            }}
+            onSortChange={setSortDescriptor}
+          >
+            <TableHeader columns={headerColumns}>
+              {(column: any) => (
+                <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
+                  {column.name.toUpperCase()}
+                </TableColumn>
+              )}
+            </TableHeader>
+            <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
+              {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
+            </TableBody>
+          </Table>
+        </Tab>
+        <Tab
+          title={
+            <div className="flex items-center">
+              <Plus />
+              <span className="ml-2">Thêm mới</span>
+            </div>
+          }
+        >
+          <form onSubmit={handleSubmit(createNewMedicine)}>
+            <p className="text-xl font-semibold mb-3">Nhập thông tin thuốc mới</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                className="mb-5"
+                type="text"
+                radius="md"
+                size="lg"
+                label="Tên thuốc"
+                placeholder="Nhập tên thuốc"
+                labelPlacement="outside"
+                isRequired
+                isInvalid={errors.name ? true : false}
+                errorMessage="Tên thuốc không được để trống"
+                {...register("name", { required: true })}
+              />
+              <Input
+                className="mb-5"
+                type="text"
+                radius="md"
+                size="lg"
+                label="Số đăng ký"
+                placeholder="Nhập số đăng ký"
+                labelPlacement="outside"
+                isRequired
+                value={registerNumber || ""}
+                onValueChange={(event) => handleRegisterNumberChange(event)}
+                isInvalid={errors.registerNumber ? true : false}
+                errorMessage="Số đăng ký không được để trống"
+                {...register("registerNumber", { required: true, valueAsNumber: true })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                className="mb-5"
+                type="text"
+                radius="md"
+                size="lg"
+                label="Trọng lượng"
+                placeholder="Nhập trọng lượng"
+                labelPlacement="outside"
+                isRequired
+                // value={netWeight || ""}
+                // onValueChange={(event) => handleNetWeightChange(event)}
+                isInvalid={errors.netWeight && true}
+                errorMessage="Trọng lượng không được để trống"
+                {...register("netWeight", { required: true })}
+              />
+              <Input
+                className="mb-5"
+                type="text"
+                radius="md"
+                size="lg"
+                label="Đơn vị"
+                placeholder="Nhập đơn vị"
+                labelPlacement="outside"
+                isRequired
+                // value={unit || ""}
+                isInvalid={errors.unit && true}
+                {...register("unit", { required: true })}
+              />
+            </div>
+            <Textarea
+              className="mb-5"
+              type="text"
+              radius="md"
+              size="lg"
+              label="Thành phần chính"
+              placeholder="Nhập thành phần chính"
+              labelPlacement="outside"
+              isRequired
+              // value={mainIngredient || ""}
+              isInvalid={errors.mainIngredient && true}
+              errorMessage="Thành phần chính không được để trống"
+              {...register("mainIngredient", { required: true })}
+            />
+            <Textarea
+              className="mb-5"
+              type="text"
+              radius="md"
+              size="lg"
+              label="Cách sử dụng"
+              placeholder="Nhập cách sử dụng"
+              labelPlacement="outside"
+              isRequired
+              // value={usage || ""}
+              isInvalid={errors.usage && true}
+              errorMessage="Cách sử dụng không được để trống"
+              {...register("usage", { required: true })}
+            />
+            <Button type="submit" color="primary" variant="solid" size="md" isDisabled={Object.keys(errors).length > 0}>
+              Thêm mới
+            </Button>
+          </form>
+        </Tab>
+      </Tabs>
     </div>
   );
 }
