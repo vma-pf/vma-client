@@ -7,6 +7,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { ROLE, decodeToken } from "@oursrc/lib/utils";
 import { authService } from "@oursrc/lib/services/authService";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -24,7 +25,7 @@ const LoginForm = () => {
   const handleLogin = async (data: any) => {
     try {
       setIsLoading(true);
-      const res = await authService.login(data.username, data.password);
+      const res: ResponseObject<any> = await authService.login(data.username, data.password);
       if (res.isSuccess === true) {
         await authService.setTokenToCookie(res.data?.accessToken, res.data?.refreshToken);
         localStorage.setItem("accessToken", res.data?.accessToken);
@@ -32,6 +33,8 @@ const LoginForm = () => {
         const role = decodeToken(res.data?.accessToken)?.role?.toLowerCase();
         if (role === ROLE.VETERINARIAN) {
           router.push("/veterinarian/dashboard");
+        } else if (role === ROLE.FARMERASSISTANT) {
+          router.push("/farm-assist/dashboard");
         } else {
           router.push("/farmer/dashboard");
         }
