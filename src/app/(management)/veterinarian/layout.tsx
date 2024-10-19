@@ -24,6 +24,7 @@ const VetLayout = ({
     "/treatment": projectName + " - " + "Kế hoạch điều trị",
     "/cage": projectName + " - " + "Quản lý chuồng",
     "/alert": projectName + " - " + "Cảnh báo",
+    "/treatment-guide": projectName + " - " + "Hướng dẫn chữa bệnh",
   };
   const navbarItems: NavbarItem[] = [
     {
