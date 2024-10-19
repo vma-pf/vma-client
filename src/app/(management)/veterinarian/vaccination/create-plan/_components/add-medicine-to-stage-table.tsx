@@ -48,9 +48,7 @@ const AddMedicineToStage = ({ stageIndex, setMedicinesInStage }: any, medicinesI
           </TableColumn>
         )}
       </TableHeader>
-      <TableBody items={medicinesInStage}>
-        {(item) => <TableRow key={item.vaccinationStageId}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
-      </TableBody>
+      <TableBody items={medicinesInStage}>{(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}</TableBody>
     </Table>
   );
 };

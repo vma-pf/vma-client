@@ -34,7 +34,7 @@ import { HiMiniPencilSquare } from "react-icons/hi2";
 import DevelopmentLineChart from "./development-line-chart";
 
 const statusOptions = [
-  { name: "Khỏe mạnh", uid: "normal" },
+  { name: "Bình thường", uid: "normal" },
   { name: "Bệnh", uid: "sick" },
   { name: "Chết", uid: "dead" },
 ];
@@ -88,7 +88,7 @@ const data: MonitorDevelopment[] = [
 ];
 
 const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
-  const [developmentLogList, setDevelopmentLogList] = React.useState<MonitorDevelopment[]>(data);
+  const [developmentLogList, setDevelopmentLogList] = React.useState<MonitorDevelopment[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
@@ -175,17 +175,23 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
     const cellValue = log[columnKey as keyof MonitorDevelopment];
 
     switch (columnKey) {
-      case "status":
-        return (
-          <Chip
-            className="capitalize"
-            color={statusColorMap[log.healthStatus as keyof typeof statusColorMap] as "primary" | "danger" | "warning" | "default" | "secondary" | "success" | undefined}
-            size="lg"
-            variant="flat"
-          >
-            {cellValue === "active" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
-          </Chip>
-        );
+      // case "title":
+      //   return (
+      //     <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={200}>
+      //       <p className="truncate">{cellValue}</p>
+      //     </Tooltip>
+      //   );
+      // case "status":
+      //   return (
+      //     <Chip
+      //       className="capitalize"
+      //       color={statusColorMap[log.healthStatus as keyof typeof statusColorMap] as "primary" | "danger" | "warning" | "default" | "secondary" | "success" | undefined}
+      //       size="lg"
+      //       variant="flat"
+      //     >
+      //       {cellValue === "active" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
+      //     </Chip>
+      //   );
       // case "actions":
       //   return (
       //     <div className="flex justify-canter items-center gap-2">
@@ -203,7 +209,7 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
       //     </div>
       //   );
       default:
-        return cellValue?.toString();
+        return <p className="truncate">{cellValue?.toString()}</p>;
     }
   }, []);
 
@@ -301,13 +307,13 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
+      <div className="py-2 px-2 flex justify-center items-center">
+        {/* <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span> */}
         <Pagination isCompact showControls showShadow color="primary" page={page} total={pages} onChange={setPage} />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
+        {/* <div className="hidden sm:flex w-[30%] justify-end gap-2"></div> */}
       </div>
     );
-  }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+  }, [items.length, page, pages, hasSearchFilter]);
   return (
     <div className="flex gap-x-2">
       <div className="p-5 w-1/2 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
@@ -340,7 +346,7 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
             )}
           </TableHeader>
           <TableBody emptyContent={"Không có kết quả"} loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
-            {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
+            {(item) => <TableRow key={item.title}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
           </TableBody>
         </Table>
         {isOpen && selectedLog && (
@@ -360,7 +366,7 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
       </div>
       <div className="p-5 w-1/2 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-2xl font-bold mb-3">Biểu đồ phát triển</p>
-        <DevelopmentLineChart /> : <p className="text-center">Chọn heo để xem biểu đồ phát triển</p>
+        <DevelopmentLineChart />
       </div>
     </div>
   );

@@ -161,7 +161,7 @@ const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) 
     <Table
       color="primary"
       classNames={{
-        wrapper: "max-h-[250px] overflow-auto",
+        wrapper: "max-h-[400px] overflow-auto",
       }}
       selectionMode="single"
       isHeaderSticky

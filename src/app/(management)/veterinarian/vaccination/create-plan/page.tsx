@@ -16,11 +16,7 @@ const CreatePlan = () => {
   }, [step]);
   return (
     <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.4 }}>
-      {step === 1 ? (
-        <FirstVaccinationStep setStep={setStep} setVaccinationPlanFirstStepResult={setVaccinationPlanFirstStepResult} />
-      ) : (
-        <SecondVaccinationStep setStep={setStep} vaccinationPlan={vaccinationPlanFirstStepResult} />
-      )}
+      {step === 1 ? <FirstVaccinationStep /> : <SecondVaccinationStep setStep={setStep} vaccinationPlan={vaccinationPlanFirstStepResult} />}
     </motion.div>
   );
 };

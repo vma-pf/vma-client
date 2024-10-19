@@ -35,6 +35,7 @@ import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-
 import { CiViewList } from "react-icons/ci";
 import { FaRegListAlt } from "react-icons/fa";
 import { useForm } from "react-hook-form";
+import { Supplier } from "@oursrc/lib/models/supplier";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -45,17 +46,21 @@ const statusColorMap: Record<string, ChipProps["color"]> = {
 export default function MedicineList({
   selectedMedicine,
   setSelectedMedicine,
+  supplier,
 }: {
   selectedMedicine?: Medicine;
   setSelectedMedicine: React.Dispatch<React.SetStateAction<Medicine | undefined>>;
+  supplier: Supplier | undefined;
 }) {
   const { toast } = useToast();
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm();
+  const name = watch("name");
   const [registerNumber, setRegisterNumber] = React.useState<string>("");
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
@@ -127,7 +132,11 @@ export default function MedicineList({
 
   const createNewMedicine = async (data: any) => {
     try {
-      const res: ResponseObject<Medicine> = await medicineService.createMedicine(data);
+      const payload = {
+        ...data,
+        name: supplier ? supplier.name + " - " + data.name : data.name,
+      };
+      const res: ResponseObject<Medicine> = await medicineService.createMedicine(payload);
       if (res.isSuccess) {
         toast({
           variant: "success",
@@ -325,6 +334,9 @@ export default function MedicineList({
         >
           <form onSubmit={handleSubmit(createNewMedicine)}>
             <p className="text-xl font-semibold mb-3">Nhập thông tin thuốc mới</p>
+            <p className="text-lg mb-3">
+              Format tên thuốc: {supplier ? supplier.name + " - " : ""} {name ? name : localStorage.getItem("newMedicineName") || ""}
+            </p>
             <div className="grid grid-cols-2 gap-2">
               <Input
                 className="mb-5"
@@ -335,6 +347,7 @@ export default function MedicineList({
                 placeholder="Nhập tên thuốc"
                 labelPlacement="outside"
                 isRequired
+                defaultValue={localStorage.getItem("newMedicineName") || ""}
                 isInvalid={errors.name ? true : false}
                 errorMessage="Tên thuốc không được để trống"
                 {...register("name", { required: true })}
@@ -344,15 +357,13 @@ export default function MedicineList({
                 type="text"
                 radius="md"
                 size="lg"
-                label="Số đăng ký"
-                placeholder="Nhập số đăng ký"
+                label="Đơn vị"
+                placeholder="Nhập đơn vị"
                 labelPlacement="outside"
                 isRequired
-                value={registerNumber || ""}
-                onValueChange={(event) => handleRegisterNumberChange(event)}
-                isInvalid={errors.registerNumber ? true : false}
-                errorMessage="Số đăng ký không được để trống"
-                {...register("registerNumber", { required: true, valueAsNumber: true })}
+                // value={unit || ""}
+                isInvalid={errors.unit && true}
+                {...register("unit", { required: true })}
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -376,13 +387,15 @@ export default function MedicineList({
                 type="text"
                 radius="md"
                 size="lg"
-                label="Đơn vị"
-                placeholder="Nhập đơn vị"
+                label="Số đăng ký"
+                placeholder="Nhập số đăng ký"
                 labelPlacement="outside"
                 isRequired
-                // value={unit || ""}
-                isInvalid={errors.unit && true}
-                {...register("unit", { required: true })}
+                value={registerNumber || ""}
+                onValueChange={(event) => handleRegisterNumberChange(event)}
+                isInvalid={errors.registerNumber ? true : false}
+                errorMessage="Số đăng ký không được để trống"
+                {...register("registerNumber", { required: true, valueAsNumber: true })}
               />
             </div>
             <Textarea

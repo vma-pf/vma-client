@@ -134,7 +134,7 @@ const CheckUpPlan = () => {
       console.log(res);
       if (res.isSuccess) {
         clearData();
-        router.push("/farm-asstst/herd");
+        router.push("/farm-assist/herd");
         dispatch(setHerdProgressSteps(initialState.herdProgressSteps));
         toast({
           title: "Tạo đàn thành công",

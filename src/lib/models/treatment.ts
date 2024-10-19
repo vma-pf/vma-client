@@ -47,3 +47,11 @@ export type CreateTreatmentRequest = {
     herdId: string;
     pigIds: [];
 };
+
+export type DiseaseReport = {
+    id: string;
+    description: string;
+    treatmentResult: string;
+    totalTreatmentTime: string;
+    isDone: boolean;
+}

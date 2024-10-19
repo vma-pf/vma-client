@@ -111,7 +111,7 @@ const RequestMedicineList = () => {
           <div className="text-center">Không có yêu cầu nào</div>
         ) : (
           filterMedicineRequest(filterStatus).map((request: MedicineRequest) => (
-            <div>
+            <div key={request.id}>
               <div className="my-2 flex items-center hover:bg-gray-100 p-2 rounded-lg">
                 <BiSolidInjection size={25} className="text-primary" />
                 <div className="ml-3">
