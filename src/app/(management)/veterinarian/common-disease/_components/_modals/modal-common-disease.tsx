@@ -7,12 +7,12 @@ import {
 } from "@nextui-org/modal";
 import { Button, Divider, Input, Spinner, Textarea } from "@nextui-org/react";
 import { toast } from "@oursrc/hooks/use-toast";
-import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
-import { treatmentService } from "@oursrc/lib/services/treatmentGuideService";
+import { CommonDisease } from "@oursrc/lib/models/common-disease";
+import { commonDiseasesService } from "@oursrc/lib/services/commonDiseaseService";
 import React from "react";
 import { useForm } from "react-hook-form";
 
-const ModalTreamentGuide = ({
+const ModalCommonDisease = ({
   isOpen,
   onClose,
   data,
@@ -20,7 +20,7 @@ const ModalTreamentGuide = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  data?: TreatmentGuide;
+  data?: CommonDisease;
   context: "create" | "edit" | "delete";
 }) => {
   const {
@@ -32,13 +32,11 @@ const ModalTreamentGuide = ({
   } = useForm();
   const [loading, setLoading] = React.useState<boolean | undefined>(false);
 
-  const diseaseTitle = watch("diseaseTitle");
-  const diseaseDescription = watch("diseaseDescription");
-  const diseaseSymptoms = watch("diseaseSymptoms");
-  const treatmentTitle = watch("treatmentTitle");
-  const treatmentDescription = watch("treatmentDescription");
+  const title = watch("title");
+  const description = watch("description");
+  const symptom = watch("symptom");
+  const treatment = watch("treatment");
   const diseaseType = watch("diseaseType");
-  const cure = watch("cure");
 
   const getTitle = () => {
     switch (context) {
@@ -54,7 +52,7 @@ const ModalTreamentGuide = ({
   const handleDelete = async () => {
     try {
       setLoading(true);
-      const response = await treatmentService.delete(data?.id || "");
+      const response = await commonDiseasesService.delete(data?.id || "");
       if (response && response.isSuccess) {
         toast({
           variant: "success",
@@ -82,10 +80,10 @@ const ModalTreamentGuide = ({
       setLoading(true);
       const response =
         context === "create"
-          ? await treatmentService.create(data)
+          ? await commonDiseasesService.create(data)
           : context === "edit"
-          ? await treatmentService.update(data?.id || "", data)
-          : treatmentService.delete(data?.id || "");
+          ? await commonDiseasesService.update(data?.id || "", data)
+          : commonDiseasesService.delete(data?.id || "");
       if (response && response.isSuccess) {
         toast({
           variant: "success",
@@ -109,25 +107,11 @@ const ModalTreamentGuide = ({
   };
 
   React.useEffect(() => {
-    setValue("diseaseTitle", data?.diseaseTitle ? data?.diseaseTitle : "");
-    setValue(
-      "diseaseDescription",
-      data?.diseaseDescription ? data?.diseaseDescription : ""
-    );
-    setValue(
-      "diseaseSymptoms",
-      data?.diseaseSymptoms ? data?.diseaseSymptoms : ""
-    );
-    setValue(
-      "treatmentTitle",
-      data?.treatmentTitle ? data?.treatmentTitle : ""
-    );
-    setValue(
-      "treatmentDescription",
-      data?.treatmentDescription ? data?.treatmentDescription : ""
-    );
+    setValue("title", data?.title ? data?.title : "");
+    setValue("description", data?.description ? data?.description : "");
+    setValue("symptom", data?.symptom ? data?.symptom : "");
+    setValue("treatment", data?.treatment ? data?.treatment : "");
     setValue("diseaseType", data?.diseaseType ? data?.diseaseType : "");
-    setValue("cure", data?.cure ? data?.cure : "");
   }, []);
 
   return (
@@ -143,11 +127,10 @@ const ModalTreamentGuide = ({
           scrollBehavior="normal"
           onClose={() => {
             if (
-              diseaseTitle ||
-              diseaseDescription ||
-              diseaseSymptoms ||
-              treatmentTitle ||
-              treatmentDescription ||
+              title ||
+              description ||
+              symptom ||
+              treatment ||
               diseaseType
             ) {
               onClose();
@@ -172,16 +155,16 @@ const ModalTreamentGuide = ({
                       placeholder="Nhập tiêu đề"
                       labelPlacement="outside"
                       isRequired
-                      value={treatmentTitle || ""}
+                      value={title || ""}
                       isInvalid={
-                        errors.treatmentTitle
+                        errors.title
                           ? true
-                          : treatmentTitle
+                          : title
                           ? false
                           : true
                       }
                       errorMessage="Tiêu đề không được để trống"
-                      {...register("treatmentTitle", { required: true })}
+                      {...register("title", { required: true })}
                     />
                     <Input
                       className="mb-5"
@@ -210,35 +193,19 @@ const ModalTreamentGuide = ({
                       placeholder="Nhập mô tả ngắn"
                       labelPlacement="outside"
                       isRequired
-                      value={treatmentDescription || ""}
+                      value={description || ""}
                       isInvalid={
-                        errors.treatmentDescription
+                        errors.description
                           ? true
-                          : treatmentDescription
+                          : description
                           ? false
                           : true
                       }
                       errorMessage="Mô tả không được để trống"
-                      {...register("treatmentDescription", { required: true })}
+                      {...register("description", { required: true })}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Tên bệnh"
-                      placeholder="Nhập tên bệnh"
-                      labelPlacement="outside"
-                      isRequired
-                      value={diseaseTitle || ""}
-                      isInvalid={
-                        errors.diseaseTitle ? true : diseaseTitle ? false : true
-                      }
-                      errorMessage="Tên bệnh không được để trống"
-                      {...register("diseaseTitle", { required: true })}
-                    />
                     <Input
                       className="mb-5"
                       type="text"
@@ -248,16 +215,16 @@ const ModalTreamentGuide = ({
                       placeholder="Nhập triệu chứng"
                       labelPlacement="outside"
                       isRequired
-                      value={diseaseSymptoms || ""}
+                      value={symptom || ""}
                       isInvalid={
-                        errors.diseaseSymptoms
+                        errors.symptom
                           ? true
-                          : diseaseSymptoms
+                          : symptom
                           ? false
                           : true
                       }
                       errorMessage="Triệu chứng không được để trống"
-                      {...register("diseaseSymptoms", { required: true })}
+                      {...register("symptom", { required: true })}
                     />
                   </div>
                   <div className="grid grid-cols-1">
@@ -266,36 +233,20 @@ const ModalTreamentGuide = ({
                       type="text"
                       radius="sm"
                       size="lg"
-                      label="Mô tả bệnh"
-                      placeholder="Nhập mô tả bệnh"
+                      label="Cách chữa bệnh"
+                      placeholder="Nhập cách chữa bệnh"
                       labelPlacement="outside"
                       isRequired
-                      value={diseaseDescription || ""}
+                      value={treatment || ""}
                       isInvalid={
-                        errors.diseaseDescription
+                        errors.treatment
                           ? true
-                          : diseaseDescription
+                          : treatment
                           ? false
                           : true
                       }
-                      errorMessage="Mô tả bệnh không được để trống"
-                      {...register("diseaseDescription", { required: true })}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 gap-1">
-                    <Textarea
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Hướng dẫn chữa bệnh"
-                      placeholder="Hướng dẫn chữa bệnh"
-                      labelPlacement="outside"
-                      isRequired
-                      value={cure || ""}
-                      isInvalid={errors.cure ? true : cure ? false : true}
-                      errorMessage="Hướng dẫn chữa bệnh không được để trống"
-                      {...register("cure", { required: true })}
+                      errorMessage="Cách chữa bệnh không được để trống"
+                      {...register("treatment", { required: true })}
                     />
                   </div>
                 </ModalBody>
@@ -319,7 +270,7 @@ const ModalTreamentGuide = ({
                 <ModalBody>
                   <p className="text-center">
                     Bạn có chắc chắn muốn xóa{" "}
-                    <strong className="text-xl">{data?.diseaseTitle}</strong>{" "}
+                    <strong className="text-xl">{data?.title}</strong>{" "}
                     không?
                   </p>
                 </ModalBody>
@@ -339,4 +290,4 @@ const ModalTreamentGuide = ({
     </div>
   );
 };
-export default ModalTreamentGuide;
+export default ModalCommonDisease;
