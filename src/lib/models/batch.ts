@@ -1,3 +1,4 @@
+import { Invoice } from "./invoice";
 import { Medicine } from "./medicine";
 
 export type BatchCreateProps = {
@@ -7,4 +8,15 @@ export type BatchCreateProps = {
     quantity: number | null;
     expiredAt: string | null;
     medicine?: Medicine | null;
+}
+
+export type Batch = {
+    medicineId: string;
+    invoiceId: string;
+    importedDate: string;
+    expiredAt: string;
+    quantity: number;
+    remainingQuantity: number;
+    medicine: Medicine | null;
+    invoice: Invoice | null;
 }

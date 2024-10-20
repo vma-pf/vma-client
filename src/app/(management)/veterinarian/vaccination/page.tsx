@@ -269,7 +269,7 @@ const Vaccination = () => {
                   <p className="text-center text-lg mt-3">Không có lịch trình tiêm phòng</p>
                 ) : (
                   filterVaccination(filterStatus)
-                    ?.filter((vaccination: VaccinationStageProps) => vaccination.applyStageTime >= new Date().toISOString())
+                    // ?.filter((vaccination: VaccinationStageProps) => vaccination.applyStageTime < new Date().toISOString())
                     ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
                     ?.map((stage) => (
                       <div key={stage.id} className="my-4 grid grid-cols-12 p-2 border-2 rounded-xl">

@@ -6,16 +6,22 @@ import Chart from "./_components/chart";
 import PigList from "./_components/pig-list";
 import { IoIosAlert } from "react-icons/io";
 import { GoDotFill } from "react-icons/go";
-import ButtonCreateHerd from "./_components/button-create-herd";
 import { dateConverter } from "@oursrc/lib/utils";
 import { HerdInfo } from "@oursrc/lib/models/herd";
 import HerdList from "./_components/herd-list";
 import { BiDetail } from "react-icons/bi";
 import { FaChartPie } from "react-icons/fa6";
 import { AiFillAlert } from "react-icons/ai";
+import { Pig } from "@oursrc/lib/models/pig";
+import DevelopmentLogList from "./_components/development-log-list";
 
 const Herd = () => {
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
+  const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
+
+  React.useEffect(() => {
+    !selectedHerd && setSelectedPig(undefined);
+  }, [selectedHerd]);
   return (
     <div>
       <div className="grid grid-cols-2 gap-3">
@@ -24,9 +30,6 @@ const Herd = () => {
             <div className="flex items-center">
               <Image src="/assets/vma-logo.png" alt="logo" width={50} height={50} />
               <p className="text-2xl font-bold ml-4">Danh sách đàn</p>
-            </div>
-            <div className="flex">
-              <ButtonCreateHerd />
             </div>
           </div>
           <HerdList setSelectedHerd={setSelectedHerd} />
@@ -138,8 +141,13 @@ const Herd = () => {
       </div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-2xl font-bold mb-3">Danh sách heo</p>
-        <PigList selectedHerd={selectedHerd as HerdInfo} />
+        {selectedHerd ? (
+          <PigList selectedHerd={selectedHerd as HerdInfo} setSelectedPig={setSelectedPig} />
+        ) : (
+          <p className="text-center">Chọn đàn để xem danh sách heo</p>
+        )}
       </div>
+      <div>{selectedHerd && selectedPig ? <DevelopmentLogList selectedPig={selectedPig} /> : <p className="text-center">Chọn heo để xem lịch sử phát triển</p>}</div>
     </div>
   );
 };

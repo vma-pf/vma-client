@@ -16,7 +16,6 @@ const VetLayout = ({
   const projectName = "VMA";
   const titleMap: { [key: string]: string } = {
     "/dashboard": projectName + " - " + "Tổng quan",
-    "/pig": projectName + " - " + "Quản lý heo",
     "/herd": projectName + " - " + "Quản lý đàn heo",
     "/medicine": projectName + " - " + "Quản lý thuốc",
     "/vaccination": projectName + " - " + "Lịch tiêm phòng",
