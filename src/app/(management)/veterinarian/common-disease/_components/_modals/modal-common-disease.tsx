@@ -75,21 +75,21 @@ const ModalCommonDisease = ({
     }
   };
 
-  const handleSubmitForm = async (data: any) => {
+  const handleSubmitForm = async (request: any) => {
     try {
       setLoading(true);
       const response =
         context === "create"
-          ? await commonDiseasesService.create(data)
+          ? await commonDiseasesService.create(request)
           : context === "edit"
-          ? await commonDiseasesService.update(data?.id || "", data)
+          ? await commonDiseasesService.update(data?.id || "", request)
           : commonDiseasesService.delete(data?.id || "");
       if (response && response.isSuccess) {
         toast({
           variant: "success",
           title:
             context === "create"
-              ? "Tạo thuốc thành công"
+              ? "Tạo thành công"
               : "Cập nhật thành công",
         });
         onClose();

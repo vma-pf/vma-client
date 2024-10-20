@@ -77,21 +77,21 @@ const ModalTreamentGuide = ({
     }
   };
 
-  const handleSubmitForm = async (data: any) => {
+  const handleSubmitForm = async (request: any) => {
     try {
       setLoading(true);
       const response =
         context === "create"
-          ? await treatmentService.create(data)
+          ? await treatmentService.create(request)
           : context === "edit"
-          ? await treatmentService.update(data?.id || "", data)
+          ? await treatmentService.update(data?.id || "", request)
           : treatmentService.delete(data?.id || "");
       if (response && response.isSuccess) {
         toast({
           variant: "success",
           title:
             context === "create"
-              ? "Tạo thuốc thành công"
+              ? "Tạo thành công"
               : "Cập nhật thành công",
         });
         onClose();

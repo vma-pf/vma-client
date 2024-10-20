@@ -1,4 +1,4 @@
-  "use client";
+"use client";
 import {
   Button,
   Dropdown,
@@ -55,8 +55,9 @@ const CommonDiseaseList = () => {
     onClose: onCloseDetail,
   } = useDisclosure();
   const [updateId, setUpdateId] = React.useState<string>("");
-  const [selectedData, setSelectedData] =
-    React.useState<CommonDisease | null>(null);
+  const [selectedData, setSelectedData] = React.useState<CommonDisease | null>(
+    null
+  );
   const [context, setContext] = React.useState<"create" | "edit" | "detail">(
     "create"
   );
@@ -292,8 +293,11 @@ const CommonDiseaseList = () => {
       const cellValue = data[columnKey as keyof CommonDisease];
 
       switch (columnKey) {
-        
-        case "authorName":
+        case "title":
+        case "description":
+        case "symptom":
+        case "diseaseType":
+        case "treatment":
           return (
             <Tooltip
               showArrow={true}
@@ -418,8 +422,22 @@ const CommonDiseaseList = () => {
           context="create"
         />
       )}
-      {isOpenEdit && <ModalCommonDisease isOpen={isOpenEdit} onClose={onCloseEdit} context="edit" data={selectedData || undefined} />}
-      {isOpenDelete && <ModalCommonDisease isOpen={isOpenDelete} onClose={onCloseDelete} context="delete" data={selectedData || undefined} />}
+      {isOpenEdit && (
+        <ModalCommonDisease
+          isOpen={isOpenEdit}
+          onClose={onCloseEdit}
+          context="edit"
+          data={selectedData || undefined}
+        />
+      )}
+      {isOpenDelete && (
+        <ModalCommonDisease
+          isOpen={isOpenDelete}
+          onClose={onCloseDelete}
+          context="delete"
+          data={selectedData || undefined}
+        />
+      )}
     </div>
   );
 };
