@@ -271,10 +271,10 @@ export default function MedicineList() {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
+      <div className="py-2 px-2 flex justify-center items-center">
+        {/* <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span> */}
         <Pagination isCompact showControls showShadow color="primary" page={page} total={totalPages} onChange={setPage} />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
+        {/* <div className="hidden sm:flex w-[30%] justify-end gap-2"></div> */}
       </div>
     );
   }, [selectedKeys, items.length, page, totalPages, hasSearchFilter]);

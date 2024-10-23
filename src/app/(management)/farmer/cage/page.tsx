@@ -1,19 +1,15 @@
 "use client";
-import { Button, Card, CardBody, CardFooter, CardHeader, Image, Input, Skeleton, Tooltip, useDisclosure } from "@nextui-org/react";
+import { Button, Card, CardBody, CardFooter, CardHeader, Image, Input, Skeleton } from "@nextui-org/react";
 import { Cage as CageProps } from "@oursrc/lib/models/cage";
-import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { cageService } from "@oursrc/lib/services/cageService";
 import Link from "next/link";
 import React from "react";
-import { FaRegEdit, FaRegTrashAlt } from "react-icons/fa";
-import { IoAddOutline } from "react-icons/io5";
-import AddEditForm from "./_components/add-edit-form";
 import { SearchIcon } from "lucide-react";
 
 const Cage = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [cageList, setCageList] = React.useState<CageProps[]>([]);
-  const [selectedCage, setSelectedCage] = React.useState<CageProps | null>(null);
   const fetchCages = async () => {
     try {
       setIsLoading(true);

@@ -15,6 +15,12 @@ import { FaBell } from "react-icons/fa6";
 import { HiSun, HiMoon } from "react-icons/hi";
 import { LuDot } from "react-icons/lu";
 
+const roleMap: { [key: string]: string } = {
+  "/farmer": "Farmer",
+  "/veterinarian": "Veterinarian",
+  "/farm-assist": "Farm Assistant",
+};
+
 const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string }; prefix: string }) => {
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -74,6 +80,17 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
           router.push("/veterinarian/vaccination");
           break;
       }
+    } else if (role === ROLE.FARMER) {
+      switch (message.notificationType) {
+        case "Yêu cầu tiêm phòng":
+          router.push("/farmer/medicine");
+          break;
+        case "Báo cáo bệnh":
+          router.push("/farmer/disease-report");
+          break;
+        default:
+          break;
+      }
     }
     // const path = message.notificationType === 1 ? "/farmer/medicine" : "/farmer/disease-report";
     // router.push(path);
@@ -126,7 +143,8 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
     <div className="bg-slate-200 dark:bg-zinc-800 px-4 py-2 rounded-2xl flex justify-between">
       <p className="font-bold text-3xl">{titleMap[filteredPath] || ""}</p>
       <div className="flex items-center">
-        <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "/farmer" ? "Farmer" : "FarmAssistant"}</p>
+        {/* <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "/farmer" ? "Farmer" : "/farm-assist" ? "Farm Assistant" : ""}</p> */}
+        <p>Chào, {roleMap[prefix]}</p>
         <Avatar className="mx-2" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
         <Dropdown
           placement="bottom-end"

@@ -8,7 +8,12 @@ import { monitorDevelopmentLogService } from "@oursrc/lib/services/monitorDevelo
 import { toast } from "@oursrc/hooks/use-toast";
 
 const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () => void; pigInfo: Pig }) => {
-  const { register, handleSubmit, setValue } = useForm();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
   const [height, setHeight] = React.useState<string | undefined>();
   const [width, setWidth] = React.useState<string | undefined>();
   const [weight, setWeight] = React.useState<string | undefined>();
@@ -146,6 +151,8 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
                 placeholder="Nhập ghi chú"
                 labelPlacement="outside"
                 isRequired
+                isInvalid={errors.note ? true : false}
+                errorMessage="Ghi chú không được để trống"
                 {...register("note", { required: true })}
               />
             </ModalBody>
@@ -160,7 +167,7 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
               >
                 Close
               </Button>
-              <Button color="primary" type="submit" isDisabled={height && width && weight ? false : true}>
+              <Button color="primary" type="submit" isDisabled={height && width && weight && !errors.note ? false : true}>
                 Done
               </Button>
             </ModalFooter>

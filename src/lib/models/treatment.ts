@@ -1,7 +1,7 @@
 import { MedicineInStage } from "./vaccination";
 
 export type TreatmentData = {
-    id: string;
+    id?: string;
     title: string;
     description: string;
     herdId: string;
@@ -10,27 +10,28 @@ export type TreatmentData = {
     actualEndDate: string;
     note: string;
     status: number;
-    treatmentStages: TreatmentStageProps[];
+    treatmentStages: CreateTreatmentStageProps[];
 };
 
-export type TreatmentStageProps = {
+export type CreateTreatmentStageProps = {
     id?: string;
     treatmentPlanId?: string;
     title: string;
     applyStageTime: string;
     timeSpan: string;
+    note?: string;
     isDone?: boolean;
     treatmentToDos: { description: string }[];
     inventoryRequest: MedicineInStage;
 };
 
 export type CreateTreatmentRequest = {
+    treatmentGuideId?: string;
     title: string;
-    startDate: string;
-    expectedEndDate: string;
-    actualEndDate: string;
+    expectedTimePeriod: string;
+    description: string;
     note: string;
-    createTreatmentStages: [
+    treatmentStages?: [
         {
             title: string;
             timeSpan: string;
@@ -43,7 +44,12 @@ export type CreateTreatmentRequest = {
             ];
         }
     ];
-    isApplyToAll: boolean;
-    herdId: string;
-    pigIds: [];
 };
+
+export type DiseaseReport = {
+    id: string;
+    description: string;
+    treatmentResult: string;
+    totalTreatmentTime: string;
+    isDone: boolean;
+}

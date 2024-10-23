@@ -9,8 +9,17 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   Pagination,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Selection,
+  Snippet,
   SortDescriptor,
   Spinner,
   Tab,
@@ -30,12 +39,15 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { MedicineRequest } from "@oursrc/lib/models/medicine-request";
-import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
 import { HiChevronDown } from "react-icons/hi2";
 import { IoMdCheckmark, IoMdClose, IoMdCloseCircle } from "react-icons/io";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaRegThumbsDown, FaRegThumbsUp } from "react-icons/fa6";
+import { Medicine } from "@oursrc/lib/models/medicine";
+import { medicineService } from "@oursrc/lib/services/medicineService";
+import { CustomSnippet } from "@oursrc/components/ui/custom-snippet";
 
 const columns = [
   { uid: "medicineId", name: "Mã thuốc", sortable: true },
@@ -52,6 +64,7 @@ const statusOptions = ["Đã duyệt", "Chờ xử lý", "Từ chối"];
 
 const RequestMedicineList = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenAlert, onOpen: onOpenAlert, onClose: onCloseAlert } = useDisclosure();
   const [answer, setAnswer] = useState<"accept" | "reject">();
 
   //Table field
@@ -67,6 +80,8 @@ const RequestMedicineList = () => {
     direction: "ascending",
   });
   const [selectedMedicine, setSelectedMedicine] = React.useState<MedicineRequest | null>(null);
+  const [remainQuantity, setRemainQuantity] = React.useState(0);
+  const [medicineQuantityCheck, setMedicineQuantityCheck] = React.useState(0);
 
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -116,6 +131,34 @@ const RequestMedicineList = () => {
       console.log(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const calculateTotalQuantity = async (medicineId: string) => {
+    try {
+      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(1, 500);
+      if (response.isSuccess) {
+        const totalQuantity = response.data.data.filter((medicine) => medicine.medicineId === medicineId).reduce((total, medicine) => total + medicine.quantity, 0);
+        setRemainQuantity(totalQuantity);
+      } else {
+        console.log(response.errorMessage);
+        return 0;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const checkMedicineQuantity = async (medicineId: string) => {
+    try {
+      const response: ResponseObject<MedicineRequest> = await medicineService.getMedicineById(medicineId);
+      if (response.isSuccess) {
+        setMedicineQuantityCheck(response.data.quantity);
+      } else {
+        console.log(response.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -219,11 +262,32 @@ const RequestMedicineList = () => {
 
     switch (columnKey) {
       case "medicineId":
-      case "newMedicineName":
         return (
-          <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
+          <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={200}>
             <p className="truncate">{cellValue}</p>
           </Tooltip>
+        );
+      case "newMedicineName":
+        return data.newMedicineName ? (
+          <CustomSnippet
+            variant="solid"
+            color="white"
+            hideSymbol
+            tooltipProps={{
+              showArrow: true,
+              content: "Copy",
+              color: "primary",
+              delay: 200,
+              closeDelay: 200,
+            }}
+            onCopy={(value) => {
+              localStorage.setItem("newMedicineName", value.toString());
+            }}
+          >
+            <span className="truncate">{cellValue}</span>
+          </CustomSnippet>
+        ) : (
+          <p className="truncate">{cellValue}</p>
         );
       case "isPurchaseNeeded":
         return cellValue ? <IoMdCheckmark size={20} className="text-primary" /> : <IoMdClose size={20} className="text-danger-500" />;
@@ -232,25 +296,34 @@ const RequestMedicineList = () => {
       case "actions":
         return (
           <div className="flex justify-center items-center gap-4">
-            <Tooltip content="Chấp nhận" color="primary">
+            <Tooltip content="Chấp nhận" color="primary" closeDelay={200}>
               <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                 <FaRegThumbsUp
                   size={20}
                   className="text-primary cursor-pointer"
-                  onClick={() => {
-                    setAnswer("accept");
+                  onClick={async () => {
                     setSelectedMedicine(data);
-                    onOpen();
+                    if (data.medicineId && medicineQuantityCheck < data.quantity) {
+                      await calculateTotalQuantity(data.medicineId);
+                      onOpenAlert();
+                    } else {
+                      setAnswer("accept");
+                      onOpen();
+                    }
                   }}
                 />
               </span>
             </Tooltip>
-            <Tooltip content="Từ chối" color="danger">
+            <Tooltip content="Từ chối" color="danger" closeDelay={200}>
               <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                 <FaRegThumbsDown
                   size={20}
                   className="text-danger-500 cursor-pointer"
-                  onClick={() => {
+                  onClick={async () => {
+                    // const medicineQuantity = (await checkMedicineQuantity(data.medicineId || "")) || 0;
+                    if (data.medicineId && medicineQuantityCheck < data.quantity) {
+                      return;
+                    }
                     setAnswer("reject");
                     setSelectedMedicine(data);
                     onOpen();
@@ -258,6 +331,22 @@ const RequestMedicineList = () => {
                 />
               </span>
             </Tooltip>
+            {data.medicineId && (
+              <Popover placement="bottom" showArrow>
+                <Tooltip content="Kiểm tra số lượng" closeDelay={200}>
+                  <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                    <PopoverTrigger onClick={() => checkMedicineQuantity(data.medicineId || "")}>
+                      <EyeIcon size={20} className="cursor-pointer" />
+                    </PopoverTrigger>
+                  </span>
+                </Tooltip>
+                <PopoverContent>
+                  <p className="text-md cursor-pointer">
+                    Số lượng còn lại: <strong>{medicineQuantityCheck}</strong>
+                  </p>
+                </PopoverContent>
+              </Popover>
+            )}
           </div>
         );
       default:
@@ -311,6 +400,22 @@ const RequestMedicineList = () => {
       </Table>
       {isOpen && selectedMedicine && answer === "accept" && <ReplyRequest isOpen={isOpen} onClose={onClose} selectedMedicine={selectedMedicine} answer={answer} />}
       {isOpen && selectedMedicine && answer === "reject" && <ReplyRequest isOpen={isOpen} onClose={onClose} selectedMedicine={selectedMedicine} answer={answer} />}
+      {isOpenAlert && (
+        <Modal isOpen={isOpenAlert} onClose={onCloseAlert} size="sm">
+          <ModalContent>
+            <ModalHeader>
+              <p className="text-xl font-bold">Thông báo</p>
+            </ModalHeader>
+            <ModalBody>
+              <p className="text-lg">Số lượng thuốc {selectedMedicine?.newMedicineName || selectedMedicine?.medicineId} không đủ để chấp nhận yêu cầu.</p>
+              <p className="text-lg">
+                Tổng số lượng thuốc cần nhập cho thuốc {selectedMedicine?.newMedicineName || selectedMedicine?.medicineId} là{" "}
+                <strong className="text-2xl">{remainQuantity}</strong>.
+              </p>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </div>
   );
 };

@@ -21,6 +21,7 @@ import { Pig } from "@oursrc/lib/models/pig";
 import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { SERVERURL } from "@oursrc/lib/http";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { v4 } from "uuid";
 
 // const pigList: Pig[] = [
 //   { id: 1, name: "Heo 001", pigCode: "HEO001" },
@@ -178,7 +179,14 @@ const AssignTag = () => {
               repeatDelay: 2,
             }}
           >
-            <RiRfidLine className="mx-auto text-primary" size={150} />
+            <RiRfidLine
+              className="mx-auto text-primary"
+              size={150}
+              // onClick={() => {
+              //   setPigInfo({ Uid: v4(), Weight: 100, Height: 50, Width: 50 });
+              //   onOpen();
+              // }}
+            />
           </motion.div>
           <p className="text-center text-lg mt-4">Quét tag bằng thiết bị RFID để gắn tag cho heo</p>
         </div>
@@ -324,7 +332,7 @@ const AssignTag = () => {
         </div>
         {pigInfo && <AssignInfo isOpen={isOpen} onClose={onClose} setAssignedPigs={setAssignedPigs} pigInfo={pigInfo} />}
         <div className="flex justify-end">
-          <Button color="primary" variant="solid" isLoading={loading} size="lg" isDisabled={assignedPigs?.length <= 0} type="submit" onPress={handleSubmit}>
+          <Button color="primary" variant="solid" isLoading={loading} size="lg" isDisabled={assignedPigs?.length <= 0} onPress={handleSubmit}>
             Bước tiếp theo
           </Button>
         </div>

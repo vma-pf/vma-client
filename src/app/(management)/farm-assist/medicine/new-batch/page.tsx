@@ -49,6 +49,7 @@ const NewBatch = () => {
   const [selected, setSelected] = React.useState<string>("1");
   const [selectedBatch, setSelectedBatch] = React.useState<BatchCreateProps | undefined>(undefined);
   const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | undefined>(undefined);
+  const [selectedSupplier, setSelectedSupplier] = React.useState<Supplier | undefined>(undefined);
   const [date, setDate] = React.useState<DateValue>();
   const [image, setImage] = React.useState<File | string | undefined>(undefined);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -199,7 +200,10 @@ const NewBatch = () => {
             isInvalid={data.supplierId ? false : true}
             errorMessage="Chọn nhà cung cấp"
             value={data.supplierId || ""}
-            onChange={(event) => setData({ ...data, supplierId: event.target.value })}
+            onChange={(event) => {
+              setData({ ...data, supplierId: event.target.value });
+              setSelectedSupplier(suppliers.find((supplier) => supplier.id === event.target.value));
+            }}
             // {...register("supplierId", { required: true })}
           >
             {suppliers.map((supplier) => (
@@ -244,6 +248,7 @@ const NewBatch = () => {
               <Button
                 color="primary"
                 variant="solid"
+                isDisabled={data.supplierId ? false : true}
                 onPress={() => {
                   setSelectedBatch(batch);
                   onOpen();
@@ -282,6 +287,7 @@ const NewBatch = () => {
                   <MedicineList
                     selectedMedicine={batchList.find((item) => item.id === selectedBatch?.id)?.medicine || undefined}
                     setSelectedMedicine={setSelectedMedicine}
+                    supplier={selectedSupplier}
                   />
                 </ModalBody>
               </ModalContent>

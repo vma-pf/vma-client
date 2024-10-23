@@ -170,7 +170,7 @@ const SelectedPigsList = ({ pigList = [] }: any) => {
           wrapper: "min-h-[550px]",
         }}
         selectedKeys={selectedKeys}
-        selectionMode="single"
+        selectionMode="none"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
