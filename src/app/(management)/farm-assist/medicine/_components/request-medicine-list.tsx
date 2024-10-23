@@ -9,6 +9,11 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   Pagination,
   Popover,
   PopoverContent,
@@ -59,6 +64,7 @@ const statusOptions = ["Đã duyệt", "Chờ xử lý", "Từ chối"];
 
 const RequestMedicineList = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenAlert, onOpen: onOpenAlert, onClose: onCloseAlert } = useDisclosure();
   const [answer, setAnswer] = useState<"accept" | "reject">();
 
   //Table field
@@ -74,6 +80,8 @@ const RequestMedicineList = () => {
     direction: "ascending",
   });
   const [selectedMedicine, setSelectedMedicine] = React.useState<MedicineRequest | null>(null);
+  const [remainQuantity, setRemainQuantity] = React.useState(0);
+  const [medicineQuantityCheck, setMedicineQuantityCheck] = React.useState(0);
 
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -126,14 +134,28 @@ const RequestMedicineList = () => {
     }
   };
 
-  const checkMedicineQuantity = async (medicineId: string) => {
+  const calculateTotalQuantity = async (medicineId: string) => {
     try {
-      const response: ResponseObject<Medicine> = await medicineService.getMedicineById(medicineId);
+      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(1, 500);
       if (response.isSuccess) {
-        return response.data.quantity;
+        const totalQuantity = response.data.data.filter((medicine) => medicine.medicineId === medicineId).reduce((total, medicine) => total + medicine.quantity, 0);
+        setRemainQuantity(totalQuantity);
       } else {
         console.log(response.errorMessage);
         return 0;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const checkMedicineQuantity = async (medicineId: string) => {
+    try {
+      const response: ResponseObject<MedicineRequest> = await medicineService.getMedicineById(medicineId);
+      if (response.isSuccess) {
+        setMedicineQuantityCheck(response.data.quantity);
+      } else {
+        console.log(response.errorMessage);
       }
     } catch (error) {
       console.log(error);
@@ -280,13 +302,14 @@ const RequestMedicineList = () => {
                   size={20}
                   className="text-primary cursor-pointer"
                   onClick={async () => {
-                    const medicineQuantity = (await checkMedicineQuantity(data.medicineId || "")) || 0;
-                    if (data.medicineId && medicineQuantity < data.quantity) {
-                      return;
-                    }
-                    setAnswer("accept");
                     setSelectedMedicine(data);
-                    onOpen();
+                    if (data.medicineId && medicineQuantityCheck < data.quantity) {
+                      await calculateTotalQuantity(data.medicineId);
+                      onOpenAlert();
+                    } else {
+                      setAnswer("accept");
+                      onOpen();
+                    }
                   }}
                 />
               </span>
@@ -297,8 +320,8 @@ const RequestMedicineList = () => {
                   size={20}
                   className="text-danger-500 cursor-pointer"
                   onClick={async () => {
-                    const medicineQuantity = (await checkMedicineQuantity(data.medicineId || "")) || 0;
-                    if (data.medicineId && medicineQuantity < data.quantity) {
+                    // const medicineQuantity = (await checkMedicineQuantity(data.medicineId || "")) || 0;
+                    if (data.medicineId && medicineQuantityCheck < data.quantity) {
                       return;
                     }
                     setAnswer("reject");
@@ -312,14 +335,14 @@ const RequestMedicineList = () => {
               <Popover placement="bottom" showArrow>
                 <Tooltip content="Kiểm tra số lượng" closeDelay={200}>
                   <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                    <PopoverTrigger>
+                    <PopoverTrigger onClick={() => checkMedicineQuantity(data.medicineId || "")}>
                       <EyeIcon size={20} className="cursor-pointer" />
                     </PopoverTrigger>
                   </span>
                 </Tooltip>
                 <PopoverContent>
                   <p className="text-md cursor-pointer">
-                    Số lượng còn lại: <strong>{checkMedicineQuantity(data.medicineId)}</strong>
+                    Số lượng còn lại: <strong>{medicineQuantityCheck}</strong>
                   </p>
                 </PopoverContent>
               </Popover>
@@ -377,6 +400,22 @@ const RequestMedicineList = () => {
       </Table>
       {isOpen && selectedMedicine && answer === "accept" && <ReplyRequest isOpen={isOpen} onClose={onClose} selectedMedicine={selectedMedicine} answer={answer} />}
       {isOpen && selectedMedicine && answer === "reject" && <ReplyRequest isOpen={isOpen} onClose={onClose} selectedMedicine={selectedMedicine} answer={answer} />}
+      {isOpenAlert && (
+        <Modal isOpen={isOpenAlert} onClose={onCloseAlert} size="sm">
+          <ModalContent>
+            <ModalHeader>
+              <p className="text-xl font-bold">Thông báo</p>
+            </ModalHeader>
+            <ModalBody>
+              <p className="text-lg">Số lượng thuốc {selectedMedicine?.newMedicineName || selectedMedicine?.medicineId} không đủ để chấp nhận yêu cầu.</p>
+              <p className="text-lg">
+                Tổng số lượng thuốc cần nhập cho thuốc {selectedMedicine?.newMedicineName || selectedMedicine?.medicineId} là{" "}
+                <strong className="text-2xl">{remainQuantity}</strong>.
+              </p>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
     </div>
   );
 };

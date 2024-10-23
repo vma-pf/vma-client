@@ -3,7 +3,7 @@ import React from "react";
 import VaccinationList from "./_components/vaccination-list";
 import { FaClock, FaRegCalendarPlus } from "react-icons/fa6";
 import { VaccinationData, VaccinationStageProps } from "../../../../lib/models/vaccination";
-import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Progress, Skeleton, useDisclosure } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Progress, Skeleton, useDisclosure } from "@nextui-org/react";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { dateConverter } from "@oursrc/lib/utils";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
@@ -24,13 +24,41 @@ const statusMap = [
   { name: "Đã hủy", value: 3 },
 ];
 
+const herdData: HerdInfo = {
+  id: "1",
+  code: "herd-spring-2025",
+  breed: "Yorkshire",
+  totalNumber: 100,
+  expectedEndDate: "2022-12-30",
+  actualEndDate: "2022-12-30",
+  startDate: "2022-12-30",
+  description: "Đàn heo mới",
+  averageWeight: 100,
+  status: 1,
+};
+
+const barnData = [
+  {
+    id: "1",
+    code: "barn-1",
+    name: "Chuồng 1",
+    quantity: 50,
+  },
+  {
+    id: "2",
+    code: "barn-2",
+    name: "Chuồng 2",
+    quantity: 50,
+  },
+];
+
 const Vaccination = () => {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
   const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(new Set<string>());
   const [vaccinationData, setVaccinationData] = React.useState<VaccinationData | undefined>();
-  const [herd, setHerd] = React.useState<HerdInfo>();
+  const [herd, setHerd] = React.useState<HerdInfo>(herdData);
   const [filterStatus, setFilterStatus] = React.useState("not-done");
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
@@ -215,24 +243,24 @@ const Vaccination = () => {
                       <p className="text-md">Giống:</p>
                       <p className="text-lg font-semibold">{herd.breed}</p>
                     </div>
-                    {/* <div className="mt-3 flex justify-between">
-                  <Accordion variant="splitted" defaultExpandedKeys={["1"]}>
-                    <AccordionItem key={1} title="Danh sách chuồng">
-                      <div className="flex justify-between">
-                        <p className="text-xs font-light">Mã code</p>
-                        <p className="text-xs font-light">Tên chuồng</p>
-                        <p className="text-xs font-light">Số lượng</p>
-                      </div>
-                      {herd.barns.map((barn) => (
-                        <div key={barn.id} className="flex justify-between">
-                          <p className="text-lg mt-2">{barn.code}</p>
-                          <p className="text-lg mt-2">{barn.name}</p>
-                          <p className="text-lg mt-2">{barn.quantity}</p>
-                        </div>
-                      ))}
-                    </AccordionItem>
-                  </Accordion>
-                </div> */}
+                    <div className="mt-3 flex justify-between">
+                      <Accordion variant="splitted" defaultExpandedKeys={["1"]}>
+                        <AccordionItem key={1} title="Danh sách chuồng">
+                          <div className="flex justify-between">
+                            <p className="text-xs font-light">Mã code</p>
+                            <p className="text-xs font-light">Tên chuồng</p>
+                            <p className="text-xs font-light">Số lượng</p>
+                          </div>
+                          {barnData.map((barn) => (
+                            <div key={barn.id} className="flex justify-between">
+                              <p className="text-lg mt-2">{barn.code}</p>
+                              <p className="text-lg mt-2">{barn.name}</p>
+                              <p className="text-lg mt-2">{barn.quantity}</p>
+                            </div>
+                          ))}
+                        </AccordionItem>
+                      </Accordion>
+                    </div>
                   </div>
                 ) : (
                   <p className="text-center text-lg mt-3">Chưa chọn lịch tiêm phòng</p>

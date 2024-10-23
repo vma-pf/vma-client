@@ -21,6 +21,7 @@ const VetLayout = ({
     "/vaccination": projectName + " - " + "Lịch tiêm phòng",
     "/vaccination/create-plan": projectName + " - " + "Tạo lịch tiêm phòng",
     "/treatment": projectName + " - " + "Kế hoạch điều trị",
+    "/treatment/create-plan": projectName + " - " + "Tạo kế hoạch điều trị",
     "/cage": projectName + " - " + "Quản lý chuồng",
     "/alert": projectName + " - " + "Cảnh báo",
   };

@@ -244,7 +244,7 @@ export default function CageListReadOnly({ setSelected }: any) {
           wrapper: "min-h-[500px]",
         }}
         selectedKeys={selectedKeys}
-        selectionMode="multiple"
+        selectionMode="single"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"

@@ -242,7 +242,6 @@ const HerdListReadOnly = ({ setSelected }: any) => {
   return (
     <div>
       <Table
-        isStriped
         color="primary"
         bottomContent={bottomContent}
         bottomContentPlacement="outside"

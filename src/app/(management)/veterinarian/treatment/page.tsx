@@ -10,7 +10,7 @@ import { Accordion, AccordionItem, Button, Dropdown, DropdownItem, DropdownMenu,
 import { FaClock, FaRegCalendarPlus } from "react-icons/fa6";
 import { TbMedicineSyrup } from "react-icons/tb";
 import { CiEdit } from "react-icons/ci";
-import { TreatmentData, TreatmentStageProps } from "@oursrc/lib/models/treatment";
+import { TreatmentData, CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
 import TreatmentList from "./_components/treatment-list";
 import Image from "next/image";
 import { MdCalendarToday, MdOutlineStickyNote2 } from "react-icons/md";
@@ -36,31 +36,7 @@ const treatmentDetail: TreatmentData = {
   actualEndDate: "2022-10-20",
   note: "Ghi chú 1",
   status: 0,
-  treatmentStages: [
-    {
-      id: "1",
-      title: "Bước 1",
-      applyStageTime: "2022-10-10",
-      timeSpan: "10",
-      isDone: false,
-      treatmentToDos: [{ description: "Mô tả 1" }],
-      inventoryRequest: {
-        id: "1",
-        medicines: [
-          {
-            medicineId: "1",
-            medicineName: "Thuốc 1",
-            quantity: 10,
-            netWeight: "10",
-            portionEachPig: 10,
-            unit: "kg",
-          },
-        ],
-        description: "Mô tả 1",
-        title: "Yêu cầu 1",
-      },
-    },
-  ],
+  treatmentStages: [],
 };
 
 const Treatment = () => {
@@ -74,7 +50,7 @@ const Treatment = () => {
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
-  const [selectedVaccination, setSelectedVaccination] = React.useState<TreatmentStageProps>();
+  const [selectedVaccination, setSelectedVaccination] = React.useState<CreateTreatmentStageProps>();
 
   const filterValue = React.useMemo(() => {
     if (filterStatus === "all") {

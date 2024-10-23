@@ -40,8 +40,10 @@ import { useForm } from "react-hook-form";
 import { v4 } from "uuid";
 import MedicineListInStage from "./medine-list-in-stage";
 import SelectedPigsList from "./selected-pigs-list";
+import { useRouter } from "next/navigation";
 
 const FirstVaccinationStep = () => {
+  const router = useRouter();
   //State
   const [vaccinationTemplatesOptions, setVaccinationTemplatesOptions] = React.useState<{ key: string; label: string }[]>([]);
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
@@ -285,6 +287,7 @@ const FirstVaccinationStep = () => {
           title: "Tạo thành công lịch tiêm phòng",
           description: "Đã tạo thành công lịch tiêm phòng! Xem chi tiết tại màn hình thống kê",
         });
+        router.push("/veterinarian/vaccination");
       } else {
         throw new AggregateError([new Error()], response.errorMessage);
       }

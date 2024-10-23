@@ -80,6 +80,17 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
           router.push("/veterinarian/vaccination");
           break;
       }
+    } else if (role === ROLE.FARMER) {
+      switch (message.notificationType) {
+        case "Yêu cầu tiêm phòng":
+          router.push("/farmer/medicine");
+          break;
+        case "Báo cáo bệnh":
+          router.push("/farmer/disease-report");
+          break;
+        default:
+          break;
+      }
     }
     // const path = message.notificationType === 1 ? "/farmer/medicine" : "/farmer/disease-report";
     // router.push(path);
