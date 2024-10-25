@@ -21,6 +21,7 @@ import DevelopmentLineChart from "./_components/development-line-chart";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { MonitorDevelopment } from "@oursrc/lib/models/monitor-development";
 import { monitorDevelopmentLogService } from "@oursrc/lib/services/monitorDevelopmentLogService";
+import PigDetail from "./_components/_modal/pig-detail";
 
 const Herd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -183,6 +184,7 @@ const Herd = () => {
           {selectedHerd && selectedPig ? <DevelopmentLineChart /> : <p className="text-center">Chọn heo để xem biểu đồ phát triển</p>}
         </div> */}
       {isOpen && selectedPig && <HealthCheckUp isOpen={isOpen} onClose={onClose} pigInfo={selectedPig} />}
+      {isOpenDetail && selectedPig && <PigDetail isOpen={isOpenDetail} onClose={onCloseDetail} pigInfo={selectedPig} />}
     </div>
   );
 };

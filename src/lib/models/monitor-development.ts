@@ -5,7 +5,7 @@ export type MonitorDevelopment = {
     height: string;
     width: string;
     healthStatus: string;
-    checkupAt: string;
+    checkUpAt: string;
 }
 
 export type CreateMonitorDevelopment = {

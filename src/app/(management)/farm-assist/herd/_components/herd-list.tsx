@@ -113,7 +113,6 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
     try {
       setIsLoading(true);
       const response: ResponseObjectList<HerdInfo> = await herdService.getHerd(page, rowsPerPage);
-      console.log("response: ", response);
       if (response.isSuccess) {
         setHerdList(response.data.data || []);
         setTotalRecords(response.data.totalRecords);
@@ -143,6 +142,10 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
             {cellValue === 0 ? "Chưa bắt đầu" : cellValue === 1 ? "Đang diến ra" : "Đã kết thúc"}
           </Chip>
         );
+      case "startDate":
+      case "expectedEndDate":
+      case "actualEndDate":
+        return new Date(cellValue as string).toLocaleDateString("vi-VN");
       default:
         return cellValue?.toString();
     }

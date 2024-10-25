@@ -4,20 +4,20 @@ import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@oursrc/components/ui/card";
 import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@oursrc/components/ui/chart";
 
-const chartData = [
-  { month: "Tháng 1", weight: 186, height: 80, width: 50 },
-  { month: "Tháng 2", weight: 305, height: 200, width: 100 },
-  { month: "Tháng 3", weight: 237, height: 120, width: 70 },
-  { month: "Tháng 4", weight: 73, height: 190, width: 60 },
-  { month: "Tháng 5", weight: 209, height: 130, width: 80 },
-  { month: "Tháng 6", weight: 214, height: 140, width: 90 },
-  { month: "Tháng 7", weight: 214, height: 140, width: 90 },
-  { month: "Tháng 8", weight: 214, height: 140, width: 90 },
-  { month: "Tháng 9", weight: 214, height: 140, width: 90 },
-  { month: "Tháng 10", weight: 214, height: 140, width: 90 },
-  { month: "Tháng 11", weight: 214, height: 140, width: 90 },
-  { month: "Tháng 12", weight: 214, height: 140, width: 90 },
-];
+// const chartData = [
+//   { month: "Tháng 1", weight: 186, height: 80, width: 50 },
+//   { month: "Tháng 2", weight: 305, height: 200, width: 100 },
+//   { month: "Tháng 3", weight: 237, height: 120, width: 70 },
+//   { month: "Tháng 4", weight: 73, height: 190, width: 60 },
+//   { month: "Tháng 5", weight: 209, height: 130, width: 80 },
+//   { month: "Tháng 6", weight: 214, height: 140, width: 90 },
+//   { month: "Tháng 7", weight: 214, height: 140, width: 90 },
+//   { month: "Tháng 8", weight: 214, height: 140, width: 90 },
+//   { month: "Tháng 9", weight: 214, height: 140, width: 90 },
+//   { month: "Tháng 10", weight: 214, height: 140, width: 90 },
+//   { month: "Tháng 11", weight: 214, height: 140, width: 90 },
+//   { month: "Tháng 12", weight: 214, height: 140, width: 90 },
+// ];
 
 const chartConfig = {
   weight: {
@@ -34,13 +34,13 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export default function DevelopmentLineChart() {
+export default function DevelopmentLineChart({ chartData }: { chartData: any[] }) {
   return (
     <Card>
       <CardHeader>
         {/* <CardTitle>Biểu đồ chỉ số cơ thể heo</CardTitle> */}
         <CardDescription>
-          {chartData[0].month} - {chartData[chartData.length - 1].month}
+          {chartData.length > 0 && chartData[0]?.month} - {chartData[chartData.length - 1]?.month}
         </CardDescription>
       </CardHeader>
       <CardContent>

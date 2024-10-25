@@ -50,42 +50,13 @@ const columns = [
   { name: "Cân nặng", uid: "weight", sortable: true },
   { name: "Chiều cao", uid: "height", sortable: true },
   { name: "Chiều rộng", uid: "width", sortable: true },
+  { name: "Ngày kiểm tra", uid: "checkUpAt", sortable: true },
+  { name: "Chuồng", uid: "cageCode", sortable: true },
   { name: "Tình trạng", uid: "healthStatus", sortable: true },
-  { name: "Ngày kiểm tra", uid: "checkupAt", sortable: true },
   // { name: "Hành động", uid: "actions" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["title", "weight", "height", "width", "healthStatus", "checkupAt"];
-
-const data: MonitorDevelopment[] = [
-  {
-    id: "1",
-    title: "Đánh giá sức khỏe",
-    weight: "100",
-    height: "100",
-    width: "100",
-    healthStatus: "normal",
-    checkupAt: "2024-09-30T01:57:49.49+00:00",
-  },
-  {
-    id: "2",
-    title: "Đánh giá sức khỏe",
-    weight: "100",
-    height: "100",
-    width: "100",
-    healthStatus: "sick",
-    checkupAt: "2024-09-30T01:57:49.49+00:00",
-  },
-  {
-    id: "3",
-    title: "Đánh giá sức khỏe",
-    weight: "100",
-    height: "100",
-    width: "100",
-    healthStatus: "dead",
-    checkupAt: "2024-09-30T01:57:49.49+00:00",
-  },
-];
+const INITIAL_VISIBLE_COLUMNS = ["title", "weight", "height", "width", "healthStatus", "checkUpAt", "cageCode"];
 
 const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
   const [developmentLogList, setDevelopmentLogList] = React.useState<MonitorDevelopment[]>([]);
@@ -101,6 +72,7 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
     column: "breed",
     direction: "ascending",
   });
+  const [chartData, setChartData] = React.useState<{ month: string; weight: number; height: number; width: number }[]>([]);
   const [selectedLog, setSelectedLog] = React.useState<MonitorDevelopment>();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -154,13 +126,21 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
     try {
       setIsLoading(true);
       const response: ResponseObjectList<MonitorDevelopment> = await monitorDevelopmentLogService.getMonitoringLogsByPigId(selectedPig?.id ?? "", page, rowsPerPage);
-      console.log(response);
       if (response.isSuccess) {
-        setDevelopmentLogList(response.data.data || []);
+        const sortedData = response.data.data.sort((a, b) => new Date(a.checkUpAt).getTime() - new Date(b.checkUpAt).getTime());
+        setDevelopmentLogList(sortedData || []);
         setTotalRecords(response.data.totalRecords);
         setPage(response.data?.pageIndex);
         setPages(response.data?.totalPages);
         setRowsPerPage(response.data?.pageSize);
+        setChartData(
+          sortedData.map((log) => ({
+            month: new Date(log.checkUpAt).toLocaleString("vi-VN", { month: "long" }),
+            weight: Number(log.weight),
+            height: Number(log.height),
+            width: Number(log.width),
+          }))
+        );
       } else {
         console.log(response.errorMessage);
       }
@@ -208,8 +188,20 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
       //       </Tooltip>
       //     </div>
       //   );
+      case "checkUpAt":
+        return (
+          <p className="truncate">
+            {new Date(cellValue as string).toLocaleString("vi-VN", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        );
       default:
-        return <p className="truncate">{cellValue?.toString()}</p>;
+        return cellValue;
     }
   }, []);
 
@@ -366,7 +358,7 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
       </div>
       <div className="p-5 w-1/2 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-xl font-semibold mb-3">Biểu đồ phát triển</p>
-        <DevelopmentLineChart />
+        <DevelopmentLineChart chartData={chartData} />
       </div>
     </div>
   );
