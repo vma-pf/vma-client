@@ -133,6 +133,8 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
             {cellValue === "active" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
           </Chip>
         );
+      case "vaccinationDate":
+        return new Date(cellValue as string).toLocaleDateString("vi-VN");
       case "actions":
         return (
           <div className="relative flex justify-center items-center gap-2">

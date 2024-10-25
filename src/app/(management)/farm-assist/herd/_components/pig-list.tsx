@@ -20,6 +20,11 @@ import {
   SortDescriptor,
   Spinner,
   Tooltip,
+  useDisclosure,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
 } from "@nextui-org/react";
 import { columns, statusOptions } from "../data";
 import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
@@ -30,6 +35,8 @@ import { HerdInfo } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@oursrc/components/ui/drawer";
 import DevelopmentLogList from "./development-log-list";
+import DiseaseReport from "./disease-report";
+import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@oursrc/components/ui/sheet";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   normal: "success",
@@ -116,7 +123,6 @@ export default function PigList({
     try {
       setIsLoading(true);
       const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerd.id, page, rowsPerPage);
-      console.log("response: ", response);
       if (response.isSuccess) {
         setPigList(response.data.data || []);
         setTotalRecords(response.data?.totalRecords || 0);
@@ -142,19 +148,15 @@ export default function PigList({
             {cellValue === "active" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
           </Chip>
         );
+      case "vaccinationDate":
+        return new Date(cellValue as string).toLocaleDateString("vi-VN");
       case "actions":
         return (
           <div className="flex justify-center items-center gap-4">
-            <Drawer>
+            {/* <Drawer>
               <DrawerTrigger>
                 <Tooltip content="Chi tiết" color="primary" closeDelay={200}>
-                  <span
-                    className="text-lg text-default-400 cursor-pointer active:opacity-50"
-                    // onClick={() => {
-                    //   setSelectedPig(pig);
-                    //   // onOpen();
-                    // }}
-                  >
+                  <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                     <EyeIcon
                       size={20}
                       className=" cursor-pointer"
@@ -167,7 +169,7 @@ export default function PigList({
                 </Tooltip>
               </DrawerTrigger>
               <DrawerContent className="h-5/6">
-                <div className="overflow-auto h-full">
+                <div className="mt-2 overflow-auto h-full">
                   <DrawerHeader>
                     <DrawerTitle>
                       <p className="text-2xl font-bold">Hồ sơ heo {pig.id}</p>
@@ -175,13 +177,26 @@ export default function PigList({
                   </DrawerHeader>
                   <div className="p-4 pb-0">
                     <DevelopmentLogList selectedPig={pig} />
+                    <DiseaseReport selectedPig={pig} />
                   </div>
                   <DrawerFooter>
                     <DrawerClose>Cancel</DrawerClose>
                   </DrawerFooter>
                 </div>
               </DrawerContent>
-            </Drawer>
+            </Drawer> */}
+            <Tooltip content="Chi tiết" color="primary" closeDelay={200}>
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <EyeIcon
+                  size={20}
+                  className=" cursor-pointer"
+                  onClick={() => {
+                    setSelectedPig(pig);
+                    onOpen();
+                  }}
+                />
+              </span>
+            </Tooltip>
           </div>
         );
       default:
