@@ -7,6 +7,8 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDi
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { scheduleService } from "@oursrc/lib/services/scheduleService";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 
 type ScheduleProps = {
   allDay: boolean;
@@ -17,48 +19,72 @@ type ScheduleProps = {
   backgroundColor?: string;
 };
 
-const eventData: ScheduleProps[] = [
-  {
-    id: "1",
-    title: "Board Meeting",
-    start: new Date(2024, 9, 11, 15, 0),
-    end: new Date(2024, 9, 11, 16, 0),
-    allDay: false,
-    backgroundColor: "#0ea5e9",
-  },
-  {
-    id: "2",
-    title: "Training session",
-    start: new Date(2024, 9, 12, 14, 0),
-    end: new Date(2024, 9, 12, 16, 0),
-    allDay: false,
-  },
-  {
-    id: "3",
-    title: "Conference",
-    start: new Date(2024, 9, 13, 10, 0),
-    end: new Date(2024, 9, 13, 12, 0),
-    allDay: false,
-  },
-];
+// const eventData: ScheduleProps[] = [
+//   {
+//     id: "1",
+//     title: "Board Meeting",
+//     start: new Date(2024, 9, 11, 15, 0),
+//     end: new Date(2024, 9, 11, 16, 0),
+//     allDay: false,
+//     backgroundColor: "#0ea5e9",
+//   },
+//   {
+//     id: "2",
+//     title: "Training session",
+//     start: new Date(2024, 9, 12, 14, 0),
+//     end: new Date(2024, 9, 12, 16, 0),
+//     allDay: false,
+//   },
+//   {
+//     id: "3",
+//     title: "Conference",
+//     start: new Date(2024, 9, 13, 10, 0),
+//     end: new Date(2024, 9, 13, 12, 0),
+//     allDay: false,
+//   },
+// ];
 
 const Schedule = () => {
   const [currentEvents, setCurrentEvents] = useState<EventApi[]>([]);
   //   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [eventData, setEventData] = useState<ScheduleProps[]>([]);
   const [newEventTitle, setNewEventTitle] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<DateSelectArg | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  useEffect(() => {
-    // Load events from local storage when the component mounts
-    if (typeof window !== "undefined") {
-      const savedEvents = localStorage.getItem("events");
-      if (savedEvents) {
-        // setCurrentEvents(JSON.parse(savedEvents));
-        setCurrentEvents(eventData as EventApi[]);
+  const fetchEvents = async () => {
+    try {
+      const response: ResponseObject<any> = await scheduleService.getMySchedules();
+      console.log(response);
+      if (response.isSuccess) {
+        const events: ScheduleProps[] = (response.data as any[]).map((event: any) => ({
+          id: event.id,
+          title: event.type === 0 ? "Tiêm phòng" + " - " + event.title : "Khám bệnh" + " - " + event.title,
+          start: new Date(event.start),
+          end: new Date(event.end),
+          allDay: true,
+          backgroundColor: event.isDone ? "#808080" : event.type === 0 ? "#0ea5e9" : "#10b981",
+          isDone: event.isDone,
+          type: event.type,
+        }));
+        setEventData(events);
+        localStorage.setItem("events", JSON.stringify(events));
+        console.log(new Date().getMonth());
+        console.log(events.map((event) => new Date(event.start).getMonth()));
+        setCurrentEvents(events.filter((event) => new Date(event.start).getMonth() === new Date().getMonth()) as EventApi[]);
       }
-      localStorage.setItem("events", JSON.stringify(eventData));
+    } catch (error) {
+      console.error(error);
     }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+    // const savedEvents = localStorage.getItem("events");
+    // if (savedEvents) {
+    //   setCurrentEvents(eventData as EventApi[]);
+    // }
+    // localStorage.setItem("events", JSON.stringify(eventData));
   }, []);
 
   // useEffect(() => {
@@ -113,10 +139,14 @@ const Schedule = () => {
             {currentEvents.length <= 0 && <div className="italic text-center text-gray-400">No Events Present</div>}
 
             {currentEvents.length > 0 &&
-              currentEvents.map((event: EventApi) => (
+              currentEvents.map((event) => (
                 <li className="border border-gray-200 shadow px-4 py-2 rounded-md text-primary" key={event.id}>
-                  {event.title}
-                  <br />
+                  <p
+                    className={`text-${event.backgroundColor === "#808080" ? "zinc-500" : event.backgroundColor === "#0ea5e9" ? "sky-500" : "primary"}
+                  `}
+                  >
+                    {event.title}
+                  </p>
                   <label className="text-slate-950">
                     {formatDate(event.start!, {
                       locale: "vi",
@@ -143,7 +173,7 @@ const Schedule = () => {
               right: "dayGridMonth,timeGridWeek,timeGridDay",
             }} // Set header toolbar options.
             eventColor={"#10b981"} // Set event color.
-            initialView="timeGridWeek" // Initial view mode of the calendar.
+            initialView="dayGridMonth" // Initial view mode of the calendar.
             // editable={true} // Allow events to be edited.
             // selectable={true} // Allow dates to be selectable.
             selectMirror={true} // Mirror selections visually.
@@ -153,8 +183,8 @@ const Schedule = () => {
             eventsSet={(events) => setCurrentEvents(events)} // Update state with current events whenever they change.
             eventDidMount={(event) => {
               // Add a tooltip to each event with its title.
-              console.log(event);
-              event.el.setAttribute("title", event.event.title);
+              // console.log(event);
+              // event.el.setAttribute("title", event.event.title);
             }}
             initialEvents={typeof window !== "undefined" ? JSON.parse(localStorage.getItem("events") || "[]") : []} // Initial events loaded from local storage.
           />

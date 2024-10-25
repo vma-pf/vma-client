@@ -52,4 +52,4 @@ export type DiseaseReport = {
     treatmentResult: string;
     totalTreatmentTime: string;
     isDone: boolean;
-}
+};

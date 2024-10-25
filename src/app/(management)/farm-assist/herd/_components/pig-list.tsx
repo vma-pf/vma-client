@@ -18,21 +18,18 @@ import {
   Selection,
   ChipProps,
   SortDescriptor,
-  useDisclosure,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Spinner,
+  Tooltip,
 } from "@nextui-org/react";
 import { columns, statusOptions } from "../data";
 import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
-import { Plus, Search } from "lucide-react";
+import { EyeIcon, Plus, Search } from "lucide-react";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { HerdInfo } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@oursrc/components/ui/drawer";
+import DevelopmentLogList from "./development-log-list";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   normal: "success",
@@ -46,11 +43,19 @@ const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export default function PigList({ selectedHerd, setSelectedPig }: { selectedHerd: HerdInfo; setSelectedPig: React.Dispatch<React.SetStateAction<Pig | undefined>> }) {
+export default function PigList({
+  selectedHerd,
+  setSelectedPig,
+  onOpen,
+}: {
+  selectedHerd: HerdInfo;
+  setSelectedPig: React.Dispatch<React.SetStateAction<Pig | undefined>>;
+  onOpen: () => void;
+}) {
   const [pigList, setPigList] = React.useState<Pig[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
-  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
+  // const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
@@ -125,7 +130,7 @@ export default function PigList({ selectedHerd, setSelectedPig }: { selectedHerd
     }
   };
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  // const { isOpen, onOpen, onOpenChange } = useDisclosure();
   // const [selectedPig, setSelectedPig] = React.useState<Pig>();
   const renderCell = React.useCallback((pig: Pig, columnKey: React.Key) => {
     const cellValue = pig[columnKey as keyof Pig];
@@ -139,26 +144,44 @@ export default function PigList({ selectedHerd, setSelectedPig }: { selectedHerd
         );
       case "actions":
         return (
-          <div className="relative flex justify-center items-center gap-2">
-            <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <HiDotsVertical className="text-default-300" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  onClick={() => {
-                    setSelectedPig(pig);
-                    onOpen();
-                  }}
-                >
-                  View
-                </DropdownItem>
-                <DropdownItem>Edit</DropdownItem>
-                <DropdownItem>Delete</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+          <div className="flex justify-center items-center gap-4">
+            <Drawer>
+              <DrawerTrigger>
+                <Tooltip content="Chi tiết" color="primary" closeDelay={200}>
+                  <span
+                    className="text-lg text-default-400 cursor-pointer active:opacity-50"
+                    // onClick={() => {
+                    //   setSelectedPig(pig);
+                    //   // onOpen();
+                    // }}
+                  >
+                    <EyeIcon
+                      size={20}
+                      className=" cursor-pointer"
+                      onClick={() => {
+                        setSelectedPig(pig);
+                        // onOpen();
+                      }}
+                    />
+                  </span>
+                </Tooltip>
+              </DrawerTrigger>
+              <DrawerContent className="h-5/6">
+                <div className="overflow-auto h-full">
+                  <DrawerHeader>
+                    <DrawerTitle>
+                      <p className="text-2xl font-bold">Hồ sơ heo {pig.id}</p>
+                    </DrawerTitle>
+                  </DrawerHeader>
+                  <div className="p-4 pb-0">
+                    <DevelopmentLogList selectedPig={pig} />
+                  </div>
+                  <DrawerFooter>
+                    <DrawerClose>Cancel</DrawerClose>
+                  </DrawerFooter>
+                </div>
+              </DrawerContent>
+            </Drawer>
           </div>
         );
       default:
@@ -260,58 +283,16 @@ export default function PigList({ selectedHerd, setSelectedPig }: { selectedHerd
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
+      <div className="py-2 px-2 flex justify-center items-center">
+        {/* <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span> */}
         <Pagination isCompact showControls showShadow color="primary" page={page} total={pages} onChange={setPage} />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2">
-          {/* <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onPreviousPage}
-          >
-            Previous
-          </Button>
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onNextPage}
-          >
-            Next
-          </Button> */}
-        </div>
+        {/* <div className="hidden sm:flex w-[30%] justify-end gap-2">
+        </div> */}
       </div>
     );
-  }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+  }, [items.length, page, pages, hasSearchFilter]);
   return (
     <div>
-      {/* {isOpen && (
-        <Modal backdrop="opaque" isOpen={isOpen} onOpenChange={onOpenChange}>
-          <ModalContent>
-            {() => (
-              <>
-                <ModalHeader className="flex flex-col gap-1">Pig {selectedPig?.id}</ModalHeader>
-                <ModalBody>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis. Pellentesque sit amet hendrerit risus,
-                    sed porttitor quam.
-                  </p>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis. Pellentesque sit amet hendrerit risus,
-                    sed porttitor quam.
-                  </p>
-                  <p>
-                    Magna exercitation reprehenderit magna aute tempor cupidatat consequat elit dolor adipisicing. Mollit dolor eiusmod sunt ex incididunt cillum quis.
-                    Velit duis sit officia eiusmod Lorem aliqua enim laboris do dolor eiusmod. Et mollit incididunt nisi consectetur esse laborum eiusmod pariatur
-                    proident Lorem eiusmod et. Culpa deserunt nostrud ad veniam.
-                  </p>
-                </ModalBody>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
-      )} */}
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
@@ -321,16 +302,16 @@ export default function PigList({ selectedHerd, setSelectedPig }: { selectedHerd
         classNames={{
           wrapper: "max-h-[750px]",
         }}
-        selectedKeys={selectedKeys}
-        selectionMode="single"
+        // selectedKeys={selectedKeys}
+        // selectionMode="single"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        onSelectionChange={(keys) => {
-          setSelectedKeys(keys);
-          // setSelectedPigs(keys === "all" ? pigList : pigList.filter((pig) => Array.from(keys).includes(pig.id)));
-          setSelectedPig(pigList.find((pig) => pig.id === Array.from(keys)[0]));
-        }}
+        // onSelectionChange={(keys) => {
+        //   setSelectedKeys(keys);
+        //   // setSelectedPigs(keys === "all" ? pigList : pigList.filter((pig) => Array.from(keys).includes(pig.id)));
+        //   setSelectedPig(pigList.find((pig) => pig.id === Array.from(keys)[0]));
+        // }}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>

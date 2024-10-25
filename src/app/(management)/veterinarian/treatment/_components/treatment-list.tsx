@@ -1,11 +1,40 @@
 "use client";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner, SortDescriptor, Selection } from "@nextui-org/react";
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Spinner,
+  SortDescriptor,
+  Selection,
+  Input,
+  Dropdown,
+  DropdownTrigger,
+  Button,
+  DropdownMenu,
+  DropdownItem,
+  Pagination,
+} from "@nextui-org/react";
 import React, { useMemo } from "react";
 import { VaccinationData } from "../../../../../lib/models/vaccination";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
 import { TreatmentData } from "@oursrc/lib/models/treatment";
+import { treatmentGuideService } from "@oursrc/lib/services/treatmentGuideService";
+import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
+import { Search } from "lucide-react";
+import { HiChevronDown } from "react-icons/hi2";
+
+const columns = [
+  { name: "tên", uid: "title", sortable: true },
+  { name: "mô tả", uid: "description", sortable: true },
+  { name: "ghi chú", uid: "note", sortable: true },
+];
+
+const INITIAL_VISIBLE_COLUMNS = ["title", "description", "note"];
 
 const statusMapColor = [
   { name: "red", value: 0 },
@@ -20,78 +49,78 @@ const statusMap = [
   { name: "Đã hủy", value: 3 },
 ];
 
-const treatmentData: TreatmentData[] = [
-  {
-    id: "1",
-    title: "Lịch 1",
-    description: "Mô tả 1",
-    herdId: "1",
-    startDate: "2022-10-10",
-    expectedEndDate: "2022-10-20",
-    actualEndDate: "2022-10-20",
-    note: "Ghi chú 1",
-    status: 0,
-    treatmentStages: [
-      {
-        title: "Bước 1",
-        applyStageTime: "2022-10-10",
-        timeSpan: "10",
-        isDone: false,
-        treatmentToDos: [{ description: "Mô tả 1" }],
-        inventoryRequest: {
-          id: "1",
-          medicines: [
-            {
-              medicineId: "1",
-              medicineName: "Thuốc 1",
-              quantity: 10,
-              netWeight: "10",
-              portionEachPig: 10,
-              unit: "kg",
-            },
-          ],
-          description: "Mô tả 1",
-          title: "Yêu cầu 1",
-        },
-      },
-    ],
-  },
-  {
-    id: "2",
-    title: "Lịch 2",
-    description: "Mô tả 2",
-    herdId: "2",
-    startDate: "2022-10-10",
-    expectedEndDate: "2022-10-20",
-    actualEndDate: "2022-10-20",
-    note: "Ghi chú 2",
-    status: 1,
-    treatmentStages: [
-      {
-        title: "Bước 2",
-        applyStageTime: "2022-10-10",
-        timeSpan: "10",
-        isDone: false,
-        treatmentToDos: [{ description: "Mô tả 2" }],
-        inventoryRequest: {
-          id: "2",
-          medicines: [
-            {
-              medicineId: "1",
-              medicineName: "Thuốc 1",
-              quantity: 10,
-              netWeight: "10",
-              portionEachPig: 10,
-              unit: "kg",
-            },
-          ],
-          description: "Mô tả 2",
-          title: "Yêu cầu 2",
-        },
-      },
-    ],
-  },
-];
+// const treatmentData: TreatmentData[] = [
+//   {
+//     id: "1",
+//     title: "Lịch 1",
+//     description: "Mô tả 1",
+//     herdId: "1",
+//     startDate: "2022-10-10",
+//     expectedEndDate: "2022-10-20",
+//     actualEndDate: "2022-10-20",
+//     note: "Ghi chú 1",
+//     status: 0,
+//     treatmentStages: [
+//       {
+//         title: "Bước 1",
+//         applyStageTime: "2022-10-10",
+//         timeSpan: "10",
+//         isDone: false,
+//         treatmentToDos: [{ description: "Mô tả 1" }],
+//         inventoryRequest: {
+//           id: "1",
+//           medicines: [
+//             {
+//               medicineId: "1",
+//               medicineName: "Thuốc 1",
+//               quantity: 10,
+//               netWeight: "10",
+//               portionEachPig: 10,
+//               unit: "kg",
+//             },
+//           ],
+//           description: "Mô tả 1",
+//           title: "Yêu cầu 1",
+//         },
+//       },
+//     ],
+//   },
+//   {
+//     id: "2",
+//     title: "Lịch 2",
+//     description: "Mô tả 2",
+//     herdId: "2",
+//     startDate: "2022-10-10",
+//     expectedEndDate: "2022-10-20",
+//     actualEndDate: "2022-10-20",
+//     note: "Ghi chú 2",
+//     status: 1,
+//     treatmentStages: [
+//       {
+//         title: "Bước 2",
+//         applyStageTime: "2022-10-10",
+//         timeSpan: "10",
+//         isDone: false,
+//         treatmentToDos: [{ description: "Mô tả 2" }],
+//         inventoryRequest: {
+//           id: "2",
+//           medicines: [
+//             {
+//               medicineId: "1",
+//               medicineName: "Thuốc 1",
+//               quantity: 10,
+//               netWeight: "10",
+//               portionEachPig: 10,
+//               unit: "kg",
+//             },
+//           ],
+//           description: "Mô tả 2",
+//           title: "Yêu cầu 2",
+//         },
+//       },
+//     ],
+//   },
+// ];
 
 const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) => {
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
@@ -99,12 +128,20 @@ const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) 
     direction: "ascending",
   });
   const [isLoading, setIsLoading] = React.useState(false);
-  const [treatmentList, setTreatmentList] = React.useState<TreatmentData[]>(treatmentData);
+  const [treatmentList, setTreatmentList] = React.useState<TreatmentData[]>([]);
   const [filterValue, setFilterValue] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState<Selection>(new Set([]));
+  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
+  const [totalRecords, setTotalRecords] = React.useState(0);
+  const [totalPages, setTotalPages] = React.useState(1);
   const [page, setPage] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const hasSearchFilter = filterValue.length > 0;
+
+  const headerColumns = React.useMemo(() => {
+    if (visibleColumns === "all") return columns;
+
+    return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
+  }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
     let filteredVaccination: TreatmentData[] = [...treatmentList];
@@ -112,12 +149,8 @@ const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) 
     if (hasSearchFilter) {
       filteredVaccination = filteredVaccination.filter((vaccination) => vaccination.title.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusMap.length) {
-      filteredVaccination = filteredVaccination.filter((vaccination) => Array.from(statusFilter).includes(vaccination.status as number));
-    }
-
     return filteredVaccination;
-  }, [treatmentList, filterValue, statusFilter]);
+  }, [treatmentList, filterValue]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -138,14 +171,17 @@ const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) 
 
   const getAllVaccinationPlan = async () => {
     try {
-      //   setIsLoading(true);
-      //   const res: ResponseObjectList<TreatmentData> = await vaccinationService.getAllVaccinationPlan(1, 500);
-      //   console.log("res: ", res);
-      //   if (res && res.isSuccess) {
-      //     setTreatmentList(res.data.data || []);
-      //   } else {
-      //     console.log("Error: ", res.errorMessage);
-      //   }
+      setIsLoading(true);
+      const res: ResponseObjectList<TreatmentData> = await treatmentPlanService.getAll(page, rowsPerPage);
+      if (res && res.isSuccess) {
+        setTreatmentList(res.data.data || []);
+        setPage(res.data.pageIndex);
+        setRowsPerPage(res.data.pageSize);
+        setTotalPages(res.data.totalPages);
+        setTotalRecords(res.data.totalRecords);
+      } else {
+        console.log("Error: ", res.errorMessage);
+      }
     } catch (error) {
       console.log("Error: ", error);
     } finally {
@@ -156,7 +192,87 @@ const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) 
 
   React.useEffect(() => {
     getAllVaccinationPlan();
+  }, [page, rowsPerPage]);
+
+  const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRowsPerPage(Number(e.target.value));
+    setPage(1);
   }, []);
+  const onSearchChange = React.useCallback((value?: string) => {
+    if (value) {
+      setFilterValue(value);
+      setPage(1);
+    } else {
+      setFilterValue("");
+    }
+  }, []);
+  const onClear = React.useCallback(() => {
+    setFilterValue("");
+    setPage(1);
+  }, []);
+
+  const topContent = React.useMemo(() => {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between gap-3 items-end">
+          <Input
+            isClearable
+            className="w-full sm:max-w-[44%]"
+            placeholder="Tìm kiếm theo tên thuốc..."
+            startContent={<Search />}
+            value={filterValue}
+            onClear={() => onClear()}
+            onValueChange={onSearchChange}
+          />
+          <div className="flex gap-3">
+            <Dropdown>
+              <DropdownTrigger className="hidden sm:flex">
+                <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
+                  Hiển thị cột
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu disallowEmptySelection closeOnSelect={false} selectedKeys={visibleColumns} selectionMode="multiple" onSelectionChange={setVisibleColumns}>
+                {columns.map((column) => (
+                  <DropdownItem key={column.uid} className="capitalize">
+                    {column.name.toUpperCase()}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-default-400 text-small">Tổng cộng {totalRecords} kết quả</span>
+          <label className="flex items-center text-default-400 text-small">
+            Số hàng mỗi trang:
+            <select className="bg-transparent outline-none text-default-400 text-small" onChange={onRowsPerPageChange}>
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    );
+  }, [filterValue, visibleColumns, onSearchChange, onRowsPerPageChange, treatmentList.length, hasSearchFilter]);
+  const renderCell = React.useCallback((data: TreatmentData, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof TreatmentData];
+
+    switch (columnKey) {
+      default:
+        return cellValue?.toString();
+    }
+  }, []);
+
+  const bottomContent = React.useMemo(() => {
+    return (
+      <div className="py-2 px-2 flex justify-center items-center">
+        {/* <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span> */}
+        <Pagination isCompact showControls showShadow color="primary" page={page} total={totalPages} onChange={setPage} />
+        {/* <div className="hidden sm:flex w-[30%] justify-end gap-2"></div> */}
+      </div>
+    );
+  }, [items.length, page, totalPages, hasSearchFilter]);
   return (
     <Table
       color="primary"
@@ -165,6 +281,8 @@ const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) 
       }}
       selectionMode="single"
       isHeaderSticky
+      topContent={topContent}
+      bottomContent={bottomContent}
       sortDescriptor={sortDescriptor}
       onSortChange={setSortDescriptor}
       //   align="center"
@@ -172,37 +290,19 @@ const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) 
       onSelectionChange={setSelectedTreatment}
       aria-label="Example static collection table"
     >
-      <TableHeader>
-        <TableColumn allowsSorting className="text-lg">
-          Tên lịch
-        </TableColumn>
-        <TableColumn allowsSorting className="text-lg">
-          Đàn
-        </TableColumn>
-        <TableColumn allowsSorting className="text-lg">
-          Ngày bắt đầu
-        </TableColumn>
-        <TableColumn allowsSorting className="text-lg">
-          Ngày kết thúc (dự kiến)
-        </TableColumn>
-        <TableColumn allowsSorting className="text-lg">
-          Tình trạng
-        </TableColumn>
+      <TableHeader columns={headerColumns}>
+        {(column: any) => (
+          <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
+            {column.name.toUpperCase()}
+          </TableColumn>
+        )}
       </TableHeader>
-      <TableBody emptyContent={"Không có kết quả"} loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
-        {treatmentList.map((data: TreatmentData) => (
-          <TableRow key={data.id}>
-            <TableCell>{data.title}</TableCell>
-            <TableCell>{data.herdId}</TableCell>
-            <TableCell>{dateTimeConverter(data.startDate)}</TableCell>
-            <TableCell>{dateTimeConverter(data.expectedEndDate)}</TableCell>
-            <TableCell>
-              <p className={`text-${statusMapColor.find((status) => status.value === data.status)?.name}-500 text-center`}>
-                {statusMap.find((status) => status.value === data.status)?.name}
-              </p>
-            </TableCell>
+      <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={isLoading ? "loading" : "idle"}>
+        {(item) => (
+          <TableRow key={item.id} className="h-12">
+            {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
           </TableRow>
-        ))}
+        )}
       </TableBody>
     </Table>
   );

@@ -14,8 +14,10 @@ export const vaccinationService = {
     http.get<ResponseObject<any>>(`get-vaccination-plan/${id}`),
   getMedicineInStage: (id: string) =>
     http.get<ResponseObject<any>>(`vaccination-stages/${id}/medicines`),
+  getHerdByVaccinationPlanId: (id: string) =>
+    http.get<ResponseObject<any>>(`api/vaccination-plans/${id}/herds`),
   createVaccinationPlan: (model: CreateVaccinationRequest) =>
-    http.post<ResponseObject<any>>(endpoint+"/create-vaccination-plan-and-stage", {
+    http.post<ResponseObject<any>>(endpoint + "/create-vaccination-plan-and-stage", {
       title: model.title,
       startDate: model.startDate,
       expectedEndDate: model.expectedEndDate,

@@ -9,10 +9,17 @@ import { GrStatusGoodSmall } from "react-icons/gr";
 import { PiSubtitlesLight } from "react-icons/pi";
 
 const statusMap = [
-  { status: 0, value: "Đang chờ" },
+  { status: 0, value: "Đang chờ duyệt" },
   { status: 1, value: "Đã yêu cầu" },
   { status: 2, value: "Chấp nhận" },
   { status: 3, value: "Từ chối" },
+];
+
+const statusColorMap = [
+  { status: 0, color: "text-gray-500" },
+  { status: 1, color: "text-yellow-500" },
+  { status: 2, color: "text-green-500" },
+  { status: 3, color: "text-red-500" },
 ];
 
 const DetailPlan = ({
@@ -51,7 +58,7 @@ const DetailPlan = ({
                 <p className="text-lg">{selectedVaccination && dateConverter(selectedVaccination?.applyStageTime)}</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
-                <GrStatusGoodSmall className="text-5xl" />
+                <GrStatusGoodSmall className={`text-5xl ${selectedVaccination?.isDone ? "text-green-500" : "text-red-500"}`} />
                 <p className="text-md font-light">Trạng thái</p>
                 <p className={`text-lg ${selectedVaccination?.isDone ? "text-green-500" : "text-red-500"}`}>{selectedVaccination?.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
               </div>
@@ -65,7 +72,9 @@ const DetailPlan = ({
                       <Image className="my-auto col-span-2" src="/assets/vma-logo.png" alt="medicine" width={70} height={70} />
                       <div className="my-auto col-span-8">
                         <p className="text-lg font-bold">{medicine.medicineName}</p>
-                        <p className="text-md font-light">{statusMap.find((status) => status.status === medicine.status)?.value}</p>
+                        <p className={`text-md font-light ${statusColorMap.find((status) => status.status === medicine.status)?.color}`}>
+                          {statusMap.find((status) => status.status === medicine.status)?.value}
+                        </p>
                       </div>
                       <p className="my-auto col-span-2 mx-2 text-md font-semibold text-right">X{medicine.quantity}</p>
                     </div>
@@ -80,6 +89,11 @@ const DetailPlan = ({
             </div>
           </div>
         </ModalBody>
+        <ModalFooter>
+          <Button variant="solid" color="primary" isDisabled={medicineList?.every((medicine) => medicine.status === 0)}>
+            Xuất thuốc
+          </Button>
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );

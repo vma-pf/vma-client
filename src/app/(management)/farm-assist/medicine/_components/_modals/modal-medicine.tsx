@@ -5,6 +5,8 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { CreateMedicineRequest, Medicine, UpdateMedicineRequest } from "@oursrc/lib/models/medicine";
 import { medicineService } from "@oursrc/lib/services/medicineService";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
 const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean; onClose: () => void; medicine?: Medicine; context: "create" | "edit" | "delete" }) => {
   const {
     register,
@@ -20,6 +22,8 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
   const usage = watch("usage");
   const unit = watch("unit");
   const mainIngredient = watch("mainIngredient");
+
+  const storedMedicine = localStorage.getItem("newMedicine") ? JSON.parse(localStorage.getItem("newMedicine") || "") : "";
 
   const getTitle = () => {
     switch (context) {
@@ -80,7 +84,7 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
   const handleSubmitForm = async (data: any) => {
     try {
       setLoading(true);
-      const response =
+      const response: ResponseObject<Medicine> =
         context === "create"
           ? await medicineService.createMedicine(data)
           : context === "edit"
@@ -91,11 +95,17 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
           variant: "success",
           title: context === "create" ? "Tạo thuốc thành công" : "Cập nhật thành công",
         });
+        // Call api to mark purchase medicine
+        if (context === "create") {
+          const res: ResponseObject<any> = await medicineRequestService.markPurchaseMedicine(storedMedicine.requestId, response.data.id ?? "");
+          console.log(res);
+        }
         onClose();
       } else {
+        console.log(response.errorMessage);
         toast({
           variant: "destructive",
-          title: response.errorMessage,
+          title: context === "create" ? "Tạo thuốc thất bại" : "Cập nhật thất bại",
         });
       }
     } catch (error: any) {
@@ -106,7 +116,7 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
   };
 
   React.useEffect(() => {
-    setValue("name", medicine?.name ? medicine?.name : "");
+    setValue("name", medicine?.name ? medicine?.name : storedMedicine.newMedicineName);
     setValue("netWeight", medicine?.netWeight ? medicine?.netWeight : "");
     setValue("registerNumber", medicine?.registerNumber ? medicine?.registerNumber : "");
     setValue("usage", medicine?.usage ? medicine?.usage : "");

@@ -317,7 +317,7 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
   return (
     <div className="flex gap-x-2">
       <div className="p-5 w-1/2 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <p className="text-2xl font-bold mb-3">Lịch sử quá trình phát triển</p>
+        <p className="text-xl font-semibold mb-3">Lịch sử quá trình phát triển</p>
         <Table
           aria-label="Example table with custom cells, pagination and sorting"
           isHeaderSticky
@@ -365,7 +365,7 @@ const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
         )}
       </div>
       <div className="p-5 w-1/2 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <p className="text-2xl font-bold mb-3">Biểu đồ phát triển</p>
+        <p className="text-xl font-semibold mb-3">Biểu đồ phát triển</p>
         <DevelopmentLineChart />
       </div>
     </div>

@@ -3,11 +3,23 @@ import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader
 import { useToast } from "@oursrc/hooks/use-toast";
 import { setNextTreatmentProgressStep } from "@oursrc/lib/features/treatment-progress-step/treatment-progress-step-slice";
 import { useAppDispatch } from "@oursrc/lib/hooks";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { DiseaseReport } from "@oursrc/lib/models/treatment";
+import { diseaseReportService } from "@oursrc/lib/services/diseaseReportService";
 import React from "react";
 import { useForm } from "react-hook-form";
 
-const DiseaseReport = ({ isOpen, onOpen, onClose }: { isOpen: boolean; onOpen: () => void; onClose: () => void }) => {
-  const dispatch = useAppDispatch();
+const CreateDiseaseReport = ({
+  isOpen,
+  onOpen,
+  onClose,
+  setDiseaseReport,
+}: {
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+  setDiseaseReport: React.Dispatch<React.SetStateAction<DiseaseReport | undefined>>;
+}) => {
   const { toast } = useToast();
   const {
     register,
@@ -16,6 +28,21 @@ const DiseaseReport = ({ isOpen, onOpen, onClose }: { isOpen: boolean; onOpen: (
   } = useForm();
   const onSubmit = async (data: any) => {
     try {
+      const res: ResponseObject<DiseaseReport> = await diseaseReportService.createDiseaseReport(data);
+      if (res.isSuccess) {
+        setDiseaseReport(res.data);
+        onClose();
+        toast({
+          title: "Tạo báo cáo bệnh thành công",
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: res.errorMessage || "Tạo báo cáo bệnh thất bại",
+          variant: "destructive",
+        });
+        console.log(res.errorMessage);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -63,4 +90,4 @@ const DiseaseReport = ({ isOpen, onOpen, onClose }: { isOpen: boolean; onOpen: (
   );
 };
 
-export default DiseaseReport;
+export default CreateDiseaseReport;
