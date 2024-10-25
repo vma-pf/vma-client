@@ -6,7 +6,21 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { StageMedicine } from "@oursrc/lib/models/medicine";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
-import { Accordion, AccordionItem, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Progress, Skeleton, Tab, Tabs, useDisclosure } from "@nextui-org/react";
+import {
+  Accordion,
+  AccordionItem,
+  Button,
+  Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Progress,
+  Skeleton,
+  Tab,
+  Tabs,
+  useDisclosure,
+} from "@nextui-org/react";
 import { FaClock, FaRegCalendarPlus } from "react-icons/fa6";
 import { TbMedicineSyrup } from "react-icons/tb";
 import { CiEdit } from "react-icons/ci";
@@ -14,10 +28,13 @@ import { TreatmentData, CreateTreatmentStageProps } from "@oursrc/lib/models/tre
 import TreatmentList from "./_components/treatment-list";
 import Image from "next/image";
 import { MdCalendarToday, MdOutlineStickyNote2 } from "react-icons/md";
-import { IoIosCalendar } from "react-icons/io";
+import { IoIosAlert, IoIosCalendar } from "react-icons/io";
 import { PiNotebookDuotone } from "react-icons/pi";
 import { BiDetail } from "react-icons/bi";
 import { HiOutlineDocumentReport } from "react-icons/hi";
+import { GoDotFill } from "react-icons/go";
+import TreatmentGuideList from "./_components/treatment-guide-list";
+import CommonDiseaseList from "./_components/common-disease-list";
 
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
@@ -135,7 +152,7 @@ const Treatment = () => {
 
   return (
     <div>
-      <Tabs size="lg" color="primary" variant="solid">
+      <Tabs size="lg" color="primary" variant="solid" defaultSelectedKey="1">
         <Tab
           key="1"
           title={
@@ -168,13 +185,50 @@ const Treatment = () => {
                 <TreatmentList setSelectedTreatment={setSelectedTreatmentId} />
               </div>
               <div className="w-1/2 ml-2 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-                <p className="text-2xl font-bold">Thuốc được sử dụng nhiều nhất</p>
-                <div className="mt-5 flex justify-between">
-                  <div className="flex items-center">
-                    <Image src="/assets/vma-logo.png" alt="logo" width={50} height={50} />
-                    <div className="flex flex-col">
-                      <p className="text-2xl font-bold ml-4">Thuốc 1</p>
-                      <p className="text-lg ml-4">Được sử dụng trong 10 kế hoạch</p>
+                <p className="m-2 text-xl font-semibold">Dấu hiệu bất thường</p>
+                <div className="my-2 max-h-[300px] overflow-auto">
+                  <div className="mx-2 my-3 flex justify-between items-center">
+                    <div className="flex justify-start items-center">
+                      <IoIosAlert className="mr-3 text-danger-500" size={30} />
+                      <div>
+                        <p className="font-semibold">Chuồng 001</p>
+                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                        <p className="text-zinc-400 text-sm">bây giờ</p>
+                      </div>
+                    </div>
+                    <GoDotFill className="text-blue-500" />
+                  </div>
+                  <Divider className="my-2" orientation="horizontal" />
+                  <div className="mx-2 my-3 flex justify-between items-center">
+                    <div className="flex justify-start items-center">
+                      <IoIosAlert className="mr-3" size={30} />
+                      <div>
+                        <p className="font-semibold">Chuồng 002</p>
+                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                        <p className="text-zinc-400 text-sm">hôm qua</p>
+                      </div>
+                    </div>
+                  </div>
+                  <Divider orientation="horizontal" />
+                  <div className="mx-2 my-3 flex justify-between items-center">
+                    <div className="flex justify-start items-center">
+                      <IoIosAlert className="mr-3" size={30} />
+                      <div>
+                        <p className="font-semibold">Chuồng 001</p>
+                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                        <p className="text-zinc-400 text-sm">tuần trước</p>
+                      </div>
+                    </div>
+                  </div>
+                  <Divider orientation="horizontal" />
+                  <div className="mx-2 my-3 flex justify-between items-center">
+                    <div className="flex justify-start items-center">
+                      <IoIosAlert className="mr-3" size={30} />
+                      <div>
+                        <p className="font-semibold">Chuồng 001</p>
+                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                        <p className="text-zinc-400 text-sm">tháng trước</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -393,7 +447,9 @@ const Treatment = () => {
               <span className="ml-2">Hướng dẫn điều trị</span>
             </div>
           }
-        ></Tab>
+        >
+          <TreatmentGuideList />
+        </Tab>
         <Tab
           key="3"
           title={
@@ -402,7 +458,9 @@ const Treatment = () => {
               <span className="ml-2">Từ điển bệnh</span>
             </div>
           }
-        ></Tab>
+        >
+          <CommonDiseaseList />
+        </Tab>
       </Tabs>
     </div>
   );

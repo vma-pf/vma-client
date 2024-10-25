@@ -24,6 +24,7 @@ import { monitorDevelopmentLogService } from "@oursrc/lib/services/monitorDevelo
 
 const Herd = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
   const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
 
@@ -156,7 +157,7 @@ const Herd = () => {
           Kiểm tra sức khỏe
         </Button>
         {selectedHerd ? (
-          <PigList selectedHerd={selectedHerd as HerdInfo} setSelectedPig={setSelectedPig} />
+          <PigList selectedHerd={selectedHerd as HerdInfo} setSelectedPig={setSelectedPig} onOpen={onOpenDetail} />
         ) : (
           <p className="text-center">Chọn đàn để xem danh sách heo</p>
         )}
@@ -175,7 +176,7 @@ const Herd = () => {
           {selectedPig ? <p>Chưa có dữ liệu</p> : <p className="text-center">Chọn heo để xem báo cáo bệnh tật</p>}
           </ResizablePanel>
         </ResizablePanelGroup> */}
-        {selectedHerd && selectedPig ? <DevelopmentLogList selectedPig={selectedPig} /> : <p className="text-center">Chọn heo để xem lịch sử phát triển</p>}
+        {/* {selectedHerd && selectedPig ? <DevelopmentLogList selectedPig={selectedPig} /> : <p className="text-center">Chọn heo để xem lịch sử phát triển</p>} */}
       </div>
       {/* <div className="p-5 w-1/2 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
           <p className="text-2xl font-bold mb-3">Biểu đồ phát triển</p>

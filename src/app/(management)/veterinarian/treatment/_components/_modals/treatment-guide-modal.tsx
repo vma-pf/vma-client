@@ -1,14 +1,8 @@
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Button, Divider, Input, Spinner, Textarea } from "@nextui-org/react";
 import { toast } from "@oursrc/hooks/use-toast";
 import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
-import { treatmentService } from "@oursrc/lib/services/treatmentGuideService";
+import { treatmentGuideService } from "@oursrc/lib/services/treatmentGuideService";
 import React from "react";
 import { useForm } from "react-hook-form";
 
@@ -54,7 +48,7 @@ const ModalTreamentGuide = ({
   const handleDelete = async () => {
     try {
       setLoading(true);
-      const response = await treatmentService.delete(data?.id || "");
+      const response = await treatmentGuideService.delete(data?.id || "");
       if (response && response.isSuccess) {
         toast({
           variant: "success",
@@ -66,10 +60,7 @@ const ModalTreamentGuide = ({
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title:
-          error instanceof AggregateError
-            ? error.message
-            : "Lỗi hệ thống. Vui lòng thử lại sau!",
+        title: error instanceof AggregateError ? error.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     } finally {
       onClose();
@@ -82,17 +73,14 @@ const ModalTreamentGuide = ({
       setLoading(true);
       const response =
         context === "create"
-          ? await treatmentService.create(request)
+          ? await treatmentGuideService.create(request)
           : context === "edit"
-          ? await treatmentService.update(data?.id || "", request)
-          : treatmentService.delete(data?.id || "");
+          ? await treatmentGuideService.update(data?.id || "", request)
+          : treatmentGuideService.delete(data?.id || "");
       if (response && response.isSuccess) {
         toast({
           variant: "success",
-          title:
-            context === "create"
-              ? "Tạo thành công"
-              : "Cập nhật thành công",
+          title: context === "create" ? "Tạo thành công" : "Cập nhật thành công",
         });
         onClose();
       } else {
@@ -110,22 +98,10 @@ const ModalTreamentGuide = ({
 
   React.useEffect(() => {
     setValue("diseaseTitle", data?.diseaseTitle ? data?.diseaseTitle : "");
-    setValue(
-      "diseaseDescription",
-      data?.diseaseDescription ? data?.diseaseDescription : ""
-    );
-    setValue(
-      "diseaseSymptoms",
-      data?.diseaseSymptoms ? data?.diseaseSymptoms : ""
-    );
-    setValue(
-      "treatmentTitle",
-      data?.treatmentTitle ? data?.treatmentTitle : ""
-    );
-    setValue(
-      "treatmentDescription",
-      data?.treatmentDescription ? data?.treatmentDescription : ""
-    );
+    setValue("diseaseDescription", data?.diseaseDescription ? data?.diseaseDescription : "");
+    setValue("diseaseSymptoms", data?.diseaseSymptoms ? data?.diseaseSymptoms : "");
+    setValue("treatmentTitle", data?.treatmentTitle ? data?.treatmentTitle : "");
+    setValue("treatmentDescription", data?.treatmentDescription ? data?.treatmentDescription : "");
     setValue("diseaseType", data?.diseaseType ? data?.diseaseType : "");
     setValue("cure", data?.cure ? data?.cure : "");
   }, []);
@@ -142,14 +118,7 @@ const ModalTreamentGuide = ({
           size="4xl"
           scrollBehavior="normal"
           onClose={() => {
-            if (
-              diseaseTitle ||
-              diseaseDescription ||
-              diseaseSymptoms ||
-              treatmentTitle ||
-              treatmentDescription ||
-              diseaseType
-            ) {
+            if (diseaseTitle || diseaseDescription || diseaseSymptoms || treatmentTitle || treatmentDescription || diseaseType) {
               onClose();
             }
           }}
@@ -173,13 +142,7 @@ const ModalTreamentGuide = ({
                       labelPlacement="outside"
                       isRequired
                       value={treatmentTitle || ""}
-                      isInvalid={
-                        errors.treatmentTitle
-                          ? true
-                          : treatmentTitle
-                          ? false
-                          : true
-                      }
+                      isInvalid={errors.treatmentTitle ? true : treatmentTitle ? false : true}
                       errorMessage="Tiêu đề không được để trống"
                       {...register("treatmentTitle", { required: true })}
                     />
@@ -193,9 +156,7 @@ const ModalTreamentGuide = ({
                       labelPlacement="outside"
                       isRequired
                       value={diseaseType || ""}
-                      isInvalid={
-                        errors.diseaseType ? true : diseaseType ? false : true
-                      }
+                      isInvalid={errors.diseaseType ? true : diseaseType ? false : true}
                       errorMessage="Mức độ không được để trống"
                       {...register("diseaseType", { required: true })}
                     />
@@ -211,13 +172,7 @@ const ModalTreamentGuide = ({
                       labelPlacement="outside"
                       isRequired
                       value={treatmentDescription || ""}
-                      isInvalid={
-                        errors.treatmentDescription
-                          ? true
-                          : treatmentDescription
-                          ? false
-                          : true
-                      }
+                      isInvalid={errors.treatmentDescription ? true : treatmentDescription ? false : true}
                       errorMessage="Mô tả không được để trống"
                       {...register("treatmentDescription", { required: true })}
                     />
@@ -233,9 +188,7 @@ const ModalTreamentGuide = ({
                       labelPlacement="outside"
                       isRequired
                       value={diseaseTitle || ""}
-                      isInvalid={
-                        errors.diseaseTitle ? true : diseaseTitle ? false : true
-                      }
+                      isInvalid={errors.diseaseTitle ? true : diseaseTitle ? false : true}
                       errorMessage="Tên bệnh không được để trống"
                       {...register("diseaseTitle", { required: true })}
                     />
@@ -249,13 +202,7 @@ const ModalTreamentGuide = ({
                       labelPlacement="outside"
                       isRequired
                       value={diseaseSymptoms || ""}
-                      isInvalid={
-                        errors.diseaseSymptoms
-                          ? true
-                          : diseaseSymptoms
-                          ? false
-                          : true
-                      }
+                      isInvalid={errors.diseaseSymptoms ? true : diseaseSymptoms ? false : true}
                       errorMessage="Triệu chứng không được để trống"
                       {...register("diseaseSymptoms", { required: true })}
                     />
@@ -271,13 +218,7 @@ const ModalTreamentGuide = ({
                       labelPlacement="outside"
                       isRequired
                       value={diseaseDescription || ""}
-                      isInvalid={
-                        errors.diseaseDescription
-                          ? true
-                          : diseaseDescription
-                          ? false
-                          : true
-                      }
+                      isInvalid={errors.diseaseDescription ? true : diseaseDescription ? false : true}
                       errorMessage="Mô tả bệnh không được để trống"
                       {...register("diseaseDescription", { required: true })}
                     />
@@ -303,12 +244,7 @@ const ModalTreamentGuide = ({
                   <Button color="danger" onPress={onClose}>
                     <p className="text-white">Hủy</p>
                   </Button>
-                  <Button
-                    variant="solid"
-                    color="primary"
-                    isLoading={loading}
-                    type="submit"
-                  >
+                  <Button variant="solid" color="primary" isLoading={loading} type="submit">
                     <p className="text-white">{getTitle()}</p>
                   </Button>
                 </ModalFooter>
@@ -318,9 +254,7 @@ const ModalTreamentGuide = ({
                 <ModalHeader>{getTitle()}</ModalHeader>
                 <ModalBody>
                   <p className="text-center">
-                    Bạn có chắc chắn muốn xóa{" "}
-                    <strong className="text-xl">{data?.diseaseTitle}</strong>{" "}
-                    không?
+                    Bạn có chắc chắn muốn xóa <strong className="text-xl">{data?.diseaseTitle}</strong> không?
                   </p>
                 </ModalBody>
                 <ModalFooter>

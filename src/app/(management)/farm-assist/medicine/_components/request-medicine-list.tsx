@@ -48,21 +48,24 @@ import { FaRegThumbsDown, FaRegThumbsUp } from "react-icons/fa6";
 import { Medicine } from "@oursrc/lib/models/medicine";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { CustomSnippet } from "@oursrc/components/ui/custom-snippet";
+import { HiDotsVertical } from "react-icons/hi";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
 
 const columns = [
-  { uid: "medicineId", name: "Mã thuốc", sortable: true },
-  { uid: "newMedicineName", name: "Tên thuốc", sortable: true },
+  { uid: "medicineName", name: "Tên thuốc", sortable: true },
   { uid: "quantity", name: "Số lượng", sortable: true },
+  { uid: "isPurchaseNeeded", name: "Phân loại", sortable: true },
   { uid: "status", name: "Trạng thái", sortable: true },
-  { uid: "isPurchaseNeeded", name: "Cần mua" },
   { uid: "actions", name: "Hành động" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["medicineId", "newMedicineName", "quantity", "status", "isPurchaseNeeded", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["medicineName", "quantity", "status", "isPurchaseNeeded", "actions"];
 
 const statusOptions = ["Đã duyệt", "Chờ xử lý", "Từ chối"];
+const isPurchaseNeededOptions = ["Thuốc mới", "Đã tồn tại trong kho"];
 
 const RequestMedicineList = () => {
+  const { toast } = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenAlert, onOpen: onOpenAlert, onClose: onCloseAlert } = useDisclosure();
   const [answer, setAnswer] = useState<"accept" | "reject">();
@@ -120,6 +123,7 @@ const RequestMedicineList = () => {
       const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(page, rowsPerPage);
       if (response.isSuccess) {
         setMedicineList(response.data.data);
+        setPage(response.data.pageIndex);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
@@ -154,8 +158,34 @@ const RequestMedicineList = () => {
       const response: ResponseObject<MedicineRequest> = await medicineService.getMedicineById(medicineId);
       if (response.isSuccess) {
         setMedicineQuantityCheck(response.data.quantity);
+        return response.data.quantity;
       } else {
         console.log(response.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const checkRequestAuthor = async (medicineRequest: MedicineRequest, requestType: string) => {
+    try {
+      setSelectedMedicine(medicineRequest);
+      const medicineCheck = (await checkMedicineQuantity(medicineRequest.medicineId || "")) ?? 0;
+      switch (requestType) {
+        case "accept":
+        case "reject":
+          if (medicineRequest.medicineId && medicineCheck < medicineRequest.quantity) {
+            await calculateTotalQuantity(medicineRequest.medicineId);
+            onOpenAlert();
+          } else if (medicineRequest.newMedicineName) {
+            onOpenAlert();
+          } else {
+            setAnswer(requestType);
+            onOpen();
+          }
+          break;
+        default:
+          break;
       }
     } catch (error) {
       console.log(error);
@@ -261,17 +291,19 @@ const RequestMedicineList = () => {
     const cellValue = data[columnKey as keyof MedicineRequest];
 
     switch (columnKey) {
-      case "medicineId":
-        return (
-          <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={200}>
-            <p className="truncate">{cellValue}</p>
-          </Tooltip>
-        );
-      case "newMedicineName":
-        return data.newMedicineName ? (
+      case "medicineName":
+        return data.medicineId && data.medicineName ? (
+          <div>
+            {/* <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={200}>
+              <p className="truncate">{cellValue}</p>
+            </Tooltip> */}
+            <p className="">{data.medicineName}</p>
+          </div>
+        ) : (
           <CustomSnippet
             variant="solid"
             color="white"
+            className="text-wrap p-0 m-0"
             hideSymbol
             tooltipProps={{
               showArrow: true,
@@ -281,16 +313,14 @@ const RequestMedicineList = () => {
               closeDelay: 200,
             }}
             onCopy={(value) => {
-              localStorage.setItem("newMedicineName", value.toString());
+              localStorage.setItem("newMedicine", JSON.stringify({ requestId: data.id, newMedicineName: data.newMedicineName }));
             }}
           >
-            <span className="truncate">{cellValue}</span>
+            <span className="truncate">{data.newMedicineName}</span>
           </CustomSnippet>
-        ) : (
-          <p className="truncate">{cellValue}</p>
         );
       case "isPurchaseNeeded":
-        return cellValue ? <IoMdCheckmark size={20} className="text-primary" /> : <IoMdClose size={20} className="text-danger-500" />;
+        return <p className={`${data.isPurchaseNeeded ? "text-warning-500" : "text-primary"}`}>{isPurchaseNeededOptions[data.isPurchaseNeeded ? 0 : 1]}</p>;
       case "status":
         return <p className={`${cellValue === "Đã duyệt" ? "text-primary" : cellValue === "Chờ xử lý" ? "text-warning" : "text-danger-500"}`}>{cellValue}</p>;
       case "actions":
@@ -298,55 +328,14 @@ const RequestMedicineList = () => {
           <div className="flex justify-center items-center gap-4">
             <Tooltip content="Chấp nhận" color="primary" closeDelay={200}>
               <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <FaRegThumbsUp
-                  size={20}
-                  className="text-primary cursor-pointer"
-                  onClick={async () => {
-                    setSelectedMedicine(data);
-                    if (data.medicineId && medicineQuantityCheck < data.quantity) {
-                      await calculateTotalQuantity(data.medicineId);
-                      onOpenAlert();
-                    } else {
-                      setAnswer("accept");
-                      onOpen();
-                    }
-                  }}
-                />
+                <FaRegThumbsUp size={20} className="text-primary cursor-pointer" onClick={() => checkRequestAuthor(data, "accept")} />
               </span>
             </Tooltip>
             <Tooltip content="Từ chối" color="danger" closeDelay={200}>
               <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <FaRegThumbsDown
-                  size={20}
-                  className="text-danger-500 cursor-pointer"
-                  onClick={async () => {
-                    // const medicineQuantity = (await checkMedicineQuantity(data.medicineId || "")) || 0;
-                    if (data.medicineId && medicineQuantityCheck < data.quantity) {
-                      return;
-                    }
-                    setAnswer("reject");
-                    setSelectedMedicine(data);
-                    onOpen();
-                  }}
-                />
+                <FaRegThumbsDown size={20} className="text-danger-500 cursor-pointer" onClick={() => checkRequestAuthor(data, "reject")} />
               </span>
             </Tooltip>
-            {data.medicineId && (
-              <Popover placement="bottom" showArrow>
-                <Tooltip content="Kiểm tra số lượng" closeDelay={200}>
-                  <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                    <PopoverTrigger onClick={() => checkMedicineQuantity(data.medicineId || "")}>
-                      <EyeIcon size={20} className="cursor-pointer" />
-                    </PopoverTrigger>
-                  </span>
-                </Tooltip>
-                <PopoverContent>
-                  <p className="text-md cursor-pointer">
-                    Số lượng còn lại: <strong>{medicineQuantityCheck}</strong>
-                  </p>
-                </PopoverContent>
-              </Popover>
-            )}
           </div>
         );
       default:
@@ -407,11 +396,24 @@ const RequestMedicineList = () => {
               <p className="text-xl font-bold">Thông báo</p>
             </ModalHeader>
             <ModalBody>
-              <p className="text-lg">Số lượng thuốc {selectedMedicine?.newMedicineName || selectedMedicine?.medicineId} không đủ để chấp nhận yêu cầu.</p>
-              <p className="text-lg">
-                Tổng số lượng thuốc cần nhập cho thuốc {selectedMedicine?.newMedicineName || selectedMedicine?.medicineId} là{" "}
-                <strong className="text-2xl">{remainQuantity}</strong>.
-              </p>
+              {selectedMedicine?.medicineName && (
+                <p className="text-lg">
+                  Số lượng thuốc {selectedMedicine?.medicineName} hiện tại là {selectedMedicine?.quantity}, trong kho còn lại {medicineQuantityCheck}. <br />
+                  Hãy bổ sung thêm số lượng thuốc vào kho trước khi tiếp tục.
+                </p>
+              )}
+              {selectedMedicine?.newMedicineName && !selectedMedicine?.medicineName && (
+                <p className="text-lg">
+                  Thuốc này vẫn chưa có trong kho. <br />
+                  Hãy tạo lô thuốc mới rồi tiếp tục.
+                </p>
+              )}
+              {selectedMedicine?.medicineName && (
+                <p className="text-lg">
+                  Tổng số lượng thuốc cần nhập cho thuốc {selectedMedicine?.newMedicineName || selectedMedicine?.medicineName} là{" "}
+                  <strong className="text-2xl">{remainQuantity}</strong>.
+                </p>
+              )}
             </ModalBody>
           </ModalContent>
         </Modal>

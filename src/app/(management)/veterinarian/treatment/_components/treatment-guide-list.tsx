@@ -22,54 +22,54 @@ import {
 import { useToast } from "@oursrc/hooks/use-toast";
 import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
 import React from "react";
-import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "../data";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { treatmentService } from "@oursrc/lib/services/treatmentGuideService";
+import { treatmentGuideService } from "@oursrc/lib/services/treatmentGuideService";
 import { Edit, EyeIcon, Pen, Plus, Search, Trash } from "lucide-react";
 import { HiChevronDown } from "react-icons/hi2";
 import { capitalize } from "@oursrc/components/utils";
 import ModalTreamentGuide from "./_modals/treatment-guide-modal";
 
+const columns = [
+  { name: "TÊN BỆNH", uid: "diseaseTitle", sortable: true },
+  { name: "MÔ TẢ BỆNH", uid: "diseaseDescription", sortable: true },
+  { name: "TRIỆU CHỨNG", uid: "diseaseSymptoms", sortable: true },
+  { name: "TIÊU ĐỀ", uid: "treatmentTitle", sortable: true },
+  { name: "MÔ TẢ", uid: "treatmentDescription", sortable: true },
+  { name: "HƯỚNG DẪN CHỮA BỆNH", uid: "cure", sortable: true },
+  { name: "MỨC ĐỘ", uid: "diseaseType", sortable: true },
+  { name: "TẠO BỞI", uid: "authorName", sortable: true },
+  { name: "ACTIONS", uid: "actions" },
+];
+const INITIAL_VISIBLE_COLUMNS = [
+  "diseaseTitle",
+  "diseaseDescription",
+  "diseaseSymptoms",
+  "treatmentTitle",
+  "treatmentDescription",
+  "cure",
+  "diseaseType",
+  "authorName",
+  "actions",
+];
+const statusOptions = [{ name: "", uid: "" }];
+
 const TreatmentGuideList = () => {
   const { toast } = useToast();
 
   //Modal field
-  const {
-    isOpen: isOpenAdd,
-    onOpen: onOpenAdd,
-    onClose: onCloseAdd,
-  } = useDisclosure();
-  const {
-    isOpen: isOpenEdit,
-    onOpen: onOpenEdit,
-    onClose: onCloseEdit,
-  } = useDisclosure();
-  const {
-    isOpen: isOpenDelete,
-    onOpen: onOpenDelete,
-    onClose: onCloseDelete,
-  } = useDisclosure();
-  const {
-    isOpen: isOpenDetail,
-    onOpen: onOpenDetail,
-    onClose: onCloseDetail,
-  } = useDisclosure();
+  const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
+  const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
+  const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure();
+  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const [updateId, setUpdateId] = React.useState<string>("");
-  const [selectedData, setSelectedData] =
-    React.useState<TreatmentGuide | null>(null);
-  const [context, setContext] = React.useState<"create" | "edit" | "detail">(
-    "create"
-  );
+  const [selectedData, setSelectedData] = React.useState<TreatmentGuide | null>(null);
+  const [context, setContext] = React.useState<"create" | "edit" | "detail">("create");
   const [submitDone, setSubmitDone] = React.useState<boolean>(false);
 
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
-  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
-    new Set([])
-  );
-  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
-    new Set(INITIAL_VISIBLE_COLUMNS)
-  );
+  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
+  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(1);
@@ -85,9 +85,7 @@ const TreatmentGuideList = () => {
   const headerColumns = React.useMemo(() => {
     if (visibleColumns === "all") return columns;
 
-    return columns.filter((column: any) =>
-      Array.from(visibleColumns).includes(column.uid)
-    );
+    return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
   const [dataList, setDataList] = React.useState<TreatmentGuide[]>([]);
 
@@ -95,17 +93,10 @@ const TreatmentGuideList = () => {
     let filteredData: TreatmentGuide[] = [...dataList];
 
     if (hasSearchFilter) {
-      filteredData = filteredData.filter((data) =>
-        data.diseaseTitle.toLowerCase().includes(filterValue.toLowerCase())
-      );
+      filteredData = filteredData.filter((data) => data.diseaseTitle.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (
-      statusFilter !== "all" &&
-      Array.from(statusFilter).length !== statusOptions.length
-    ) {
-      filteredData = filteredData.filter((data) =>
-        Array.from(statusFilter).includes(data.diseaseTitle as string)
-      );
+    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
+      filteredData = filteredData.filter((data) => Array.from(statusFilter).includes(data.diseaseTitle as string));
     }
     return filteredData;
   }, [dataList, filterValue, statusFilter]);
@@ -131,8 +122,7 @@ const TreatmentGuideList = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response: ResponseObjectList<TreatmentGuide> =
-        await treatmentService.getByPagination(page, rowsPerPage);
+      const response: ResponseObjectList<TreatmentGuide> = await treatmentGuideService.getByPagination(page, rowsPerPage);
       if (response.isSuccess) {
         setDataList(response.data.data);
         setRowsPerPage(response.data.pageSize);
@@ -142,10 +132,7 @@ const TreatmentGuideList = () => {
     } catch (e) {
       toast({
         variant: "destructive",
-        title:
-          e instanceof AggregateError
-            ? e.message
-            : "Lỗi hệ thống. Vui lòng thử lại sau!",
+        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     } finally {
       setLoading(false);
@@ -161,7 +148,7 @@ const TreatmentGuideList = () => {
 
   const onDelete = async (data: TreatmentGuide) => {
     try {
-      const response = await treatmentService.delete(data.id);
+      const response = await treatmentGuideService.delete(data.id);
       if (response.isSuccess) {
         fetchData();
       } else {
@@ -171,10 +158,7 @@ const TreatmentGuideList = () => {
       setLoading(false);
       toast({
         variant: "destructive",
-        title:
-          e instanceof AggregateError
-            ? e.message
-            : "Lỗi hệ thống. Vui lòng thử lại sau!",
+        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     }
   };
@@ -194,13 +178,10 @@ const TreatmentGuideList = () => {
   // }, [sortDescriptor, items]);
 
   //call api
-  const onRowsPerPageChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setRowsPerPage(Number(e.target.value));
-      setPage(1);
-    },
-    []
-  );
+  const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRowsPerPage(Number(e.target.value));
+    setPage(1);
+  }, []);
   //call api
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
@@ -232,10 +213,7 @@ const TreatmentGuideList = () => {
           <div className="flex gap-3">
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<HiChevronDown className="text-small" />}
-                  variant="flat"
-                >
+                <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
                   Hiển thị cột
                 </Button>
               </DropdownTrigger>
@@ -260,15 +238,10 @@ const TreatmentGuideList = () => {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-default-400 text-small">
-            Tổng cộng {totalRecords} kết quả
-          </span>
+          <span className="text-default-400 text-small">Tổng cộng {totalRecords} kết quả</span>
           <label className="flex items-center text-default-400 text-small">
             Số hàng mỗi trang:
-            <select
-              className="bg-transparent outline-none text-default-400 text-small"
-              onChange={onRowsPerPageChange}
-            >
+            <select className="bg-transparent outline-none text-default-400 text-small" onChange={onRowsPerPageChange}>
               <option value="5">5</option>
               <option value="10">10</option>
               <option value="15">15</option>
@@ -277,43 +250,29 @@ const TreatmentGuideList = () => {
         </div>
       </div>
     );
-  }, [
-    filterValue,
-    statusFilter,
-    visibleColumns,
-    onSearchChange,
-    onRowsPerPageChange,
-    dataList.length,
-    hasSearchFilter,
-  ]);
+  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, dataList.length, hasSearchFilter]);
 
-  const renderCell = React.useCallback(
-    (data: TreatmentGuide, columnKey: React.Key) => {
-      const cellValue = data[columnKey as keyof TreatmentGuide];
+  const renderCell = React.useCallback((data: TreatmentGuide, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof TreatmentGuide];
 
-      switch (columnKey) {
-        case "diseaseTitle":
-        case "diseaseDescription":
-        case "diseaseSymptoms":
-        case "treatmentTitle":
-        case "treatmentDescription":
-        case "cure":
-        case "diseaseType":
-        case "authorName":
-          return (
-            <Tooltip
-              showArrow={true}
-              content={cellValue}
-              color="primary"
-              closeDelay={300}
-            >
-              <p className="truncate">{cellValue}</p>
-            </Tooltip>
-          );
-        case "actions":
-          return (
-            <div className="flex justify-end items-center gap-2">
-              {/* <Tooltip content="Chi tiết" color="primary">
+    switch (columnKey) {
+      case "diseaseTitle":
+      case "diseaseDescription":
+      case "diseaseSymptoms":
+      case "treatmentTitle":
+      case "treatmentDescription":
+      case "cure":
+      case "diseaseType":
+      case "authorName":
+        return (
+          <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={300}>
+            <p className="truncate">{cellValue}</p>
+          </Tooltip>
+        );
+      case "actions":
+        return (
+          <div className="flex justify-end items-center gap-2">
+            {/* <Tooltip content="Chi tiết" color="primary">
                 <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                   <EyeIcon
                     onClick={() => {
@@ -323,51 +282,37 @@ const TreatmentGuideList = () => {
                   />
                 </span>
               </Tooltip> */}
-              <Tooltip content="Chỉnh sửa" color="primary">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <Edit
-                    onClick={() => {
-                      onEdit(data);
-                    }}
-                  />
-                </span>
-              </Tooltip>
-              <Tooltip content="Xóa" color="danger">
-                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                  <Trash
-                    color="#ff0000"
-                    onClick={() => {
-                      onDelete(data);
-                    }}
-                  />
-                </span>
-              </Tooltip>
-            </div>
-          );
-        default:
-          return cellValue;
-      }
-    },
-    []
-  );
+            <Tooltip content="Chỉnh sửa" color="primary">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <Edit
+                  onClick={() => {
+                    onEdit(data);
+                  }}
+                />
+              </span>
+            </Tooltip>
+            <Tooltip content="Xóa" color="danger">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <Trash
+                  color="#ff0000"
+                  onClick={() => {
+                    onDelete(data);
+                  }}
+                />
+              </span>
+            </Tooltip>
+          </div>
+        );
+      default:
+        return cellValue;
+    }
+  }, []);
 
   const bottomContent = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">
-          {selectedKeys === "all"
-            ? "Đã chọn tất cả"
-            : `Đã chọn ${selectedKeys.size} kết quả`}
-        </span>
-        <Pagination
-          isCompact
-          showControls
-          showShadow
-          color="primary"
-          page={page}
-          total={totalPages}
-          onChange={setPage}
-        />
+        <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
+        <Pagination isCompact showControls showShadow color="primary" page={page} total={totalPages} onChange={setPage} />
         <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
       </div>
     );
@@ -393,37 +338,20 @@ const TreatmentGuideList = () => {
       >
         <TableHeader columns={headerColumns}>
           {(column: any) => (
-            <TableColumn
-              key={column.uid}
-              align={column.uid === "actions" ? "center" : "start"}
-              allowsSorting={column.sortable}
-            >
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
               {column.name.toUpperCase()}
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody
-          emptyContent={"Không có kết quả"}
-          items={filteredItems}
-          loadingContent={<Spinner />}
-          loadingState={loading ? "loading" : "idle"}
-        >
+        <TableBody emptyContent={"Không có kết quả"} items={filteredItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
           {(item) => (
             <TableRow key={item.id} className="h-12">
-              {(columnKey) => (
-                <TableCell>{renderCell(item, columnKey)}</TableCell>
-              )}
+              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
             </TableRow>
           )}
         </TableBody>
       </Table>
-      {isOpenAdd && (
-        <ModalTreamentGuide
-          isOpen={isOpenAdd}
-          onClose={onCloseAdd}
-          context="create"
-        />
-      )}
+      {isOpenAdd && <ModalTreamentGuide isOpen={isOpenAdd} onClose={onCloseAdd} context="create" />}
       {isOpenEdit && <ModalTreamentGuide isOpen={isOpenEdit} onClose={onCloseEdit} context="edit" data={selectedData || undefined} />}
       {isOpenDelete && <ModalTreamentGuide isOpen={isOpenDelete} onClose={onCloseDelete} context="delete" data={selectedData || undefined} />}
     </div>

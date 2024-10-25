@@ -3,7 +3,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
 import CreateTreatmentProgressStep from "@oursrc/components/treatment/create-treatment-progress-step";
-import DiseaseReport from "./_components/disease-report";
 import { useTreatmentProgressSteps } from "@oursrc/lib/store";
 import {
   Button,
@@ -29,7 +28,7 @@ import {
 } from "@nextui-org/react";
 import { useForm } from "react-hook-form";
 import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
-import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
+import { CreateTreatmentStageProps, DiseaseReport } from "@oursrc/lib/models/treatment";
 import { v4 } from "uuid";
 import CreateTreatmentStage from "./_components/create-treatment-stages";
 import { Filter, Plus, Trash } from "lucide-react";
@@ -39,10 +38,12 @@ import HerdListReadOnly from "@oursrc/components/herds/herd-list-read-only";
 import SelectedPigsList from "../../vaccination/create-plan/_components/selected-pigs-list";
 import { Cage } from "@oursrc/lib/models/cage";
 import { Herd } from "@oursrc/lib/models/herd";
-import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { Pig } from "@oursrc/lib/models/pig";
 import { pigService } from "@oursrc/lib/services/pigService";
 import MedicineListInStage from "./_components/medine-list-in-stage";
+import CreateDiseaseReport from "./_components/_modals/create-disease-report";
+import { useRouter } from "next/navigation";
 
 export type TreatmentPlanStep = {
   id: number;
@@ -53,10 +54,12 @@ export type TreatmentPlanStep = {
 
 const CreatePLan = () => {
   const { toast } = useToast();
+  const router = useRouter();
   const storedTreatmentProgressSteps = useTreatmentProgressSteps();
   const [treatmentProgressSteps, setTreatmentProgressSteps] = React.useState(useTreatmentProgressSteps());
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [openBy, setOpenBy] = React.useState<string>("herd");
+  const [diseaseReport, setDiseaseReport] = React.useState<DiseaseReport | undefined>();
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
@@ -116,21 +119,65 @@ const CreatePLan = () => {
       stages.length > 0 &&
       stages.every((stage) => stage.title && stage.timeSpan && stage.applyStageTime && stage.treatmentToDos.every((todo) => todo.description)) &&
       date &&
-      Object.keys(errors).length === 0
+      Object.keys(errors).length === 0 &&
+      allSelectedPigs.length > 0
     );
   };
 
   const onSubmit = async (data: any) => {
     try {
-      console.log(data);
-      console.log(stages);
-      console.log(allSelectedPigs);
+      // console.log(data);
+      // console.log(stages);
+      // console.log(new Date(date?.year ?? 0, date?.month ?? 0, date?.day ?? 0).toISOString());
+      // console.log(allSelectedPigs);
+      const payload = {
+        ...data,
+        expectedTimePeriod: new Date(date?.year ?? 0, date?.month ?? 0, date?.day ?? 0).toISOString(),
+        treatmentStages: stages.map((stage) => ({
+          ...stage,
+          note: "",
+          inventoryRequestDto: {
+            ...stage.inventoryRequest,
+            medicines: stage.inventoryRequest.medicines.map((medicine) => ({
+              medicineId: medicine.medicineId,
+              newMedicineName: medicine.medicineName,
+              portionEachPig: medicine.portionEachPig,
+            })),
+          },
+        })),
+        diseaseReportId: diseaseReport?.id,
+        pigIds: allSelectedPigs.map((pig) => pig.id),
+      };
+      payload.treatmentStages.map((stage: any) => delete stage.inventoryRequest);
+      payload.treatmentStages.map((stage: any) => delete stage.inventoryRequestDto.id);
+      console.log(payload);
       if (!isFormFilled()) {
         toast({
           title: "Vui lòng điền đầy đủ thông tin kế hoạch",
           variant: "destructive",
         });
         return;
+      }
+      if (!diseaseReport) {
+        toast({
+          title: "Vui lòng tạo báo cáo bệnh",
+          variant: "destructive",
+        });
+        return;
+      }
+      const res: ResponseObject<any> = await treatmentPlanService.createTreatmentPlan(payload);
+      if (res.isSuccess) {
+        toast({
+          title: "Tạo kế hoạch điều trị thành công",
+          variant: "success",
+        });
+        router.push("/veterinarian/treatment");
+      } else {
+        toast({
+          title: res.errorMessage || "Tạo kế hoạch điều trị thất bại",
+          variant: "destructive",
+        });
+        console.log(res.errorMessage);
       }
     } catch (error) {
       console.log(error);
@@ -139,120 +186,6 @@ const CreatePLan = () => {
         variant: "destructive",
       });
     }
-  };
-
-  const onStageChange = (event: string, field: string, index: string) => {
-    setStages(
-      stages.map((stage: CreateTreatmentStageProps) => {
-        if (stage.id === index) {
-          return {
-            ...stage,
-            [field]: event,
-          };
-        }
-        return stage;
-      })
-    );
-  };
-
-  const onAddStage = () => {
-    const newId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    setStages([
-      ...stages,
-      {
-        id: newId.toString(),
-        title: "",
-        timeSpan: "1",
-        applyStageTime: "",
-        treatmentToDos: [{ description: "" }],
-        inventoryRequest: {
-          id: v4(),
-          title: "",
-          description: "",
-          medicines: [],
-        },
-      },
-    ]);
-  };
-  const onDeleteStage = (stage: CreateTreatmentStageProps) => {
-    setStages([...stages.filter((x: CreateTreatmentStageProps) => x.id !== stage.id)]);
-  };
-  const onAddTodoInStage = (stageIndex: number) => {
-    const newStages = stages.map((stage: CreateTreatmentStageProps, index: number) => {
-      if (index === stageIndex) {
-        return {
-          ...stage,
-          treatmentToDos: [...stage.treatmentToDos, { description: "" }],
-        };
-      }
-      return stage; // No need for a shallow copy if not updating
-    });
-
-    setStages(newStages);
-  };
-
-  const onDeleteTodoInStage = (stageIndex: number, todoIndex: number) => {
-    const newStages = stages.map((stage: CreateTreatmentStageProps, index: number) => {
-      if (index === stageIndex) {
-        return {
-          ...stage,
-          treatmentTodos: stage.treatmentToDos.filter((_, i) => i !== todoIndex),
-        };
-      }
-      return stage;
-    });
-
-    setStages(newStages);
-  };
-
-  const handleToDoChange = (e: React.ChangeEvent<HTMLInputElement>, stageIndex: number, todoIndex: number) => {
-    const newStages = stages.map((stage, sIndex) => {
-      if (sIndex === stageIndex) {
-        return {
-          ...stage,
-          treatmentToDos: stage.treatmentToDos.map((todo, tIndex) => {
-            if (tIndex === todoIndex) {
-              return { ...todo, description: e.target.value };
-            }
-            return todo;
-          }),
-        };
-      }
-      return stage;
-    });
-
-    setStages(newStages);
-  };
-
-  const updateMedicine = (e: any, stageIndex: number) => {
-    setStages((prevStages) => {
-      const updatedStages = [...prevStages];
-      const selectedStage = updatedStages[stageIndex];
-
-      if (!selectedStage) {
-        console.error(`Stage at index ${stageIndex} not found`);
-        return prevStages;
-      }
-
-      const currentMedicines = selectedStage.inventoryRequest.medicines;
-      const updatedMedicines = [...currentMedicines]; // Start with a copy of current medicines
-
-      e.medicines.forEach((newMedicine: any) => {
-        const existingMedicineIndex = updatedMedicines.findIndex((medicine) => medicine.medicineId === newMedicine.medicineId);
-        if (existingMedicineIndex !== -1) {
-          updatedMedicines[existingMedicineIndex] = newMedicine;
-        } else {
-          updatedMedicines.push(newMedicine);
-        }
-      });
-
-      selectedStage.inventoryRequest = {
-        ...selectedStage.inventoryRequest,
-        medicines: updatedMedicines,
-      };
-      updatedStages[stageIndex] = selectedStage;
-      return updatedStages;
-    });
   };
 
   // const getComponent = () => {
@@ -296,10 +229,10 @@ const CreatePLan = () => {
     <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.4 }}>
       {/* <CreateTreatmentProgressStep steps={treatmentProgressSteps} />
       {getComponent()} */}
-      {isOpen && <DiseaseReport isOpen={isOpen} onOpen={onOpen} onClose={onClose} />}
+      {isOpen && <CreateDiseaseReport isOpen={isOpen} onOpen={onOpen} onClose={onClose} setDiseaseReport={setDiseaseReport} />}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex justify-end">
-          <Button color="primary" onClick={onOpen}>
+          <Button color="primary" onClick={onOpen} isDisabled={diseaseReport ? true : false}>
             Tạo báo cáo bệnh
           </Button>
           <Button color="primary" type="submit" className="ml-3" isDisabled={!isFormFilled()}>
@@ -364,141 +297,7 @@ const CreatePLan = () => {
       </form>
       <Card className="my-4">
         <CardBody>
-          <div className="mb-2 flex flex-row justify-between">
-            <p className="text-2xl font-semibold">Giai đoạn tiêm phòng</p>
-            <Button color="primary" endContent={<Plus />} onClick={onAddStage}>
-              Thêm giai đoạn
-            </Button>
-          </div>
-          <Accordion defaultExpandedKeys={["0"]} variant="splitted">
-            {stages.map((stage, stageIndex: number) => {
-              return (
-                <AccordionItem
-                  key={stageIndex}
-                  title={`Giai đoạn ${stageIndex + 1}`}
-                  startContent={
-                    <div className="flex flex-row items-start mr-2">
-                      <span className="text-lg text-danger cursor-pointer active:opacity-50">
-                        {stages.length > 1 && (
-                          <Tooltip color="danger" content="Xóa giai đoạn">
-                            <Button isIconOnly color="danger" size="sm" onClick={() => onDeleteStage(stage)}>
-                              <Trash size={20} color="#ffffff" />
-                            </Button>
-                          </Tooltip>
-                        )}
-                      </span>
-                    </div>
-                  }
-                >
-                  <div key={stage.id} className="flex flex-row justify-between">
-                    <div className="w-full">
-                      <div className="w-full grid grid-cols-3 gap-4">
-                        <Input
-                          className="mb-5"
-                          type="text"
-                          radius="sm"
-                          size="lg"
-                          label="Tên giai đoạn"
-                          placeholder="Nhập tên giai đoạn"
-                          labelPlacement="outside"
-                          isRequired
-                          value={stage.title}
-                          isInvalid={stage.title ? false : true}
-                          errorMessage="Tên giai đoạn không được để trống"
-                          onValueChange={(event) => onStageChange(event, "title", stage.id || "")}
-                        />
-                        <DatePicker
-                          className="mb-5"
-                          radius="sm"
-                          size="lg"
-                          label="Ngày tiêm"
-                          value={stage.applyStageTime ? parseDate(stage.applyStageTime) : undefined}
-                          isDateUnavailable={(date: DateValue) =>
-                            stages.some((x: CreateTreatmentStageProps) => x.applyStageTime === date.toString() && x.id !== stage.id)
-                          }
-                          minValue={date ? date : today(getLocalTimeZone())}
-                          // maxValue={date.end}
-                          labelPlacement="outside"
-                          isRequired
-                          isInvalid={stage.applyStageTime ? false : true}
-                          errorMessage="Ngày tiêm không được để trống"
-                          onChange={(event) => onStageChange(event.toString(), "applyStageTime", stage.id || "")}
-                        />
-                        <Input
-                          className="mb-5"
-                          type="number"
-                          min={1}
-                          max={50}
-                          radius="sm"
-                          size="lg"
-                          label="Số ngày thực hiện (dự kiến)"
-                          placeholder="Nhập số ngày thực hiện (dự kiến)"
-                          labelPlacement="outside"
-                          isRequired
-                          onKeyDown={(e) => e.preventDefault()}
-                          value={stage.timeSpan}
-                          isInvalid={stage.timeSpan ? false : true}
-                          errorMessage="Số ngày thực hiện không được để trống"
-                          onValueChange={(event) => onStageChange(event, "timeSpan", stage.id || "")}
-                        />
-                      </div>
-                      {/* todo */}
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="col-span-2">
-                          <MedicineListInStage medicineInStageProp={stage.inventoryRequest} updateMedicines={(e: any) => updateMedicine(e, stageIndex)} />
-                        </div>
-                        <div>
-                          <Tooltip color="primary" content={`Các bước cần thực hiện trong giai đoạn ${stageIndex + 1}`}>
-                            <Card className="" radius="sm">
-                              <CardBody>
-                                {stage.treatmentToDos?.map(
-                                  (
-                                    treatmentToDo: {
-                                      description: string;
-                                    },
-                                    index: number
-                                  ) => {
-                                    return (
-                                      <div key={index} className="mb-2">
-                                        <div className="p-0 grid grid-cols-11 gap-2">
-                                          <Input
-                                            className="mb-5 col-span-9 w-full"
-                                            type="text"
-                                            radius="sm"
-                                            size="sm"
-                                            label={`Bước ${index + 1}`}
-                                            labelPlacement="inside"
-                                            value={treatmentToDo.description}
-                                            onChange={(e) => handleToDoChange(e, stageIndex, index)}
-                                          />
-                                          <div className="flex gap-2">
-                                            {stage?.treatmentToDos && stage.treatmentToDos?.length > 1 && (
-                                              <Button isIconOnly color="danger" size="sm" onClick={() => onDeleteTodoInStage(stageIndex, index)}>
-                                                <Trash size={20} color="#ffffff" />
-                                              </Button>
-                                            )}
-                                            {index === stage.treatmentToDos.length - 1 && (
-                                              <Button isIconOnly color="primary" size="sm" onClick={() => onAddTodoInStage(stageIndex)}>
-                                                <Plus size={20} color="#ffffff" />
-                                              </Button>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  }
-                                )}
-                              </CardBody>
-                            </Card>
-                          </Tooltip>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionItem>
-              );
-            })}
-          </Accordion>
+          <CreateTreatmentStage stages={stages} setStages={setStages} date={date} />
         </CardBody>
       </Card>
       <Card className="mt-3">

@@ -36,6 +36,7 @@ import { CiViewList } from "react-icons/ci";
 import { FaRegListAlt } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { Supplier } from "@oursrc/lib/models/supplier";
+import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -74,6 +75,8 @@ export default function MedicineList({
     column: "lastUpdatedAt",
     direction: "ascending",
   });
+
+  const storedMedicine = localStorage.getItem("newMedicine") ? JSON.parse(localStorage.getItem("newMedicine") || "") : "";
 
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -143,6 +146,9 @@ export default function MedicineList({
           title: "Thêm thuốc mới thành công",
         });
         setSelectedMedicine(res.data);
+        // Call api to mark purchase medicine
+        const response: ResponseObject<any> = await medicineRequestService.markPurchaseMedicine(storedMedicine.requestId, res.data.id ?? "");
+        console.log(response);
       } else {
         toast({
           variant: "destructive",
@@ -335,7 +341,7 @@ export default function MedicineList({
           <form onSubmit={handleSubmit(createNewMedicine)}>
             <p className="text-xl font-semibold mb-3">Nhập thông tin thuốc mới</p>
             <p className="text-lg mb-3">
-              Format tên thuốc: {supplier ? supplier.name + " - " : ""} {name ? name : localStorage.getItem("newMedicineName") || ""}
+              Format tên thuốc: {supplier ? supplier.name + " - " : ""} {name ? name : storedMedicine.newMedicineName}
             </p>
             <div className="grid grid-cols-2 gap-2">
               <Input
@@ -347,7 +353,7 @@ export default function MedicineList({
                 placeholder="Nhập tên thuốc"
                 labelPlacement="outside"
                 isRequired
-                defaultValue={localStorage.getItem("newMedicineName") || ""}
+                defaultValue={storedMedicine.newMedicineName}
                 isInvalid={errors.name ? true : false}
                 errorMessage="Tên thuốc không được để trống"
                 {...register("name", { required: true })}

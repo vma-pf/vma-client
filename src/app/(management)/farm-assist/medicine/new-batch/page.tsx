@@ -123,7 +123,7 @@ const NewBatch = () => {
           title: "Tạo lô mới thành công",
           variant: "success",
         });
-        router.push("/farmer/medicine");
+        router.push("/farm-assist/medicine");
       } else {
         console.log(response?.errorMessage);
         toast({
@@ -300,7 +300,7 @@ const NewBatch = () => {
             variant="solid"
             onPress={() => setBatchList([...batchList, { id: uuidv4(), medicineId: null, invoiceId: null, quantity: null, expiredAt: null }])}
           >
-            Thêm lô mới
+            Thêm lô
           </Button>
         </div>
       </div>

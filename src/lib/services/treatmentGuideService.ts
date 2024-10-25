@@ -8,7 +8,7 @@ import {
 
 const endpoint = "api/treatmentGuides";
 
-export const treatmentService = {
+export const treatmentGuideService = {
   getByPagination: (page: number, pageSize: number = 30) =>
     http.get<ResponseObjectList<any>>(endpoint, {
       params: {
