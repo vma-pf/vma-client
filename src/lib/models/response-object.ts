@@ -14,3 +14,8 @@ export type ResponseObject<T> = {
     data: T;
     errorMessage: string | null;
 };
+export type ResponseObjectNoPaging<T> = {
+    isSuccess: boolean;
+    data: T[];
+    errorMessage: string | null;
+};
