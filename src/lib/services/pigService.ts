@@ -1,8 +1,13 @@
 import http from "@oursrc/lib/http";
 
 import { Pig } from "../models/pig";
-import { ResponseObject, ResponseObjectList, ResponseObjectNoPaging } from "../models/response-object";
+import {
+  ResponseObject,
+  ResponseObjectList,
+  ResponseObjectNoPaging,
+} from "../models/response-object";
 import { VaccinationData } from "../models/vaccination";
+import { TreatmentData } from "../models/treatment";
 
 const endpoint = "api/pigs";
 
@@ -30,5 +35,22 @@ export const pigService = {
     }),
   assignPigToCage: (pig: any) => http.post<ResponseObject<any>>(endpoint, pig),
   getPigId: (id: string) => http.get(endpoint + `/${id}`),
-  getVaccinationPlanByPigId: (pigId: string) => http.get<ResponseObjectNoPaging<VaccinationData>>(endpoint + `/pigs/${pigId}/vaccination-plans`)
+  getVaccinationPlanByPigId: (pigId: string) =>
+    http.get<ResponseObjectNoPaging<VaccinationData>>(
+      endpoint + `/pigs/${pigId}/vaccination-plans`
+    ),
+  getTreatmentPlanByPigId: (
+    pigId: string,
+    pageIndex: number,
+    pageSize: number
+  ) =>
+    http.get<ResponseObjectList<TreatmentData>>(
+      endpoint + `/${pigId}/treatment-plans`,
+      {
+        params: {
+          pageIndex: pageIndex?.toString() || "",
+          pageSize: pageSize?.toString() || "",
+        },
+      }
+    ),
 };
