@@ -21,7 +21,7 @@ import React, { useMemo } from "react";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
-import { TreatmentData } from "@oursrc/lib/models/treatment";
+import { DiseaseReport } from "@oursrc/lib/models/treatment";
 import { treatmentGuideService } from "@oursrc/lib/services/treatmentGuideService";
 import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
 import { Search } from "lucide-react";
@@ -29,33 +29,31 @@ import { HiChevronDown } from "react-icons/hi2";
 import { pigService } from "@oursrc/lib/services/pigService";
 
 const columns = [
-  { name: "tên", uid: "title", sortable: true },
-  { name: "mô tả", uid: "description", sortable: true },
-  { name: "ghi chú", uid: "note", sortable: true },
+  { name: "Mô tả", uid: "description", sortable: true },
+  { name: "Kết quả chữa bệnh", uid: "treatmentResult", sortable: true },
+  { name: "Thời gian chữa bệnh", uid: "totalTreatmentTime", sortable: true },
+  { name: "Tiến độ", uid: "isDone", sortable: true },
+  { name: "Ngày tạo", uid: "createdAt", sortable: true },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["title", "description", "note"];
+const INITIAL_VISIBLE_COLUMNS = ["treatmentResult", "description", "totalTreatmentTime", "isDone", "createdAt"];
 
 const statusMapColor = [
   { name: "red", value: 0 },
-  { name: "blue", value: 1 },
-  { name: "green", value: 2 },
-  { name: "red", value: 3 },
+  { name: "green", value: 1 },
 ];
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
-  { name: "Đang thực hiện", value: 1 },
-  { name: "Đã hoàn thành", value: 2 },
-  { name: "Đã hủy", value: 3 },
+  { name: "Đã hoàn thành", value: 1 },
 ];
 
-const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, setSelectedTreatment: any }) => {
+const PigDiseaseReportList = ({ pigId }: { pigId: string }) => {
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
-    column: "title",
+    column: "createdAt",
     direction: "ascending",
   });
   const [isLoading, setIsLoading] = React.useState(false);
-  const [treatmentList, setTreatmentList] = React.useState<TreatmentData[]>([]);
+  const [diseaseReportList, setDiseaseReportList] = React.useState<DiseaseReport[]>([]);
   const [filterValue, setFilterValue] = React.useState("");
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [totalRecords, setTotalRecords] = React.useState(0);
@@ -71,13 +69,13 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, 
   }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredVaccination: TreatmentData[] = [...treatmentList];
+    let filteredDiseaseReport: DiseaseReport[] = [...diseaseReportList];
 
     if (hasSearchFilter) {
-      filteredVaccination = filteredVaccination.filter((vaccination) => vaccination.title.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredDiseaseReport = filteredDiseaseReport.filter((vaccination) => vaccination.description.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    return filteredVaccination;
-  }, [treatmentList, filterValue]);
+    return filteredDiseaseReport;
+  }, [diseaseReportList, filterValue]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -87,9 +85,9 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, 
   }, [filteredItems]);
 
   const sortedItems = useMemo(() => {
-    return [...filteredItems].sort((a: TreatmentData, b: TreatmentData) => {
-      const first = a[sortDescriptor.column as keyof TreatmentData] as unknown as number;
-      const second = b[sortDescriptor.column as keyof TreatmentData] as unknown as number;
+    return [...filteredItems].sort((a: DiseaseReport, b: DiseaseReport) => {
+      const first = a[sortDescriptor.column as keyof DiseaseReport] as unknown as number;
+      const second = b[sortDescriptor.column as keyof DiseaseReport] as unknown as number;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -99,9 +97,9 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, 
   const getAllVaccinationPlan = async () => {
     try {
       setIsLoading(true);
-      const res: ResponseObjectList<TreatmentData> = await pigService.getTreatmentPlanByPigId(pigId, page, rowsPerPage);
+      const res: ResponseObjectList<DiseaseReport> = await pigService.getDiseaseReportByPigId(pigId, page, rowsPerPage);
       if (res && res.isSuccess) {
-        setTreatmentList(res.data.data || []);
+        setDiseaseReportList(res.data.data || []);
         setPage(res.data.pageIndex);
         setRowsPerPage(res.data.pageSize);
         setTotalPages(res.data.totalPages);
@@ -145,7 +143,7 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, 
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
-            placeholder="Tìm kiếm theo tên..."
+            placeholder="Tìm kiếm theo mô tả..."
             startContent={<Search />}
             value={filterValue}
             onClear={() => onClear()}
@@ -181,11 +179,17 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, 
         </div>
       </div>
     );
-  }, [filterValue, visibleColumns, onSearchChange, onRowsPerPageChange, treatmentList.length, hasSearchFilter]);
-  const renderCell = React.useCallback((data: TreatmentData, columnKey: React.Key) => {
-    const cellValue = data[columnKey as keyof TreatmentData];
+  }, [filterValue, visibleColumns, onSearchChange, onRowsPerPageChange, diseaseReportList.length, hasSearchFilter]);
+  const renderCell = React.useCallback((data: DiseaseReport, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof DiseaseReport];
 
     switch (columnKey) {
+      case "createdAt":
+        return (
+          <div>
+            {dateTimeConverter(cellValue.toString())}
+          </div>
+        )
       default:
         return cellValue?.toString();
     }
@@ -214,7 +218,7 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, 
       onSortChange={setSortDescriptor}
       //   align="center"
       // selectedKeys={selectedKeys}
-      onSelectionChange={setSelectedTreatment}
+      // onSelectionChange={setSelectedKeys}
       aria-label="Example static collection table"
     >
       <TableHeader columns={headerColumns}>
@@ -235,4 +239,4 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, 
   );
 };
 
-export default PigTreatmentPlanList;
+export default PigDiseaseReportList;

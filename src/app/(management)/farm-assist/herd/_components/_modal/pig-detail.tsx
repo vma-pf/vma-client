@@ -6,16 +6,16 @@ import {
   Tab,
   Tabs,
 } from "@nextui-org/react";
-import { Pig } from "@oursrc/lib/models/pig";
-import React from "react";
-import DevelopmentLogList from "../development-log-list";
-import PigVaccinationList from "@oursrc/components/vaccination/pig-vaccination-list";
-import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
-import PigVaccinationStageList from "@oursrc/components/vaccination/pig-vaccination-stage-list";
-import { MdOutlineWarehouse } from "react-icons/md";
-import { TbVaccine } from "react-icons/tb";
-import { ClipboardCheck, ClipboardList } from "lucide-react";
 import PigTreatmentPlanList from "@oursrc/components/treatment/pig-treatment-plan-list";
+import PigVaccinationList from "@oursrc/components/vaccination/pig-vaccination-list";
+import PigVaccinationStageList from "@oursrc/components/vaccination/pig-vaccination-stage-list";
+import { Pig } from "@oursrc/lib/models/pig";
+import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
+import { ClipboardCheck, ClipboardList } from "lucide-react";
+import React from "react";
+import { TbVaccine } from "react-icons/tb";
+import DevelopmentLogList from "../development-log-list";
+import PigDiseaseReportList from "@oursrc/components/disease-reports/pig-disease-report-list";
 
 const PigDetail = ({
   isOpen,
@@ -92,7 +92,11 @@ const PigDetail = ({
                   <span className="ml-2">Báo cáo bệnh</span>
                 </div>
               }
-            >asc</Tab>
+            >
+              <div>
+                <PigDiseaseReportList pigId={pigInfo.id}/>
+              </div>
+            </Tab>
           </Tabs>
         </ModalBody>
       </ModalContent>

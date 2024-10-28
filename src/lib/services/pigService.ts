@@ -7,7 +7,7 @@ import {
   ResponseObjectNoPaging,
 } from "../models/response-object";
 import { VaccinationData } from "../models/vaccination";
-import { TreatmentData } from "../models/treatment";
+import { DiseaseReport, TreatmentData } from "../models/treatment";
 
 const endpoint = "api/pigs";
 
@@ -53,4 +53,18 @@ export const pigService = {
         },
       }
     ),
+    getDiseaseReportByPigId: (
+      pigId: string,
+      pageIndex: number,
+      pageSize: number
+    ) =>
+      http.get<ResponseObjectList<DiseaseReport>>(
+        endpoint + `/${pigId}/disease-reports`,
+        {
+          params: {
+            pageIndex: pageIndex?.toString() || "",
+            pageSize: pageSize?.toString() || "",
+          },
+        }
+      ),
 };
