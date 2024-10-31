@@ -71,6 +71,9 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
         case "Yêu cầu tiêm phòng":
           router.push("/farm-assist/medicine");
           break;
+        case "Yêu cầu cấp phát thuốc":
+          router.push("/farm-assist/medicine");
+          break;
         default:
           break;
       }

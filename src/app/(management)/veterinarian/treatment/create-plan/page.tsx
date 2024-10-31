@@ -35,7 +35,6 @@ import { Filter, Plus, Trash } from "lucide-react";
 import { useToast } from "@oursrc/hooks/use-toast";
 import CageListReadOnly from "@oursrc/components/cages/cage-list-read-only";
 import HerdListReadOnly from "@oursrc/components/herds/herd-list-read-only";
-import SelectedPigsList from "../../vaccination/create-plan/_components/selected-pigs-list";
 import { Cage } from "@oursrc/lib/models/cage";
 import { Herd } from "@oursrc/lib/models/herd";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
@@ -44,6 +43,7 @@ import { pigService } from "@oursrc/lib/services/pigService";
 import MedicineListInStage from "./_components/medine-list-in-stage";
 import CreateDiseaseReport from "./_components/_modals/create-disease-report";
 import { useRouter } from "next/navigation";
+import SelectedPigsList from "./_components/selected-pig-list";
 
 export type TreatmentPlanStep = {
   id: number;
@@ -55,14 +55,15 @@ export type TreatmentPlanStep = {
 const CreatePLan = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const storedTreatmentProgressSteps = useTreatmentProgressSteps();
-  const [treatmentProgressSteps, setTreatmentProgressSteps] = React.useState(useTreatmentProgressSteps());
+  // const storedTreatmentProgressSteps = useTreatmentProgressSteps();
+  // const [treatmentProgressSteps, setTreatmentProgressSteps] = React.useState(useTreatmentProgressSteps());
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [openBy, setOpenBy] = React.useState<string>("herd");
   const [diseaseReport, setDiseaseReport] = React.useState<DiseaseReport | undefined>();
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
+  const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);
   const {
     register,
     handleSubmit,
@@ -110,17 +111,21 @@ const CreatePLan = () => {
       }
     } catch (e) {
       console.log(e);
-      setAllSelectedPigs([]);
+    } finally {
+      setSelectedPigs([]);
     }
   };
 
   const isFormFilled = () => {
     return (
       stages.length > 0 &&
-      stages.every((stage) => stage.title && stage.timeSpan && stage.applyStageTime && stage.treatmentToDos.every((todo) => todo.description)) &&
+      stages.every(
+        (stage) =>
+          stage.title && stage.timeSpan && stage.applyStageTime && stage.treatmentToDos.every((todo) => todo.description) && stage.inventoryRequest.medicines.length > 0
+      ) &&
       date &&
       Object.keys(errors).length === 0 &&
-      allSelectedPigs.length > 0
+      selectedPigs.length > 0
     );
   };
 
@@ -138,15 +143,15 @@ const CreatePLan = () => {
           note: "",
           inventoryRequestDto: {
             ...stage.inventoryRequest,
-            medicines: stage.inventoryRequest.medicines.map((medicine) => ({
-              medicineId: medicine.medicineId,
-              newMedicineName: medicine.medicineName,
+            medicines: stage.inventoryRequest.medicines.map((medicine: any) => ({
+              medicineId: medicine.type === "existed" ? medicine.medicineId : null,
+              newMedicineName: medicine.type === "new" ? medicine.name : null,
               portionEachPig: medicine.portionEachPig,
             })),
           },
         })),
         diseaseReportId: diseaseReport?.id,
-        pigIds: allSelectedPigs.map((pig) => pig.id),
+        pigIds: selectedPigs.map((pig) => pig.id),
       };
       payload.treatmentStages.map((stage: any) => delete stage.inventoryRequest);
       payload.treatmentStages.map((stage: any) => delete stage.inventoryRequestDto.id);
@@ -200,31 +205,23 @@ const CreatePLan = () => {
   React.useEffect(() => {
     if (selectedHerds.length > 0) {
       fetchPigs("herd");
-    } else {
-      setAllSelectedPigs([]);
     }
   }, [selectedHerds]);
 
   React.useEffect(() => {
     if (selectedCages.length > 0) {
       fetchPigs("cage");
-    } else {
-      setAllSelectedPigs([]);
     }
   }, [selectedCages]);
 
-  React.useEffect(() => {
-    const storedStep = localStorage.getItem("treatmentProgressSteps");
-    if (storedStep) {
-      setTreatmentProgressSteps(JSON.parse(storedStep));
-    } else {
-      setTreatmentProgressSteps(storedTreatmentProgressSteps);
-    }
-  }, [storedTreatmentProgressSteps]);
-
   // React.useEffect(() => {
-  //   onOpen();
-  // }, []);
+  //   const storedStep = localStorage.getItem("treatmentProgressSteps");
+  //   if (storedStep) {
+  //     setTreatmentProgressSteps(JSON.parse(storedStep));
+  //   } else {
+  //     setTreatmentProgressSteps(storedTreatmentProgressSteps);
+  //   }
+  // }, [storedTreatmentProgressSteps]);
   return (
     <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.4 }}>
       {/* <CreateTreatmentProgressStep steps={treatmentProgressSteps} />
@@ -342,7 +339,7 @@ const CreatePLan = () => {
               <div>
                 <Card className="mt-2" radius="sm">
                   <CardBody>
-                    <SelectedPigsList pigList={allSelectedPigs} />
+                    <SelectedPigsList pigList={allSelectedPigs} selectedPigs={selectedPigs} setSelectedPigs={setSelectedPigs} />
                   </CardBody>
                 </Card>
               </div>

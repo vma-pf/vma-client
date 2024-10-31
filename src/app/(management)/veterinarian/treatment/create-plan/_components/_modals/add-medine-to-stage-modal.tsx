@@ -1,15 +1,22 @@
 "use client";
 import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Tab, Tabs } from "@nextui-org/react";
 import MedicinesListReadOnly from "@oursrc/components/medicines/medicines-list-read-only";
-import { toast } from "@oursrc/hooks/use-toast";
 import React from "react";
-import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 
-const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: any) => {
+const AddMedicineToStageModal = ({
+  isOpen,
+  onClose,
+  setSelectedMedicine,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  setSelectedMedicine: React.Dispatch<React.SetStateAction<any>>;
+}) => {
   const [currentTab, setCurrentTab] = React.useState<React.Key>("existed");
-  const [selectedMed, setSelectedMed] = React.useState<{}>({});
+  const [selectedMed, setSelectedMed] = React.useState<any>();
   const [portionEachPig, setPortionEachPig] = React.useState<number>(1);
+  const [newMedicineName, setNewMedicineName] = React.useState<string>("");
 
   const handlePortionChange = (event: string) => {
     let numericValue = event.replace(/[^0-9]/g, "");
@@ -22,14 +29,18 @@ const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: 
     setPortionEachPig(Number(numericValue));
   };
 
-  const onSubmitNewMedicine = () => {
-    if (selectedMed === null || !selectedMed) {
-      toast({
-        variant: "destructive",
-        title: "Vui lòng chọn thuốc và thử lại",
-      });
-      return;
+  const isSubmitted = () => {
+    switch (currentTab) {
+      case "existed":
+        return selectedMed ? true : false;
+      case "new":
+        return newMedicineName ? true : false;
+      default:
+        return false;
     }
+  };
+
+  const onSubmitNewMedicine = () => {
     switch (currentTab) {
       case "existed":
         setSelectedMedicine({
@@ -37,13 +48,26 @@ const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: 
           portionEachPig: portionEachPig,
           type: "existed",
         });
-        return;
+        onClose();
+        break;
+      case "new":
+        setSelectedMedicine({
+          ...selectedMed,
+          name: newMedicineName,
+          portionEachPig: portionEachPig,
+          id: uuidv4(),
+          type: "new",
+        });
+        onClose();
+        break;
+      default:
+        break;
     }
   };
 
   return (
     <div>
-      <Modal isOpen={isOpen} size="4xl" onOpenChange={onOpenChange} isDismissable={false}>
+      <Modal isOpen={isOpen} size="4xl" onClose={onClose} isDismissable={false}>
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Chọn thuốc cho giai đoạn</ModalHeader>
           <ModalBody>
@@ -66,15 +90,22 @@ const AddMedicineToStageModal = ({ isOpen, onOpenChange, setSelectedMedicine }: 
                   value={portionEachPig.toString()}
                   onValueChange={(event) => handlePortionChange(event)}
                 />
-                <Input type="text" label="Tên thuốc" placeholder="Nhập tên thuốc" labelPlacement="outside" size="lg" className="pb-2" />
-                <Input type="text" label="Đơn vị" placeholder="Nhập đơn vị" labelPlacement="outside" size="lg" className="pb-2" />
-                <Input type="text" label="Giá" placeholder="Nhập giá" labelPlacement="outside" size="lg" className="pb-2" />
+                <Input
+                  type="text"
+                  label="Tên thuốc"
+                  placeholder="Nhập tên thuốc"
+                  labelPlacement="outside"
+                  size="lg"
+                  className="pb-2"
+                  value={newMedicineName}
+                  onValueChange={(event) => setNewMedicineName(event)}
+                />
               </Tab>
             </Tabs>
           </ModalBody>
           <ModalFooter>
             <div className="flex justify-end">
-              <Button variant="solid" color="primary" size="lg" type="submit" onClick={onSubmitNewMedicine}>
+              <Button variant="solid" color="primary" onClick={onSubmitNewMedicine} isDisabled={!isSubmitted()}>
                 <p className="text-white">Xác nhận</p>
               </Button>
             </div>

@@ -1,11 +1,4 @@
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
-  Tab,
-  Tabs,
-} from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent, ModalHeader, Tab, Tabs } from "@nextui-org/react";
 import PigTreatmentPlanList from "@oursrc/components/treatment/pig-treatment-plan-list";
 import PigVaccinationList from "@oursrc/components/vaccination/pig-vaccination-list";
 import PigVaccinationStageList from "@oursrc/components/vaccination/pig-vaccination-stage-list";
@@ -17,18 +10,8 @@ import { TbVaccine } from "react-icons/tb";
 import DevelopmentLogList from "../development-log-list";
 import PigDiseaseReportList from "@oursrc/components/disease-reports/pig-disease-report-list";
 
-const PigDetail = ({
-  isOpen,
-  onClose,
-  pigInfo,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  pigInfo: Pig;
-}) => {
-  const [currentStages, setCurrentStages] = React.useState<
-    VaccinationStageProps[]
-  >([]);
+const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () => void; pigInfo: Pig }) => {
+  const [currentStages, setCurrentStages] = React.useState<VaccinationStageProps[]>([]);
   const [treatment, setSelectedTreatment] = React.useState();
   return (
     <Modal
@@ -39,21 +22,34 @@ const PigDetail = ({
         wrapper: "w-full h-fit",
       }}
       scrollBehavior="inside"
+      motionProps={{
+        variants: {
+          enter: {
+            y: 0,
+            opacity: 1,
+            transition: {
+              duration: 0.3,
+              ease: "easeOut",
+            },
+          },
+          exit: {
+            y: -20,
+            opacity: 0,
+            transition: {
+              duration: 0.2,
+              ease: "easeIn",
+            },
+          },
+        },
+      }}
     >
       <ModalContent>
         <ModalHeader>
-          <p className="text-2xl font-bold">
-            Chi tiết heo [{pigInfo?.pigCode}]
-          </p>
+          <p className="text-2xl font-bold">Chi tiết heo [{pigInfo?.pigCode}]</p>
         </ModalHeader>
         <ModalBody>
           <DevelopmentLogList selectedPig={pigInfo as Pig} />
-          <Tabs
-            size="lg"
-            color="primary"
-            variant="solid"
-            defaultSelectedKey="1"
-          >
+          <Tabs size="lg" color="primary" variant="solid" defaultSelectedKey="1">
             <Tab
               key="1"
               title={
@@ -64,10 +60,7 @@ const PigDetail = ({
               }
             >
               <div className="grid grid-cols-2 gap-4">
-                <PigVaccinationList
-                  pigId={pigInfo.id}
-                  setCurrentStages={setCurrentStages}
-                />
+                <PigVaccinationList pigId={pigInfo.id} setCurrentStages={setCurrentStages} />
                 <PigVaccinationStageList stages={currentStages} />
               </div>
             </Tab>
@@ -81,7 +74,7 @@ const PigDetail = ({
               }
             >
               <div>
-                <PigTreatmentPlanList pigId={pigInfo.id} setSelectedTreatment={setSelectedTreatment}/>
+                <PigTreatmentPlanList pigId={pigInfo.id} setSelectedTreatment={setSelectedTreatment} />
               </div>
             </Tab>
             <Tab
@@ -94,7 +87,7 @@ const PigDetail = ({
               }
             >
               <div>
-                <PigDiseaseReportList pigId={pigInfo.id}/>
+                <PigDiseaseReportList pigId={pigInfo.id} />
               </div>
             </Tab>
           </Tabs>

@@ -184,7 +184,7 @@ const Vaccination = () => {
                 <p className="text-xl font-semibold">Thông tin đàn heo</p>
                 {herds.length > 0 ? (
                   herds.map((herd) => (
-                    <div>
+                    <div key={herd.id}>
                       <div className="mt-3 flex justify-between">
                         <p className="text-md">Tên đàn:</p>
                         <p className="text-lg font-semibold">{herd.code}</p>

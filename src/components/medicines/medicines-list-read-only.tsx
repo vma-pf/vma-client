@@ -223,7 +223,12 @@ const MedicinesListReadOnly = ({ setSelected }: any) => {
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        onSelectionChange={setSelectedKeys}
+        onSelectionChange={(selectedKeys: Selection) => {
+          setSelectedKeys(selectedKeys);
+          const selectedKeysArray = Array.from(selectedKeys);
+          const selectedMedicines = medicineList.filter((medicine) => medicine.id && selectedKeysArray.includes(medicine.id));
+          setSelected(selectedMedicines[0]);
+        }}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>

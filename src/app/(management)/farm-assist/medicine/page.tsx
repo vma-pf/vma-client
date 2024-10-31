@@ -23,9 +23,20 @@ const Medicine = () => {
           Tạo lô mới
         </Button>
       </div>
-      <Tabs size="lg" color="primary" variant="solid" defaultSelectedKey="2">
+      <Tabs size="lg" color="primary" variant="solid" defaultSelectedKey="1">
         <Tab
           key="1"
+          title={
+            <div className="flex items-center">
+              <TbPackageExport size={20} />
+              <span className="ml-2">Yêu cầu xuất thuốc</span>
+            </div>
+          }
+        >
+          <RequestMedicineList />
+        </Tab>
+        <Tab
+          key="2"
           title={
             <div className="flex items-center">
               <MdOutlineWarehouse size={20} />
@@ -36,19 +47,6 @@ const Medicine = () => {
           <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
             <p className="text-2xl font-bold mb-3">Danh sách thuốc đã nhập</p>
             <MedicineList />
-          </div>
-        </Tab>
-        <Tab
-          key="2"
-          title={
-            <div className="flex items-center">
-              <TbPackageExport size={20} />
-              <span className="ml-2">Yêu cầu xuất thuốc</span>
-            </div>
-          }
-        >
-          <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-            <RequestMedicineList />
           </div>
         </Tab>
       </Tabs>
