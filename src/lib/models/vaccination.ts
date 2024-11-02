@@ -59,5 +59,5 @@ export type MedicineEachStage = {
   quantity: number;
   netWeight: string;
   unit: string;
-  portionEachPig: number;
+  portionEachPig?: number;
 };

@@ -41,6 +41,8 @@ import { v4 } from "uuid";
 import MedicineListInStage from "./medine-list-in-stage";
 import SelectedPigsList from "./selected-pigs-list";
 import { useRouter } from "next/navigation";
+import { planTemplateService } from "@oursrc/lib/services/templateService";
+import { CreatePlanTemplate } from "@oursrc/lib/models/plan-template";
 
 const FirstVaccinationStep = () => {
   const router = useRouter();
@@ -217,23 +219,22 @@ const FirstVaccinationStep = () => {
 
   const handleCreateTemplate = async () => {
     const templateRequest = stages.map((x: VaccinationStageProps, index: number) => ({
-      ...x,
+      title: x.title,
+      timeSpan: x.timeSpan,
       numberOfDays: index === 0 ? 0 : Math.round((new Date(x.applyStageTime).valueOf() - new Date(stages[index - 1].applyStageTime).valueOf()) / (1000 * 3600 * 24)),
+      medicineTemplates: x.inventoryRequest.medicines,
+      toDoTemplates: x.vaccinationToDos
     }));
     if (!checkStages()) {
       return;
     }
     const request = {
-      ...getValues(),
-      startDate: new Date(date.start.toString()).toISOString(),
-      expectedEndDate: new Date(date.end.toString()).toISOString(),
-      stages: templateRequest,
+      name: templateName,
+      stageTemplates: templateRequest,
     };
+    console.log(request);
     try {
-      const response = await vaccinationTemplateService.createVaccinationTemplate({
-        titleTemplate: templateName,
-        createVaccinationPlanIncludeStageRequest: JSON.stringify(request),
-      });
+      const response = await planTemplateService.create(request);
       if (response && response.isSuccess) {
         toast({
           variant: "success",
