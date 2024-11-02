@@ -40,6 +40,7 @@ import TreatmentGuideList from "./_components/treatment-guide-list";
 import CommonDiseaseList from "./_components/common-disease-list";
 import { BookCopy, Layers2, Layers2Icon, Layers3, Table } from "lucide-react";
 import TreatmentGuideGridList from "./_components/treatment-guide-grid-list";
+import CommonDiseaseGridList from "./_components/common-disease-grid-list";
 
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
@@ -591,7 +592,19 @@ const Treatment = () => {
             </div>
           }
         >
-          <CommonDiseaseList />
+          <Tabs
+              size="md"
+              color="primary"
+              variant="solid"
+              defaultSelectedKey="mode-1"
+            >
+              <Tab key="mode-1" title={<Layers3 size={20} />}>
+                <CommonDiseaseGridList gridColumns={1} />
+              </Tab>
+              <Tab key="mode-2" title={<Table size={20} />}>
+                <CommonDiseaseList />
+              </Tab>
+            </Tabs>
         </Tab>
       </Tabs>
     </div>
