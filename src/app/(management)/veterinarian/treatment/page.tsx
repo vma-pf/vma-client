@@ -24,7 +24,10 @@ import {
 import { FaClock, FaRegCalendarPlus } from "react-icons/fa6";
 import { TbMedicineSyrup } from "react-icons/tb";
 import { CiEdit } from "react-icons/ci";
-import { TreatmentData, CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
+import {
+  TreatmentData,
+  CreateTreatmentStageProps,
+} from "@oursrc/lib/models/treatment";
 import TreatmentList from "./_components/treatment-list";
 import Image from "next/image";
 import { MdCalendarToday, MdOutlineStickyNote2 } from "react-icons/md";
@@ -35,6 +38,8 @@ import { HiOutlineDocumentReport } from "react-icons/hi";
 import { GoDotFill } from "react-icons/go";
 import TreatmentGuideList from "./_components/treatment-guide-list";
 import CommonDiseaseList from "./_components/common-disease-list";
+import { BookCopy, Layers2, Layers2Icon, Layers3, Table } from "lucide-react";
+import TreatmentGuideGridList from "./_components/treatment-guide-grid-list";
 
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
@@ -60,14 +65,27 @@ const Treatment = () => {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
-  const [selectedTreatmentId, setSelectedTreatmentId] = React.useState(new Set<string>());
-  const [treatmentData, setTreatmentData] = React.useState<TreatmentData | undefined>(treatmentDetail);
+  const [selectedTreatmentId, setSelectedTreatmentId] = React.useState(
+    new Set<string>()
+  );
+  const [treatmentData, setTreatmentData] = React.useState<
+    TreatmentData | undefined
+  >(treatmentDetail);
   const [herd, setHerd] = React.useState<HerdInfo>();
   const [filterStatus, setFilterStatus] = React.useState("not-done");
-  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
-  const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
+  const {
+    isOpen: isOpenDetail,
+    onOpen: onOpenDetail,
+    onClose: onCloseDetail,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenUpdate,
+    onOpen: onOpenUpdate,
+    onClose: onCloseUpdate,
+  } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
-  const [selectedVaccination, setSelectedVaccination] = React.useState<CreateTreatmentStageProps>();
+  const [selectedVaccination, setSelectedVaccination] =
+    React.useState<CreateTreatmentStageProps>();
 
   const filterValue = React.useMemo(() => {
     if (filterStatus === "all") {
@@ -167,7 +185,12 @@ const Treatment = () => {
               <div className="w-1/2 mr-2 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center">
-                    <Image src="/assets/vma-logo.png" alt="logo" width={50} height={50} />
+                    <Image
+                      src="/assets/vma-logo.png"
+                      alt="logo"
+                      width={50}
+                      height={50}
+                    />
                     <p className="text-2xl font-bold ml-4">Chọn kế hoạch</p>
                   </div>
                   <div className="flex">
@@ -192,7 +215,9 @@ const Treatment = () => {
                       <IoIosAlert className="mr-3 text-danger-500" size={30} />
                       <div>
                         <p className="font-semibold">Chuồng 001</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                        <p className="my-2">
+                          Có 1 cá thể có dấu hiệu bất thường
+                        </p>
                         <p className="text-zinc-400 text-sm">bây giờ</p>
                       </div>
                     </div>
@@ -204,7 +229,9 @@ const Treatment = () => {
                       <IoIosAlert className="mr-3" size={30} />
                       <div>
                         <p className="font-semibold">Chuồng 002</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                        <p className="my-2">
+                          Có 1 cá thể có dấu hiệu bất thường
+                        </p>
                         <p className="text-zinc-400 text-sm">hôm qua</p>
                       </div>
                     </div>
@@ -215,7 +242,9 @@ const Treatment = () => {
                       <IoIosAlert className="mr-3" size={30} />
                       <div>
                         <p className="font-semibold">Chuồng 001</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                        <p className="my-2">
+                          Có 1 cá thể có dấu hiệu bất thường
+                        </p>
                         <p className="text-zinc-400 text-sm">tuần trước</p>
                       </div>
                     </div>
@@ -226,7 +255,9 @@ const Treatment = () => {
                       <IoIosAlert className="mr-3" size={30} />
                       <div>
                         <p className="font-semibold">Chuồng 001</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                        <p className="my-2">
+                          Có 1 cá thể có dấu hiệu bất thường
+                        </p>
                         <p className="text-zinc-400 text-sm">tháng trước</p>
                       </div>
                     </div>
@@ -237,7 +268,10 @@ const Treatment = () => {
             {loading ? (
               <div className="grid grid-cols-2">
                 {Array.from({ length: 2 }).map((_, index) => (
-                  <div key={index} className="m-2 col-span-1 border-2 rounded-lg">
+                  <div
+                    key={index}
+                    className="m-2 col-span-1 border-2 rounded-lg"
+                  >
                     <Skeleton className="rounded-lg">
                       <div className="h-60 rounded-lg bg-default-300"></div>
                     </Skeleton>
@@ -248,73 +282,125 @@ const Treatment = () => {
               <div className="w-full mb-3 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
                 <div className="flex flex-shrink gap-5">
                   <div className="p-3 border-2 rounded-2xl w-1/2">
-                    <p className="text-xl font-semibold">Chi tiết kế hoạch điều trị</p>
+                    <p className="text-xl font-semibold">
+                      Chi tiết kế hoạch điều trị
+                    </p>
                     {treatmentData ? (
                       <div>
                         <div className="mby-2 flex items-center">
                           <FaRegCalendarPlus className="my-auto mr-4 text-3xl" />
-                          <p className="my-auto text-2xl font-bold mt-3">{treatmentData.title}</p>
+                          <p className="my-auto text-2xl font-bold mt-3">
+                            {treatmentData.title}
+                          </p>
                         </div>
-                        <p className="text-lg mt-3">{treatmentData.description}</p>
+                        <p className="text-lg mt-3">
+                          {treatmentData.description}
+                        </p>
                         <div className="flex justify-between">
                           <p className="text-md mt-3">Đàn:</p>
-                          <p className="text-lg mt-3 font-semibold">{treatmentData.herdId}</p>
+                          <p className="text-lg mt-3 font-semibold">
+                            {treatmentData.herdId}
+                          </p>
                         </div>
                         <div className="flex justify-between">
                           <p className="text-md mt-3">Ngày bắt đầu</p>
-                          <p className="text-md mt-3">Ngày kết thúc (dự kiến)</p>
+                          <p className="text-md mt-3">
+                            Ngày kết thúc (dự kiến)
+                          </p>
                         </div>
-                        <Progress value={calculateProgress(treatmentData.startDate, treatmentData.expectedEndDate)} />
+                        <Progress
+                          value={calculateProgress(
+                            treatmentData.startDate,
+                            treatmentData.expectedEndDate
+                          )}
+                        />
                         <div className="flex justify-between">
-                          <p className="text-lg mt-3 font-semibold">{dateConverter(treatmentData.startDate)}</p>
-                          <p className="text-lg mt-3 font-semibold">{dateConverter(treatmentData.expectedEndDate)}</p>
+                          <p className="text-lg mt-3 font-semibold">
+                            {dateConverter(treatmentData.startDate)}
+                          </p>
+                          <p className="text-lg mt-3 font-semibold">
+                            {dateConverter(treatmentData.expectedEndDate)}
+                          </p>
                         </div>
                         {treatmentData.actualEndDate && (
                           <div className="flex justify-between">
-                            <p className="text-md mt-3">Ngày kết thúc (thực tế):</p>
-                            <p className="text-lg mt-3 font-semibold">{treatmentData.actualEndDate}</p>
+                            <p className="text-md mt-3">
+                              Ngày kết thúc (thực tế):
+                            </p>
+                            <p className="text-lg mt-3 font-semibold">
+                              {treatmentData.actualEndDate}
+                            </p>
                           </div>
                         )}
                         <div className="flex justify-between">
                           <p className="text-md mt-3">Ghi chú:</p>
-                          <p className="text-lg mt-3 font-semibold">{treatmentData.note ? treatmentData.note : "Không có"}</p>
+                          <p className="text-lg mt-3 font-semibold">
+                            {treatmentData.note
+                              ? treatmentData.note
+                              : "Không có"}
+                          </p>
                         </div>
                         <div className="flex justify-between">
                           <p className="text-md mt-3">Tình trạng</p>
                           <p
                             className={`text-lg mt-3 font-semibold ${
-                              statusMap.find((status) => status.value === treatmentData.status)?.value === 1
+                              statusMap.find(
+                                (status) =>
+                                  status.value === treatmentData.status
+                              )?.value === 1
                                 ? "text-blue-500"
-                                : statusMap.find((status) => status.value === treatmentData.status)?.value === 2
+                                : statusMap.find(
+                                    (status) =>
+                                      status.value === treatmentData.status
+                                  )?.value === 2
                                 ? "text-green-500"
                                 : "text-red-500"
                             }`}
                           >
-                            {statusMap.find((status) => status.value === treatmentData.status)?.name}
+                            {
+                              statusMap.find(
+                                (status) =>
+                                  status.value === treatmentData.status
+                              )?.name
+                            }
                           </p>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-center text-lg mt-3">Chưa chọn kế hoạch điều trị</p>
+                      <p className="text-center text-lg mt-3">
+                        Chưa chọn kế hoạch điều trị
+                      </p>
                     )}
                   </div>
                   <div className="p-3 border-2 rounded-2xl w-1/2">
                     <Accordion variant="splitted">
-                      <AccordionItem key="1" title="Thông tin đàn heo" startContent={<BiDetail className="text-sky-500" size={25} />}>
+                      <AccordionItem
+                        key="1"
+                        title="Thông tin đàn heo"
+                        startContent={
+                          <BiDetail className="text-sky-500" size={25} />
+                        }
+                      >
                         {/* <p className="text-xl font-semibold">Thông tin đàn heo</p> */}
                         {herd ? (
                           <div>
                             <div className="mt-3 flex justify-between">
                               <p className="text-md">Tên đàn:</p>
-                              <p className="text-lg font-semibold">{herd.code}</p>
+                              <p className="text-lg font-semibold">
+                                {herd.code}
+                              </p>
                             </div>
                             <div className="mt-3 flex justify-between">
                               <p className="text-md">Số lượng:</p>
-                              <p className="text-lg font-semibold">{herd.totalNumber}</p>
+                              <p className="text-lg font-semibold">
+                                {herd.totalNumber}
+                              </p>
                             </div>
                             <div className="mt-3 flex justify-between">
                               <p className="text-md">Giống:</p>
-                              <p className="text-lg font-semibold">{herd.breed}</p>
+                              <p className="text-lg font-semibold">
+                                {herd.breed}
+                              </p>
                             </div>
                             {/* <div className="mt-3 flex justify-between">
                   <Accordion variant="splitted" defaultExpandedKeys={["1"]}>
@@ -336,17 +422,30 @@ const Treatment = () => {
                 </div> */}
                           </div>
                         ) : (
-                          <p className="text-center text-lg mt-3">Chưa chọn kế hoạch điều trị</p>
+                          <p className="text-center text-lg mt-3">
+                            Chưa chọn kế hoạch điều trị
+                          </p>
                         )}
                       </AccordionItem>
-                      <AccordionItem key="2" title="Báo cáo bệnh" startContent={<HiOutlineDocumentReport className="text-emerald-500" size={25} />}></AccordionItem>
+                      <AccordionItem
+                        key="2"
+                        title="Báo cáo bệnh"
+                        startContent={
+                          <HiOutlineDocumentReport
+                            className="text-emerald-500"
+                            size={25}
+                          />
+                        }
+                      ></AccordionItem>
                     </Accordion>
                   </div>
                 </div>
                 {treatmentData?.treatmentStages && (
                   <div>
                     <div className="mt-5 mb-3 flex justify-between items-center">
-                      <p className="text-xl font-semibold">Các giai đoạn điều trị</p>
+                      <p className="text-xl font-semibold">
+                        Các giai đoạn điều trị
+                      </p>
                       <Dropdown>
                         <DropdownTrigger>
                           <Button variant="bordered" className="capitalize">
@@ -369,16 +468,24 @@ const Treatment = () => {
                         </DropdownMenu>
                       </Dropdown>
                     </div>
-                    {treatmentData?.treatmentStages.length === 0 || filterTreatment(filterStatus).length === 0 ? (
-                      <p className="text-center text-lg mt-3">Không có lịch trình tiêm phòng</p>
+                    {treatmentData?.treatmentStages.length === 0 ||
+                    filterTreatment(filterStatus).length === 0 ? (
+                      <p className="text-center text-lg mt-3">
+                        Không có lịch trình tiêm phòng
+                      </p>
                     ) : (
                       filterTreatment(filterStatus)
                         // ?.filter((vaccination: TreatmentStageProps) => vaccination.applyStageTime >= new Date().toISOString())
                         // ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
                         ?.map((stage) => (
-                          <div key={stage.id} className="my-4 grid grid-cols-12 p-2 border-2 rounded-xl">
+                          <div
+                            key={stage.id}
+                            className="my-4 grid grid-cols-12 p-2 border-2 rounded-xl"
+                          >
                             <div className="col-span-2 flex items-center justify-center border-r-2">
-                              <p className="text-center text-lg p-2">{dateConverter(stage.applyStageTime)}</p>
+                              <p className="text-center text-lg p-2">
+                                {dateConverter(stage.applyStageTime)}
+                              </p>
                             </div>
                             <div className="col-span-2 border-r-2 flex items-center justify-center">
                               <FaClock className="text-lg" />
@@ -390,7 +497,15 @@ const Treatment = () => {
                             </div>
                             <div className="col-span-2 border-r-2 mr-3 flex flex-col items-start justify-center">
                               <p>Trạng thái</p>
-                              <p className={`text-lg ${stage.isDone ? "text-green-500" : "text-red-500"}`}>{stage.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
+                              <p
+                                className={`text-lg ${
+                                  stage.isDone
+                                    ? "text-green-500"
+                                    : "text-red-500"
+                                }`}
+                              >
+                                {stage.isDone ? "Đã tiêm" : "Chưa tiêm"}
+                              </p>
                             </div>
                             <div className="space-y-2">
                               <Button
@@ -448,7 +563,24 @@ const Treatment = () => {
             </div>
           }
         >
-          <TreatmentGuideList />
+          <div className="flex flex-col justify-end">
+            <Tabs
+              size="md"
+              color="primary"
+              variant="solid"
+              defaultSelectedKey="mode-1"
+            >
+              <Tab key="mode-1" title={<Layers3 size={20} />}>
+                <TreatmentGuideGridList gridColumns={1} />
+              </Tab>
+              <Tab key="mode-2" title={<Table size={20} />}>
+                <TreatmentGuideList />
+              </Tab>
+              {/* <Tab key="mode-3" title={<Layers2Icon size={20} />}>
+                <TreatmentGuideGridList gridColumns={2} />
+              </Tab> */}
+            </Tabs>
+          </div>
         </Tab>
         <Tab
           key="3"
