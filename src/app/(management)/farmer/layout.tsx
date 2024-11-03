@@ -65,17 +65,16 @@ const FarmerLayout = ({
   return (
     <div className="flex flex-col h-screen justify-between">
       <div className="flex flex-grow">
-        <div className="ml-4 my-4">
+        <div className="border-r-1 border-zinc-300 dark:border-zinc-700">
           <CustomNavbar prefix="/farmer" navbarItems={navbarItems} />
         </div>
-        <div className="ml-4 flex-grow">
-          <div className="p-2">
+        <div className="flex-grow">
+          <div className="border-b-2 border-zinc-300 dark:border-zinc-700">
             <CustomHeader titleMap={titleMap} prefix="/farmer" />
           </div>
-          <div className="ml-2 mr-3 h-fit">{children}</div>
+          <div className="ml-4 mr-2 mt-2 h-fit">{children}</div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

@@ -53,3 +53,15 @@ export type DiseaseReport = {
     totalTreatmentTime: string;
     isDone: boolean;
 };
+
+export type TreatmentLog = {
+    id: string;
+    diseaseReportId: string;
+    pigId: string;
+    treatmentStageId: string;
+    implementerId: string;
+    isRecovered: boolean;
+    descriptionDiseaseReport: string;
+    treatmentStageTitle: string;
+    pigCode: string;
+}

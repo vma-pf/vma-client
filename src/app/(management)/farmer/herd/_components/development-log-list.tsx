@@ -57,35 +57,35 @@ const columns = [
 
 const INITIAL_VISIBLE_COLUMNS = ["title", "weight", "height", "width", "healthStatus", "checkupAt"];
 
-const data: MonitorDevelopment[] = [
-  {
-    id: "1",
-    title: "Đánh giá sức khỏe",
-    weight: "100",
-    height: "100",
-    width: "100",
-    healthStatus: "normal",
-    checkupAt: "2024-09-30T01:57:49.49+00:00",
-  },
-  {
-    id: "2",
-    title: "Đánh giá sức khỏe",
-    weight: "100",
-    height: "100",
-    width: "100",
-    healthStatus: "sick",
-    checkupAt: "2024-09-30T01:57:49.49+00:00",
-  },
-  {
-    id: "3",
-    title: "Đánh giá sức khỏe",
-    weight: "100",
-    height: "100",
-    width: "100",
-    healthStatus: "dead",
-    checkupAt: "2024-09-30T01:57:49.49+00:00",
-  },
-];
+// const data: MonitorDevelopment[] = [
+//   {
+//     id: "1",
+//     title: "Đánh giá sức khỏe",
+//     weight: "100",
+//     height: "100",
+//     width: "100",
+//     healthStatus: "normal",
+//     checkUpAt: "2024-09-30T01:57:49.49+00:00",
+//   },
+//   {
+//     id: "2",
+//     title: "Đánh giá sức khỏe",
+//     weight: "100",
+//     height: "100",
+//     width: "100",
+//     healthStatus: "sick",
+//     checkUpAt: "2024-09-30T01:57:49.49+00:00",
+//   },
+//   {
+//     id: "3",
+//     title: "Đánh giá sức khỏe",
+//     weight: "100",
+//     height: "100",
+//     width: "100",
+//     healthStatus: "dead",
+//     checkUpAt: "2024-09-30T01:57:49.49+00:00",
+//   },
+// ];
 
 const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
   const [developmentLogList, setDevelopmentLogList] = React.useState<MonitorDevelopment[]>([]);

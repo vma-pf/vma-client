@@ -65,7 +65,7 @@ const VaccinationList = ({ selectedVaccination, setSelectedVaccination }: { sele
   const getAllVaccinationPlan = async () => {
     try {
       setIsLoading(true);
-      const res: ResponseObjectList<VaccinationData> = await vaccinationService.getAllVaccinationPlan(1, 500);
+      const res: ResponseObjectList<VaccinationData> = await vaccinationService.getMyVaccinationPlan(1, 500);
       console.log("res: ", res);
       if (res && res.isSuccess) {
         setVaccinationList(res.data.data || []);

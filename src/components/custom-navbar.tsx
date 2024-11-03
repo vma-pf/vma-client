@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import NavbarOptions from "./navbar-options";
 import Link from "next/link";
 import { BsFillArrowLeftCircleFill } from "react-icons/bs";
@@ -21,7 +21,19 @@ const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; pref
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
-  const [open, setOpen] = React.useState<boolean>(true);
+  const [open, setOpen] = React.useState<boolean>(false);
+  const [showText, setShowText] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        setShowText(true);
+      }, 100); // Match this duration with your CSS transition duration
+      return () => clearTimeout(timer);
+    } else {
+      setShowText(false);
+    }
+  }, [open]);
 
   const handleLogout = async () => {
     try {
@@ -45,40 +57,66 @@ const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; pref
     }
   };
   return (
-    <div className={`${open ? "w-56" : "w-20"} h-full duration-300`}>
-      <div className={`h-full py-3 bg-slate-200 dark:bg-zinc-800 items-center rounded-2xl ${open ? "w-56" : "w-20"} duration-300 sticky left-4 top-3 z-50`}>
-        <div className="flex flex-col items-center">
-          <Link href={prefix + "/dashboard"}>
-            <Image className="duration-300" src="/assets/vma-logo.png" alt="logo" width={open ? 80 : 50} height={open ? 80 : 50} />
-          </Link>
-          <BsFillArrowLeftCircleFill size={25} className={`relative ${open ? "left-28" : "left-10 rotate-180"} duration-300`} onClick={() => setOpen(!open)} />
-          <Divider orientation="horizontal" className="w-4/5 mt-3" />
-        </div>
-        <div className="w-full mt-3">
-          {navbarItems.map((item, index) => (
-            <NavbarOptions key={index} path={item.path} prefix={prefix} title={item.title} icon={item.icon} open={open} />
-          ))}
-        </div>
+    <div
+      className={`${open ? "w-56" : "w-20"} h-full duration-400`}
+      // onMouseEnter={() => {
+      //   const timer = setTimeout(() => {
+      //     setOpen(true);
+      //   }, 200);
+      //   return () => clearTimeout(timer);
+      // }}
+      // onMouseLeave={() => {
+      //   const timer = setTimeout(() => {
+      //     setOpen(false);
+      //   }, 200);
+      //   return () => clearTimeout(timer);
+      // }}
+    >
+      <div className={`${open ? "w-56" : "w-20"} py-5 duration-400 p-0 bg-slate-100 dark:bg-zinc-800 fixed inset-0 z-50`}>
+        <div className="h-full w-full flex flex-col items-center justify-between">
+          <div className="w-full">
+            <div className="flex flex-col items-center">
+              <Link href={prefix + "/dashboard"}>
+                <Image className="duration-400" src="/assets/vma-logo.png" alt="logo" width={70} height={70} />
+              </Link>
+              <BsFillArrowLeftCircleFill
+                size={25}
+                className={`relative ${open ? "left-28" : "left-10 rotate-180"} duration-400 bg-slate-200 dark:bg-zinc-800 rounded-full`}
+                onClick={() => setOpen(!open)}
+              />
+              <Divider orientation="horizontal" className="w-4/5 mt-3" />
+            </div>
+            <div className="w-full mt-3">
+              {navbarItems.map((item, index) => (
+                <NavbarOptions key={index} path={item.path} prefix={prefix} title={item.title} icon={item.icon} open={open} showText={showText} />
+              ))}
+            </div>
+          </div>
 
-        <div className="flex flex-col items-center">
-          <Divider orientation="horizontal" className="w-4/5 mt-3" />
-          {open ? (
-            <Button className="mt-5" variant="solid" color="danger" isLoading={isLoading} endContent={<FiLogOut size={20} />} onClick={handleLogout}>
-              Đăng xuất
+          <div className="w-full flex flex-col items-center">
+            <Divider orientation="horizontal" className="w-4/5 mt-3" />
+            {/* {open ? ( */}
+            <Button
+              className="mt-5 duration-400"
+              variant="solid"
+              color="danger"
+              isLoading={isLoading}
+              isIconOnly={!showText}
+              endContent={
+                <span>
+                  <FiLogOut size={20} />
+                </span>
+              }
+              onClick={handleLogout}
+            >
+              {open ? <p className={`transition-opacity ${showText ? "opacity-100" : "opacity-0"} ${open ? "block" : "hidden"}`}>Đăng xuất</p> : ""}
             </Button>
-          ) : (
-            <Tooltip content="Đăng xuất" placement="right" closeDelay={200}>
-              <Button
-                className="mt-5"
-                variant="solid"
-                color="danger"
-                isIconOnly
-                isLoading={isLoading}
-                endContent={<FiLogOut size={20} />}
-                onClick={handleLogout}
-              ></Button>
-            </Tooltip>
-          )}
+            {/* // ) : (
+          //   <Tooltip content="Đăng xuất" placement="right" closeDelay={200}>
+          //     <Button className="mt-5" variant="solid" color="danger" isIconOnly isLoading={isLoading} endContent={<FiLogOut size={20} />} onClick={handleLogout} />
+          //   </Tooltip>
+          // )} */}
+          </div>
         </div>
       </div>
     </div>

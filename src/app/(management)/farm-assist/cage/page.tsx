@@ -9,6 +9,8 @@ import { FaRegEdit, FaRegTrashAlt } from "react-icons/fa";
 import { IoAddOutline } from "react-icons/io5";
 import AddEditForm from "./_components/add-edit-form";
 import { SearchIcon } from "lucide-react";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@oursrc/components/ui/sheet";
+import ReactPlayer from "react-player";
 
 const Cage = () => {
   const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
@@ -65,11 +67,28 @@ const Cage = () => {
                   </div>
                 </CardBody>
                 <CardFooter className="flex justify-center gap-2">
-                  <Link href={`/farm-assist/cage/${cage.id}/camera`}>
-                    <Button color="primary" variant="solid">
-                      Xem Camera
-                    </Button>
-                  </Link>
+                  {/* <Link href={`/farm-assist/cage/${cage.id}/camera`}> */}
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button color="primary" variant="solid">
+                        Xem Camera
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent className="w-[100px] sm:w-[540px]">
+                      <SheetHeader>
+                        <SheetTitle>Camera</SheetTitle>
+                        <SheetDescription>Chọn camera để xem</SheetDescription>
+                      </SheetHeader>
+                      <div className="w-full p-4">
+                        {/* <ReactPlayer url="https://www.youtube.com/watch?v=enes_I-rEIQ" controls width="100%" height="100%" style={{ borderRadius: "10px" }} /> */}
+                        <video width="320" height="240" controls preload="none">
+                          <source src="https://www.youtube.com/watch?v=enes_I-rEIQ" type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                  {/* </Link> */}
                   <Tooltip content="Chỉnh sửa" closeDelay={200}>
                     <Button
                       color="warning"
