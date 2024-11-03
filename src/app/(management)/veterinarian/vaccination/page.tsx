@@ -313,7 +313,7 @@ const Vaccination = () => {
                       // ?.filter((vaccination: VaccinationStageProps) => vaccination.applyStageTime < new Date().toISOString())
                       ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
                       ?.map((stage) => (
-                        <div className="grid ml-16 relative">
+                        <div key={stage.id} className="grid ml-16 relative">
                           {stage.isDone ? (
                             <FaCheckCircle size={20} className={`text-primary absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
                           ) : (

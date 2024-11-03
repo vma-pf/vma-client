@@ -42,6 +42,8 @@ import { FaCheckCircle } from "react-icons/fa";
 import { GrStatusGoodSmall } from "react-icons/gr";
 import DetailPlan from "./_components/_modals/detail-plan";
 import UpdatePlanStatus from "./_components/_modals/update-plan-status";
+import { treatmentStageService } from "@oursrc/lib/services/treatmentStageService";
+import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@oursrc/components/ui/drawer";
 
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
@@ -89,7 +91,6 @@ const Treatment = () => {
 
   const filterTreatment = (status: string) => {
     const data = treatmentData?.treatmentStages || [];
-    console.log(data);
     if (status === "all") {
       return data;
     } else if (status === "done") {
@@ -101,10 +102,10 @@ const Treatment = () => {
 
   const getMedicineInStage = async (id: string) => {
     try {
-      // const res: any = await vaccinationService.getMedicineInStage(id);
-      // if (res.isSuccess) {
-      //   setMedicineList(res.data.medicine || []);
-      // }
+      const res: ResponseObject<any> = await treatmentStageService.getMedicineInStage(id);
+      if (res.isSuccess) {
+        setMedicineList(res.data.medicine || []);
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -201,20 +202,58 @@ const Treatment = () => {
               </div>
               <div className="w-1/2 ml-2 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
                 <p className="m-2 text-xl font-semibold">Dấu hiệu bất thường</p>
-                <div className="my-2 max-h-[300px] overflow-auto">
-                  <div className="mx-2 my-3 flex justify-between items-center">
-                    <div className="flex justify-start items-center">
-                      <IoIosAlert className="mr-3 text-danger-500" size={30} />
-                      <div>
-                        <p className="font-semibold">Chuồng 001</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                        <p className="text-zinc-400 text-sm">bây giờ</p>
+                <div className="my-2 max-h-[500px] overflow-auto">
+                  <Drawer>
+                    <DrawerTrigger className="w-full">
+                      <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
+                        <div className="flex justify-start items-center">
+                          <IoIosAlert className="mr-3 text-danger-500" size={30} />
+                          <div className="text-start">
+                            <p className="font-semibold">Chuồng 001</p>
+                            <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                            <p className="text-zinc-400 text-sm">bây giờ</p>
+                          </div>
+                        </div>
+                        <GoDotFill className="text-blue-500" />
                       </div>
-                    </div>
-                    <GoDotFill className="text-blue-500" />
-                  </div>
+                    </DrawerTrigger>
+                    <DrawerContent className="rounded-t-3xl h-3/5">
+                      <div className="w-full">
+                        <DrawerHeader>
+                          <DrawerTitle>
+                            <p className="mx-auto text-2xl font-bold">Chi tiết cảnh báo</p>
+                          </DrawerTitle>
+                        </DrawerHeader>
+                        <div className="p-5">
+                          <p className="text-lg font-semibold">Chuồng 001</p>
+                          <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                          <p className="text-zinc-400 text-sm">bây giờ</p>
+
+                          <Divider orientation="horizontal" />
+                          <p className="mx-auto text-lg font-semibold mt-3">Bệnh có thể gặp phải</p>
+                          <p className="text-lg">Viêm phổi</p>
+                          <Divider orientation="horizontal" />
+                          <p className="mx-auto text-lg font-semibold mt-3">Gợi ý hướng dẫn điều trị</p>
+                          <p className="text-lg">Tiêm phòng</p>
+                        </div>
+                        <DrawerFooter>
+                          <DrawerClose>
+                            <Button
+                              variant="solid"
+                              color="primary"
+                              onPress={() => {
+                                router.push("/veterinarian/treatment/create-plan");
+                              }}
+                            >
+                              Tạo kế hoạch mới
+                            </Button>
+                          </DrawerClose>
+                        </DrawerFooter>
+                      </div>
+                    </DrawerContent>
+                  </Drawer>
                   <Divider className="my-2" orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center">
+                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
                     <div className="flex justify-start items-center">
                       <IoIosAlert className="mr-3" size={30} />
                       <div>
@@ -225,7 +264,7 @@ const Treatment = () => {
                     </div>
                   </div>
                   <Divider orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center">
+                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
                     <div className="flex justify-start items-center">
                       <IoIosAlert className="mr-3" size={30} />
                       <div>
@@ -236,7 +275,7 @@ const Treatment = () => {
                     </div>
                   </div>
                   <Divider orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center">
+                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
                     <div className="flex justify-start items-center">
                       <IoIosAlert className="mr-3" size={30} />
                       <div>
@@ -400,7 +439,7 @@ const Treatment = () => {
                           // ?.filter((vaccination: VaccinationStageProps) => vaccination.applyStageTime < new Date().toISOString())
                           ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
                           ?.map((stage) => (
-                            <div className="grid ml-16 relative">
+                            <div key={stage.id} className="grid ml-16 relative">
                               {stage.isDone ? (
                                 <FaCheckCircle size={20} className={`text-primary absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
                               ) : (

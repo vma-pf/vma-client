@@ -6,25 +6,25 @@ import RequestMedicineList from "./_components/request-medicine-list";
 const Medicine = () => {
   return (
     <div className="mb-4">
-      <Tabs aria-label="Options" size="lg" color="primary" variant="underlined" defaultSelectedKey="/farmer/medicine">
-        <Tab key="/farmer/medicine" title="Kho thuốc">
-          <div className="flex">
-            <div className="p-5 mr-2 w-3/5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-              <p className="text-2xl font-bold mb-3">Danh sách thuốc trong kho</p>
-              <MedicineList />
-            </div>
-            <div className="p-5 ml-2 w-2/5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-              <RequestMedicineList />
-            </div>
-          </div>
-        </Tab>
-        {/* <Tab key="/farmer/medicine/receipt-request" title="Yêu cầu thêm thuốc">
+      {/* <Tabs aria-label="Options" size="lg" color="primary" variant="underlined" defaultSelectedKey="/farmer/medicine"> */}
+      {/* <Tab key="/farmer/medicine" title="Kho thuốc"> */}
+      <div className="flex">
+        <div className="p-5 mr-2 w-3/5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+          <p className="text-2xl font-bold mb-3">Danh sách thuốc trong kho</p>
+          <MedicineList />
+        </div>
+        <div className="p-5 ml-2 w-2/5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+          <RequestMedicineList />
+        </div>
+      </div>
+      {/* </Tab> */}
+      {/* <Tab key="/farmer/medicine/receipt-request" title="Yêu cầu thêm thuốc">
           <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
             <RequestMedicineList />
           </div>
         </Tab> */}
-        <Tab key="/farmer/disease-report" title="Từ điển bệnh" />
-      </Tabs>
+      {/* <Tab key="/farmer/disease-report" title="Từ điển bệnh" /> */}
+      {/* </Tabs> */}
     </div>
   );
 };

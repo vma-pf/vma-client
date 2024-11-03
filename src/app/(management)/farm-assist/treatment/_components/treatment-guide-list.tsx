@@ -1,7 +1,6 @@
 "use client";
 import {
   Button,
-  ChipProps,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -20,45 +19,52 @@ import {
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react";
-import { capitalize } from "@oursrc/components/utils";
 import { useToast } from "@oursrc/hooks/use-toast";
-import { Medicine } from "@oursrc/lib/models/medicine";
-import { EditIcon, EyeIcon, Plus, Search, Trash2Icon } from "lucide-react";
+import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
 import React from "react";
-import { HiChevronDown } from "react-icons/hi";
-import { medicineService } from "@oursrc/lib/services/medicineService";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import BatchList from "./_modals/batch-list";
+import { treatmentGuideService } from "@oursrc/lib/services/treatmentGuideService";
+import { Edit, EyeIcon, Pen, Plus, Search, Trash } from "lucide-react";
+import { HiChevronDown } from "react-icons/hi2";
+import { capitalize } from "@oursrc/components/utils";
+// import ModalTreamentGuide from "./_modals/treatment-guide-modal";
 
 const columns = [
-  { name: "TÊN", uid: "name", sortable: true },
-  {
-    name: "THÀNH PHẦN CHÍNH",
-    uid: "mainIngredient",
-    sortable: true,
-  },
-  { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
-  { name: "SỐ ĐĂNG KÝ", uid: "registerNumber", sortable: true },
-  { name: "TRỌNG LƯỢNG", uid: "netWeight", sortable: true },
-  { name: "TÌNH TRẠNG SỬ DỤNG", uid: "usage", sortable: true },
-  { name: "ĐƠN VỊ", uid: "unit", sortable: true },
-  { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
-  { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
+  { name: "TÊN BỆNH", uid: "diseaseTitle", sortable: true },
+  { name: "MÔ TẢ BỆNH", uid: "diseaseDescription", sortable: true },
+  { name: "TRIỆU CHỨNG", uid: "diseaseSymptoms", sortable: true },
+  { name: "TIÊU ĐỀ", uid: "treatmentTitle", sortable: true },
+  { name: "MÔ TẢ", uid: "treatmentDescription", sortable: true },
+  { name: "HƯỚNG DẪN CHỮA BỆNH", uid: "cure", sortable: true },
+  { name: "MỨC ĐỘ", uid: "diseaseType", sortable: true },
+  { name: "TẠO BỞI", uid: "authorName", sortable: true },
   { name: "ACTIONS", uid: "actions" },
 ];
-
-const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "registerNumber", "netWeight", "usage", "actions"];
-
+const INITIAL_VISIBLE_COLUMNS = [
+  "diseaseTitle",
+  "diseaseDescription",
+  "diseaseSymptoms",
+  "treatmentTitle",
+  "treatmentDescription",
+  "cure",
+  "diseaseType",
+  "authorName",
+  "actions",
+];
 const statusOptions = [{ name: "", uid: "" }];
 
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  active: "success",
-  sick: "warning",
-  dead: "danger",
-};
-
-export default function MedicineList() {
+const TreatmentGuideList = () => {
   const { toast } = useToast();
+
+  //Modal field
+  const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
+  const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
+  const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure();
+  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
+  const [updateId, setUpdateId] = React.useState<string>("");
+  const [selectedData, setSelectedData] = React.useState<TreatmentGuide | null>(null);
+  const [context, setContext] = React.useState<"create" | "edit" | "detail">("create");
+  const [submitDone, setSubmitDone] = React.useState<boolean>(false);
 
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
@@ -69,11 +75,9 @@ export default function MedicineList() {
   const [totalPages, setTotalPages] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
-    column: "lastUpdatedAt",
+    column: "id",
     direction: "ascending",
   });
-  const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | null>(null);
-  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
 
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -83,39 +87,72 @@ export default function MedicineList() {
 
     return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
-  const [medicineList, setMedicineList] = React.useState<Medicine[]>([]);
+  const [dataList, setDataList] = React.useState<TreatmentGuide[]>([]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredMedicines: Medicine[] = [...medicineList];
+    let filteredData: TreatmentGuide[] = [...dataList];
 
     if (hasSearchFilter) {
-      filteredMedicines = filteredMedicines.filter((medicine) => medicine.name.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredData = filteredData.filter((data) => data.diseaseTitle.toLowerCase().includes(filterValue.toLowerCase()));
     }
     if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-      filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.name as string));
+      filteredData = filteredData.filter((data) => Array.from(statusFilter).includes(data.diseaseTitle as string));
     }
-    return filteredMedicines;
-  }, [medicineList, filterValue, statusFilter]);
+    return filteredData;
+  }, [dataList, filterValue, statusFilter]);
 
   const [loading, setLoading] = React.useState(false);
 
+  //Use Effect
+  // React.useEffect(() => {
+  //   if (submitDone) {
+  //     onClose();
+  //     fetchData();
+  //     setSubmitDone(false);
+  //   }
+  // }, [submitDone]);
+
   React.useEffect(() => {
-    fetchData();
-  }, [page, rowsPerPage]);
+    if (!isOpenAdd) {
+      fetchData();
+    }
+  }, [page, rowsPerPage, isOpenAdd]);
 
   //API function
   const fetchData = async () => {
-    setLoading(true);
     try {
-      const response: ResponseObjectList<Medicine> = await medicineService.getMedicine(page, rowsPerPage);
+      setLoading(true);
+      const response: ResponseObjectList<TreatmentGuide> = await treatmentGuideService.getByPagination(page, rowsPerPage);
       if (response.isSuccess) {
-        setMedicineList(response.data.data);
+        setDataList(response.data.data);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
-        setLoading(false);
+      }
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onEdit = async (data: TreatmentGuide) => {
+    setContext("edit");
+    setUpdateId(data.id);
+    setSelectedData(data);
+    onOpenEdit();
+  };
+
+  const onDelete = async (data: TreatmentGuide) => {
+    try {
+      const response = await treatmentGuideService.delete(data.id);
+      if (response.isSuccess) {
+        fetchData();
       } else {
-        throw new AggregateError([response.errorMessage]);
+        throw new AggregateError(response.errorMessage);
       }
     } catch (e) {
       setLoading(false);
@@ -130,21 +167,22 @@ export default function MedicineList() {
     return filteredItems;
   }, [filteredItems]);
 
-  const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: Medicine, b: Medicine) => {
-      const first = a[sortDescriptor.column as keyof Medicine] as number;
-      const second = b[sortDescriptor.column as keyof Medicine] as number;
-      const cmp = first < second ? -1 : first > second ? 1 : 0;
+  // const sortedItems = React.useMemo(() => {
+  //   return [...items].sort((a: TreatmentGuide, b: TreatmentGuide) => {
+  //     const first = a[sortDescriptor.column as keyof TreatmentGuide] as number;
+  //     const second = b[sortDescriptor.column as keyof TreatmentGuide] as number;
+  //     const cmp = first < second ? -1 : first > second ? 1 : 0;
 
-      return sortDescriptor.direction === "descending" ? -cmp : cmp;
-    });
-  }, [sortDescriptor, items]);
+  //     return sortDescriptor.direction === "descending" ? -cmp : cmp;
+  //   });
+  // }, [sortDescriptor, items]);
 
+  //call api
   const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(Number(e.target.value));
     setPage(1);
   }, []);
-
+  //call api
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
       setFilterValue(value);
@@ -166,7 +204,7 @@ export default function MedicineList() {
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
-            placeholder="Tìm kiếm theo tên thuốc..."
+            placeholder="Tìm kiếm theo tên ..."
             startContent={<Search />}
             value={filterValue}
             onClear={() => onClear()}
@@ -194,6 +232,9 @@ export default function MedicineList() {
                 ))}
               </DropdownMenu>
             </Dropdown>
+            <Button color="primary" endContent={<Plus />} onPress={onOpenAdd}>
+              Tạo mới
+            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -209,30 +250,53 @@ export default function MedicineList() {
         </div>
       </div>
     );
-  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, medicineList.length, hasSearchFilter]);
+  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, dataList.length, hasSearchFilter]);
 
-  const renderCell = React.useCallback((data: Medicine, columnKey: React.Key) => {
-    const cellValue = data[columnKey as keyof Medicine];
+  const renderCell = React.useCallback((data: TreatmentGuide, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof TreatmentGuide];
 
     switch (columnKey) {
-      case "mainIngredient":
-      case "name":
-      case "unit":
-      case "usage":
+      case "diseaseTitle":
+      case "diseaseDescription":
+      case "diseaseSymptoms":
+      case "treatmentTitle":
+      case "treatmentDescription":
+      case "cure":
+      case "diseaseType":
+      case "authorName":
         return (
-          <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
+          <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={300}>
             <p className="truncate">{cellValue}</p>
           </Tooltip>
         );
       case "actions":
         return (
           <div className="flex justify-end items-center gap-2">
-            <Tooltip content="Chi tiết" color="primary">
+            {/* <Tooltip content="Chi tiết" color="primary">
+                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                  <EyeIcon
+                    onClick={() => {
+                      onOpenDetail();
+                      setSelectedData(data);
+                    }}
+                  />
+                </span>
+              </Tooltip> */}
+            <Tooltip content="Chỉnh sửa" color="primary">
               <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EyeIcon
+                <Edit
                   onClick={() => {
-                    onOpenDetail();
-                    setSelectedMedicine(data);
+                    onEdit(data);
+                  }}
+                />
+              </span>
+            </Tooltip>
+            <Tooltip content="Xóa" color="danger">
+              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                <Trash
+                  color="#ff0000"
+                  onClick={() => {
+                    onDelete(data);
                   }}
                 />
               </span>
@@ -257,9 +321,8 @@ export default function MedicineList() {
   return (
     <div>
       <Table
-        aria-label="Example table with custom cells, pagination and sorting"
+        color="primary"
         layout="fixed"
-        isHeaderSticky
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
@@ -280,7 +343,7 @@ export default function MedicineList() {
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
+        <TableBody emptyContent={"Không có kết quả"} items={filteredItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
           {(item) => (
             <TableRow key={item.id} className="h-12">
               {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
@@ -288,7 +351,10 @@ export default function MedicineList() {
           )}
         </TableBody>
       </Table>
-      {isOpenDetail && selectedMedicine && <BatchList isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine} />}
+      {/* {isOpenAdd && <ModalTreamentGuide isOpen={isOpenAdd} onClose={onCloseAdd} context="create" />}
+      {isOpenEdit && <ModalTreamentGuide isOpen={isOpenEdit} onClose={onCloseEdit} context="edit" data={selectedData || undefined} />}
+      {isOpenDelete && <ModalTreamentGuide isOpen={isOpenDelete} onClose={onCloseDelete} context="delete" data={selectedData || undefined} />} */}
     </div>
   );
-}
+};
+export default TreatmentGuideList;

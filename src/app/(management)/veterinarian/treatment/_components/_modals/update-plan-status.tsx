@@ -13,8 +13,10 @@ import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-
 import { cageService } from "@oursrc/lib/services/cageService";
 import { vaccinationStageService } from "@oursrc/lib/services/vaccinationStageService";
 import { useToast } from "@oursrc/hooks/use-toast";
-import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
+import { CreateTreatmentStageProps, TreatmentLog } from "@oursrc/lib/models/treatment";
 import PigTreatmentStage from "../pig-treatment-stage";
+import { treatmentStageService } from "@oursrc/lib/services/treatmentStageService";
+import { treatmentLogService } from "@oursrc/lib/services/treatmentLogService";
 
 const statusMap = [
   { status: 0, value: "Đang chờ" },
@@ -35,25 +37,25 @@ const UpdatePlanStatus = ({
   setSelectedTreatment: React.Dispatch<React.SetStateAction<CreateTreatmentStageProps | undefined>>;
 }) => {
   const { toast } = useToast();
-  const [selectedPigs, setSelectedPigs] = React.useState<VaccinationPig[]>([]);
+  const [selectedPigs, setSelectedPigs] = React.useState<TreatmentLog[]>([]);
   const [cages, setCages] = React.useState<Cage[]>([]);
 
   const updatePlanStatus = async () => {
     try {
-      const res: ResponseObject<any> = await vaccinationStageService.updateVaccinationStageStatus(
+      const res: ResponseObject<any> = await treatmentLogService.checkLogCovered(
         selectedTreatment?.id || "",
         selectedPigs.map((pig) => pig.pigId)
       );
       if (res.isSuccess) {
         toast({
-          title: "Cập nhật trạng thái lịch trình tiêm phòng thành công",
+          title: "Cập nhật trạng thái kế hoạch điều trị thành công",
           variant: "success",
         });
         onClose();
         setSelectedTreatment(undefined);
       } else {
         toast({
-          title: res.errorMessage || "Câp nhật trạng thái lịch trình tiêm phòng thất bại",
+          title: res.errorMessage || "Câp nhật trạng thái kế hoạch điều trị thất bại",
           variant: "destructive",
         });
       }

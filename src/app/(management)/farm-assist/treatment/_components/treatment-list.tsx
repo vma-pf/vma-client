@@ -172,7 +172,7 @@ const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) 
   const getAllVaccinationPlan = async () => {
     try {
       setIsLoading(true);
-      const res: ResponseObjectList<TreatmentData> = await treatmentPlanService.getMyTreatmentPlans(page, rowsPerPage);
+      const res: ResponseObjectList<TreatmentData> = await treatmentPlanService.getAll(page, rowsPerPage);
       if (res && res.isSuccess) {
         setTreatmentList(res.data.data || []);
         setPage(res.data.pageIndex);
