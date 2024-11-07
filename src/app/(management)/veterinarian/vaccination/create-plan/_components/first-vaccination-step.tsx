@@ -29,7 +29,7 @@ import { Herd } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
-import { VaccinationTemplate } from "@oursrc/lib/models/vaccination-template";
+import { VaccinationTemplate } from "@oursrc/lib/models/plan-template";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { vaccinationTemplateService } from "@oursrc/lib/services/vaccinationTemplateService";

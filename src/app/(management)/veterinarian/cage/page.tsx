@@ -55,7 +55,7 @@ const Cage = () => {
                   </div>
                 </CardBody>
                 <CardFooter className="flex justify-center gap-2">
-                  <Link href={`/farmer/cage/${cage.id}/camera`}>
+                  <Link href={`/veterinarian/cage/${cage.id}/camera`}>
                     <Button color="primary" variant="solid">
                       Xem Camera
                     </Button>

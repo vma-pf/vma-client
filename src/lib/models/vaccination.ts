@@ -54,6 +54,7 @@ export type MedicineInStage = {
 };
 
 export type MedicineEachStage = {
+  id?: string;
   medicineId: string;
   medicineName: string;
   quantity: number;

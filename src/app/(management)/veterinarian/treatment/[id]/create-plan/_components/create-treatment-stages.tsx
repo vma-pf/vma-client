@@ -21,6 +21,7 @@ import { Plus, Trash } from "lucide-react";
 import React from "react";
 import { v4 } from "uuid";
 import MedicineListInStage from "./medine-list-in-stage";
+import { TreatmentTemplate } from "@oursrc/lib/models/plan-template";
 
 const CreateTreatmentStage = ({
   stages,
