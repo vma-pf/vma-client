@@ -10,7 +10,6 @@ import { IoAddOutline } from "react-icons/io5";
 import AddEditForm from "./_components/add-edit-form";
 import { SearchIcon } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@oursrc/components/ui/sheet";
-import ReactPlayer from "react-player";
 
 const Cage = () => {
   const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();

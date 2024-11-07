@@ -350,19 +350,18 @@ const Vaccination = () => {
                               >
                                 Xem thuốc
                               </Button>
-                              {!stage.isDone && stage.applyStageTime < new Date().toISOString() && (
-                                <Button
-                                  variant="solid"
-                                  color="primary"
-                                  endContent={<CiEdit size={20} />}
-                                  onPress={() => {
-                                    setSelectedVaccination(stage);
-                                    onOpenUpdate();
-                                  }}
-                                >
-                                  Cập nhật kết quả
-                                </Button>
-                              )}
+                              <Button
+                                variant="solid"
+                                color="primary"
+                                endContent={<CiEdit size={20} />}
+                                isDisabled={stage.isDone || stage.applyStageTime > new Date().toISOString() || medicineList.some((medicine) => medicine.status !== 2)}
+                                onPress={() => {
+                                  setSelectedVaccination(stage);
+                                  onOpenUpdate();
+                                }}
+                              >
+                                Cập nhật kết quả
+                              </Button>
                             </div>
                           </div>
                         </div>

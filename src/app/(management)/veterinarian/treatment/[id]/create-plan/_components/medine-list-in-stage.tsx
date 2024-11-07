@@ -18,10 +18,11 @@ import {
 import { MedicineEachStage, MedicineInStage } from "@oursrc/lib/models/vaccination";
 import { Plus, Trash2Icon } from "lucide-react";
 import React from "react";
-// import AddMedicineToStageModal from "./_modals/add-medine-to-stage-modal";
 import { pluck } from "@oursrc/lib/utils/dev-utils";
-import AddMedicineToStageModal from "./_modals/add-medine-to-stage-modal";
+import AddMedicineToStageModal from "@oursrc/components/medicines/modals/add-medine-to-stage-modal";
 import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
+import { v4 } from "uuid";
+
 const MedicineListInStage = ({
   stage,
   setStages,
@@ -39,13 +40,17 @@ const MedicineListInStage = ({
     if (Object.entries(selectedMedicine).length > 0) {
       let newMedicines: MedicineEachStage[];
       if (stage.inventoryRequest.medicines.length > 0) {
-        const existingMedicine = stage.inventoryRequest.medicines.find((medicine) => medicine.medicineId === selectedMedicine.id);
+        const existingMedicine = stage.inventoryRequest.medicines.find(
+          (medicine) => medicine.medicineId === selectedMedicine.id || medicine.medicineName === selectedMedicine.name
+        );
         if (existingMedicine) {
           const updatedMedicine = {
             ...existingMedicine,
             portionEachPig: existingMedicine.portionEachPig + selectedMedicine.portionEachPig,
           };
-          newMedicines = stage.inventoryRequest.medicines.map((medicine) => (medicine.medicineId === selectedMedicine.id ? updatedMedicine : medicine));
+          newMedicines = stage.inventoryRequest.medicines.map((medicine) =>
+            medicine.medicineId === selectedMedicine.id || medicine.medicineName === selectedMedicine.name ? updatedMedicine : medicine
+          );
         } else {
           newMedicines = [...stage.inventoryRequest.medicines, selectedMedicine];
         }
@@ -62,6 +67,7 @@ const MedicineListInStage = ({
       });
     }
   }, [selectedMedicine]);
+
   const onRemove = () => {
     if (stage.inventoryRequest.medicines.length > 0) {
       const newMedicinesInStage = {
@@ -132,7 +138,7 @@ const MedicineListInStage = ({
         </TableHeader>
         <TableBody emptyContent={"Chưa chọn thuốc cho giai đoạn này"} items={stage.inventoryRequest.medicines}>
           {(item) => (
-            <TableRow key={item.medicineId} className="h-12">
+            <TableRow key={item.id ?? item.medicineId} className="h-12">
               {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
             </TableRow>
           )}

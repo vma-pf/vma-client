@@ -1,66 +1,28 @@
 "use client";
 import React from "react";
-import { dateConverter } from "@oursrc/lib/utils";
-import { HerdInfo } from "@oursrc/lib/models/herd";
 import { useRouter } from "next/navigation";
 import { useToast } from "@oursrc/hooks/use-toast";
-import { StageMedicine } from "@oursrc/lib/models/medicine";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  Divider,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Progress,
-  Skeleton,
-  Tab,
-  Tabs,
-  useDisclosure,
-} from "@nextui-org/react";
-import { FaClock, FaRegCalendarPlus } from "react-icons/fa6";
-import { TbMedicineSyrup } from "react-icons/tb";
-import { CiBoxList, CiEdit } from "react-icons/ci";
+import { Button, Card, CardBody, Divider, Skeleton, Tab, Tabs } from "@nextui-org/react";
+import { CiClock2, CiStickyNote } from "react-icons/ci";
 import { TreatmentData, CreateTreatmentStageProps, DiseaseReport } from "@oursrc/lib/models/treatment";
 import TreatmentList from "./_components/treatment-list";
 import Image from "next/image";
-import { MdCalendarToday, MdOutlineStickyNote2 } from "react-icons/md";
+import { MdOutlineStickyNote2 } from "react-icons/md";
 import { IoIosAlert, IoIosCalendar } from "react-icons/io";
 import { PiNotebookDuotone } from "react-icons/pi";
-import { BiDetail } from "react-icons/bi";
-import { HiOutlineDocumentReport } from "react-icons/hi";
 import { GoDotFill } from "react-icons/go";
 import TreatmentGuideList from "./_components/treatment-guide-list";
 import CommonDiseaseList from "./_components/common-disease-list";
 import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
-import { pigService } from "@oursrc/lib/services/pigService";
 import { Pig } from "@oursrc/lib/models/pig";
-import { FaCheckCircle } from "react-icons/fa";
-import { GrStatusGoodSmall } from "react-icons/gr";
-import DetailPlan from "./_components/_modals/detail-plan";
-import UpdatePlanStatus from "./_components/_modals/update-plan-status";
-import { treatmentStageService } from "@oursrc/lib/services/treatmentStageService";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@oursrc/components/ui/drawer";
-import { BookCopy, Layers2, Layers2Icon, Layers3, Table } from "lucide-react";
+import { Layers3, Table } from "lucide-react";
 import TreatmentGuideGridList from "./_components/treatment-guide-grid-list";
 import CommonDiseaseGridList from "./_components/common-disease-grid-list";
 import TreatmentStages from "./_components/treatment-stages";
-
-// const treatmentDetail: TreatmentData = {
-//   id: "1",
-//   title: "Lịch 1",
-//   description: "Mô tả 1",
-//   herdId: "1",
-//   startDate: "2022-10-10",
-//   expectedEndDate: "2022-10-20",
-//   actualEndDate: "2022-10-20",
-//   note: "Ghi chú 1",
-//   status: 0,
-//   treatmentStages: [],
-// };
+import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@oursrc/components/ui/sheet";
+import { GiCage } from "react-icons/gi";
+import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
 
 const Treatment = () => {
   const router = useRouter();
@@ -70,6 +32,7 @@ const Treatment = () => {
   const [diseaseReports, setDiseaseReports] = React.useState<DiseaseReport[]>([]);
   const [pigs, setPigs] = React.useState<Pig[]>([]);
   const [selectedTreatment, setSelectedTreatment] = React.useState<CreateTreatmentStageProps>();
+  const [selectedTreatmentGuide, setSelectedTreatmentGuide] = React.useState<TreatmentGuide>();
 
   const findTreatmentPlan = async (id: string) => {
     try {
@@ -107,6 +70,10 @@ const Treatment = () => {
   React.useEffect(() => {
     if (selectedTreatmentId.size > 0) {
       findTreatmentPlan(selectedTreatmentId.values().next().value);
+    } else {
+      setTreatmentData(undefined);
+      setDiseaseReports([]);
+      setPigs([]);
     }
   }, [selectedTreatmentId]);
 
@@ -140,8 +107,9 @@ const Treatment = () => {
                     <Button
                       variant="solid"
                       color="primary"
+                      isDisabled={!selectedTreatmentGuide}
                       onPress={() => {
-                        router.push("/veterinarian/treatment/create-plan");
+                        router.push(`/veterinarian/treatment/${selectedTreatmentGuide?.id}/create-plan`);
                       }}
                     >
                       Tạo kế hoạch mới
@@ -153,8 +121,8 @@ const Treatment = () => {
               <div className="w-1/2 ml-2 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
                 <p className="m-2 text-xl font-semibold">Dấu hiệu bất thường</p>
                 <div className="my-2 max-h-[500px] overflow-auto">
-                  <Drawer>
-                    <DrawerTrigger className="w-full">
+                  <Sheet>
+                    <SheetTrigger className="w-full">
                       <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
                         <div className="flex justify-start items-center">
                           <IoIosAlert className="mr-3 text-danger-500" size={30} />
@@ -166,42 +134,47 @@ const Treatment = () => {
                         </div>
                         <GoDotFill className="text-blue-500" />
                       </div>
-                    </DrawerTrigger>
-                    <DrawerContent className="rounded-t-3xl h-3/5">
-                      <div className="w-full">
-                        <DrawerHeader>
-                          <DrawerTitle>
-                            <p className="mx-auto text-2xl font-bold">Chi tiết cảnh báo</p>
-                          </DrawerTitle>
-                        </DrawerHeader>
-                        <div className="p-5">
-                          <p className="text-lg font-semibold">Chuồng 001</p>
-                          <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                          <p className="text-zinc-400 text-sm">bây giờ</p>
-
-                          <Divider orientation="horizontal" />
-                          <p className="mx-auto text-lg font-semibold mt-3">Bệnh có thể gặp phải</p>
-                          <p className="text-lg">Viêm phổi</p>
-                          <Divider orientation="horizontal" />
-                          <p className="mx-auto text-lg font-semibold mt-3">Gợi ý hướng dẫn điều trị</p>
-                          <p className="text-lg">Tiêm phòng</p>
+                    </SheetTrigger>
+                    <SheetContent className="w-3/4">
+                      <SheetHeader>
+                        <SheetTitle>
+                          <p className="text-2xl font-bold">Chi tiết cảnh báo</p>
+                        </SheetTitle>
+                      </SheetHeader>
+                      <div className="p-5">
+                        <div className="grid grid-cols-12 gap-4">
+                          <div className="col-span-6 flex flex-col items-center">
+                            <GiCage className="text-4xl" />
+                            <p className="text-md font-light">Chuồng</p>
+                            <p className="text-lg">CAGE001</p>
+                          </div>
+                          <div className="col-span-6 flex flex-col items-center">
+                            <CiClock2 className="text-4xl" />
+                            <p className="text-md font-light">Thời gian</p>
+                            <p className="text-lg">1 phút trước</p>
+                          </div>
+                          <div className="col-span-12 flex flex-col items-center">
+                            <CiStickyNote className="text-4xl" />
+                            <p className="text-md font-light">Nội dung</p>
+                            <p className="text-lg">Có 1 cá thể có dấu hiệu bất thường</p>
+                          </div>
                         </div>
-                        <DrawerFooter>
-                          <DrawerClose>
-                            <Button
-                              variant="solid"
-                              color="primary"
-                              onPress={() => {
-                                router.push("/veterinarian/treatment/create-plan");
-                              }}
-                            >
-                              Tạo kế hoạch mới
-                            </Button>
-                          </DrawerClose>
-                        </DrawerFooter>
                       </div>
-                    </DrawerContent>
-                  </Drawer>
+                      <SheetFooter>
+                        <SheetClose asChild>
+                          <Button
+                            variant="solid"
+                            color="primary"
+                            onPress={() => {
+                              router.push(`/veterinarian/treatment/${selectedTreatmentGuide?.id}/create-plan`);
+                            }}
+                          >
+                            Tạo kế hoạch mới
+                          </Button>
+                        </SheetClose>
+                      </SheetFooter>
+                    </SheetContent>
+                  </Sheet>
                   <Divider className="my-2" orientation="horizontal" />
                   <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
                     <div className="flex justify-start items-center">
@@ -269,16 +242,33 @@ const Treatment = () => {
           }
         >
           <div className="flex flex-col justify-end">
+            <Card className="mb-5 mx-20">
+              <CardBody>
+                <p className="text-lg text-center font-semibold">Hướng dẫn điều trị đã chọn</p>
+                {selectedTreatmentGuide ? (
+                  <div className="">
+                    <p className="">
+                      <strong>Tên bệnh:</strong> {selectedTreatmentGuide.diseaseTitle}
+                    </p>
+                    <p className="">
+                      <strong>Mô tả bệnh:</strong> {selectedTreatmentGuide.treatmentDescription}
+                    </p>
+                    <p className="">
+                      <strong>Triệu chứng:</strong> {selectedTreatmentGuide.diseaseSymptoms}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-center">Chưa chọn hướng dẫn điều trị</p>
+                )}
+              </CardBody>
+            </Card>
             <Tabs size="md" color="primary" variant="solid" defaultSelectedKey="mode-1">
               <Tab key="mode-1" title={<Layers3 size={20} />}>
-                <TreatmentGuideGridList gridColumns={1} />
+                <TreatmentGuideGridList gridColumns={1} selectedTreatmentGuide={selectedTreatmentGuide} setSelectedTreatmentGuide={setSelectedTreatmentGuide} />
               </Tab>
               <Tab key="mode-2" title={<Table size={20} />}>
-                <TreatmentGuideList />
+                <TreatmentGuideList selectedTreatmentGuide={selectedTreatmentGuide} setSelectedTreatmentGuide={setSelectedTreatmentGuide} />
               </Tab>
-              {/* <Tab key="mode-3" title={<Layers2Icon size={20} />}>
-                <TreatmentGuideGridList gridColumns={2} />
-              </Tab> */}
             </Tabs>
           </div>
         </Tab>
