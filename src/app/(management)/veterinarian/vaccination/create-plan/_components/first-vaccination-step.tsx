@@ -1,25 +1,25 @@
 "use client";
 import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import {
-  Accordion,
-  AccordionItem,
   Button,
   CalendarDate,
   Card,
   CardBody,
-  DatePicker,
   DateRangePicker,
   DateValue,
   Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Input,
   Popover,
   PopoverContent,
   PopoverTrigger,
   RangeValue,
-  Select,
-  SelectItem,
+  Selection,
   Textarea,
-  Tooltip,
+  Tooltip
 } from "@nextui-org/react";
 import CageListReadOnly from "@oursrc/components/cages/cage-list-read-only";
 import HerdListReadOnly from "@oursrc/components/herds/herd-list-read-only";
@@ -27,23 +27,20 @@ import { toast } from "@oursrc/hooks/use-toast";
 import { Cage } from "@oursrc/lib/models/cage";
 import { Herd } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
-import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { VaccinationTemplate } from "@oursrc/lib/models/plan-template";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { CreateVaccinationStageProps, VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { pigService } from "@oursrc/lib/services/pigService";
+import { planTemplateService } from "@oursrc/lib/services/planTemplate";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
-import { vaccinationTemplateService } from "@oursrc/lib/services/vaccinationTemplateService";
 import { pluck } from "@oursrc/lib/utils/dev-utils";
-import { Check, Filter, Plus, SaveAll, Trash } from "lucide-react";
+import { Check, ChevronDown, Filter, SaveAll } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { v4 } from "uuid";
-import MedicineListInStage from "./medine-list-in-stage";
-import SelectedPigsList from "./selected-pigs-list";
-import { useRouter } from "next/navigation";
-import { planTemplateService } from "@oursrc/lib/services/templateService";
-import { CreatePlanTemplate, MedicineTemplate, TodoTemplate } from "@oursrc/lib/models/plan-template";
 import CreateVaccinationStages from "./create-vaccination-stages";
+import SelectedPigsList from "./selected-pigs-list";
 
 const FirstVaccinationStep = () => {
   const router = useRouter();
@@ -54,6 +51,8 @@ const FirstVaccinationStep = () => {
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
   const [openBy, setOpenBy] = React.useState<string>("");
   const [templateName, setTemplateName] = React.useState("");
+  const [templates, setTemplates] = React.useState<VaccinationTemplate[]>();
+  const [selectedTemplate, setSelectedTemplate] = React.useState<VaccinationTemplate | undefined>();
 
   const [stages, setStages] = React.useState<VaccinationStageProps[]>([
     {
@@ -110,16 +109,13 @@ const FirstVaccinationStep = () => {
 
   const fetchTemplates = async () => {
     try {
-      const response = await vaccinationTemplateService.getVaccinationTemplate(1, 1000);
-      if (response.isSuccess) {
-        setVaccinationTemplatesOptions(
-          response.data.data.map((x: VaccinationTemplate) => ({
-            key: x.contentTemplate,
-            label: x.titleTemplate,
-          }))
-        );
+      const res: ResponseObjectList<VaccinationTemplate> = await planTemplateService.getVaccinationPlanTemplate(1, 500);
+      if (res.isSuccess) {
+        setTemplates(res.data.data);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const fetchPigs = async (fetchBy: string) => {
@@ -216,12 +212,68 @@ const FirstVaccinationStep = () => {
     });
   };
 
+  const handleChooseTemplate = (keys: Selection) => {
+    const selectedKeysArray = Array.from(keys);
+    if (selectedKeysArray.length === 0) {
+      setSelectedTemplate(undefined);
+      setStages([
+        {
+          id: v4(),
+          title: "",
+          timeSpan: "",
+          applyStageTime: "",
+          vaccinationToDos: [{ description: "" }],
+          inventoryRequest: {
+            id: v4(),
+            title: "",
+            description: "",
+            medicines: [],
+          },
+        },
+      ]);
+      return;
+    }
+    const template = templates?.filter((item) => item.id && selectedKeysArray.includes(item.id))[0] || undefined;
+    setSelectedTemplate(template);
+    const newStages = template?.stageTemplates
+      .sort((a, b) => a.numberOfDays - b.numberOfDays)
+      .map((templateStage: any) => {
+        const applyStageDate = new Date();
+        applyStageDate.setDate(applyStageDate.getDate() + templateStage.numberOfDays);
+        const applyStageDateString = applyStageDate.toISOString().split("T")[0];
+        return {
+          id: v4(),
+          title: templateStage.title,
+          timeSpan: templateStage.timeSpan,
+          applyStageTime: applyStageDateString,
+          vaccinationToDos: templateStage.toDoTemplates,
+          inventoryRequest: {
+            id: v4(),
+            title: "",
+            description: "",
+            medicines: templateStage.medicineTemplates.map((medicine: any) => ({
+              id: medicine.medicineId,
+              type: "existed",
+              medicineId: medicine.medicineId,
+              medicineName: medicine.medicineName,
+              name: medicine.medicineName,
+              portionEachPig: medicine.portionEachPig,
+            })),
+          },
+        };
+      }) as CreateVaccinationStageProps[];
+    setStages(newStages);
+  };
+
   const handleCreateTemplate = async () => {
     const templateRequest = stages.map((x: VaccinationStageProps, index: number) => ({
       title: x.title,
       timeSpan: x.timeSpan,
       numberOfDays: index === 0 ? 0 : Math.round((new Date(x.applyStageTime).valueOf() - new Date(stages[0].applyStageTime).valueOf()) / (1000 * 3600 * 24)) + 1,
-      medicineTemplates: x.inventoryRequest.medicines as MedicineTemplate[],
+      medicineTemplates: x.inventoryRequest.medicines.map((medicine: any) => ({
+        medicineId: medicine.type === "existed" ? medicine.medicineId : null,
+        portionEachPig: medicine.portionEachPig,
+      })),
       toDoTemplates: x.vaccinationToDos as TodoTemplate[],
     }));
     if (!checkStages()) {
@@ -233,7 +285,7 @@ const FirstVaccinationStep = () => {
       stageTemplates: templateRequest,
     };
     try {
-      const response = await planTemplateService.create(request);
+      const response = await planTemplateService.createPlanTemplate(request);
       if (response && response.isSuccess) {
         toast({
           variant: "success",
@@ -321,9 +373,25 @@ const FirstVaccinationStep = () => {
             <CardBody>
               <div className="flex justify-end">
                 <div className="w-2/5 mr-2 flex justify-end">
-                  <Select items={vaccinationTemplatesOptions} label="Chọn mẫu tiêm phòng" className="max-w-xs" onChange={(e) => onApplyTemplate(e)}>
-                    {(vaccinationTemplate) => <SelectItem key={vaccinationTemplate.key}>{vaccinationTemplate.label}</SelectItem>}
-                  </Select>
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button variant="ghost" color="primary" endContent={<ChevronDown size={20} />}>
+                      Chọn mẫu tiêm phòng
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    selectionMode="single"
+                    items={templates}
+                    selectedKeys={selectedTemplate && selectedTemplate.id ? new Set([selectedTemplate?.id]) : new Set<string>()}
+                    onSelectionChange={(keys: Selection) => handleChooseTemplate(keys)}
+                  >
+                    {(item) => (
+                      <DropdownItem key={item.id} description={item.name}>
+                        <p className="font-semibold">{item.name}</p>
+                      </DropdownItem>
+                    )}
+                  </DropdownMenu>
+                </Dropdown>
                 </div>
 
                 <div className="mr-2">
