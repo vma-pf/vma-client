@@ -3,7 +3,7 @@ import { ResponseObjectList } from "../models/response-object";
 
 export const vaccinationStageService = {
     getPigsInStage: (stageId: string, pageIndex: number, pageSize: number) =>
-        http.get<ResponseObjectList<any>>(`vaccinating-stages/${stageId}/pig-vaccination-stages`, {
+        http.get<ResponseObjectList<any>>(`vaccination-stages/${stageId}/pig-vaccination-stages`, {
             params: {
                 pageIndex: pageIndex?.toString() || "",
                 pageSize: pageSize?.toString() || "",

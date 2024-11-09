@@ -53,7 +53,13 @@ const INITIAL_VISIBLE_COLUMNS = [
 ];
 const statusOptions = [{ name: "", uid: "" }];
 
-const TreatmentGuideList = () => {
+const TreatmentGuideList = ({
+  selectedTreatmentGuide,
+  setSelectedTreatmentGuide,
+}: {
+  selectedTreatmentGuide: TreatmentGuide | undefined;
+  setSelectedTreatmentGuide: React.Dispatch<React.SetStateAction<TreatmentGuide | undefined>>;
+}) => {
   const { toast } = useToast();
 
   //Modal field
@@ -328,12 +334,16 @@ const TreatmentGuideList = () => {
         classNames={{
           wrapper: "max-h-[750px]",
         }}
-        selectedKeys={selectedKeys}
-        // selectionMode="multiple"
+        selectionMode="single"
+        selectedKeys={selectedTreatmentGuide && selectedTreatmentGuide.id ? new Set([selectedTreatmentGuide.id]) : new Set<string>()}
+        onSelectionChange={(keys) => {
+          const selectedKeysArray = Array.from(keys);
+          const selectedTreatmentGuide = dataList.filter((data) => data.id && selectedKeysArray.includes(data.id));
+          setSelectedTreatmentGuide(selectedTreatmentGuide[0]);
+        }}
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>

@@ -1,133 +1,62 @@
 "use client";
 import React from "react";
-import { dateConverter } from "@oursrc/lib/utils";
-import { HerdInfo } from "@oursrc/lib/models/herd";
 import { useRouter } from "next/navigation";
 import { useToast } from "@oursrc/hooks/use-toast";
-import { StageMedicine } from "@oursrc/lib/models/medicine";
-import { ResponseObject } from "@oursrc/lib/models/response-object";
-import {
-  Accordion,
-  AccordionItem,
-  Button,
-  Divider,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Progress,
-  Skeleton,
-  Tab,
-  Tabs,
-  useDisclosure,
-} from "@nextui-org/react";
-import { FaClock, FaRegCalendarPlus } from "react-icons/fa6";
-import { TbMedicineSyrup } from "react-icons/tb";
-import { CiEdit } from "react-icons/ci";
-import { TreatmentData, CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { Button, Card, CardBody, Divider, Skeleton, Tab, Tabs } from "@nextui-org/react";
+import { CiClock2, CiStickyNote } from "react-icons/ci";
+import { TreatmentData, CreateTreatmentStageProps, DiseaseReport } from "@oursrc/lib/models/treatment";
 import TreatmentList from "./_components/treatment-list";
 import Image from "next/image";
-import { MdCalendarToday, MdOutlineStickyNote2 } from "react-icons/md";
+import { MdOutlineStickyNote2 } from "react-icons/md";
 import { IoIosAlert, IoIosCalendar } from "react-icons/io";
 import { PiNotebookDuotone } from "react-icons/pi";
-import { BiDetail } from "react-icons/bi";
-import { HiOutlineDocumentReport } from "react-icons/hi";
 import { GoDotFill } from "react-icons/go";
 import TreatmentGuideList from "./_components/treatment-guide-list";
 import CommonDiseaseList from "./_components/common-disease-list";
-
-const statusMap = [
-  { name: "Chưa bắt đầu", value: 0 },
-  { name: "Đang diễn ra", value: 1 },
-  { name: "Đã hoàn thành", value: 2 },
-  { name: "Đã hủy", value: 3 },
-];
-
-const treatmentDetail: TreatmentData = {
-  id: "1",
-  title: "Lịch 1",
-  description: "Mô tả 1",
-  herdId: "1",
-  startDate: "2022-10-10",
-  expectedEndDate: "2022-10-20",
-  actualEndDate: "2022-10-20",
-  note: "Ghi chú 1",
-  status: 0,
-  treatmentStages: [],
-};
+import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
+import { Pig } from "@oursrc/lib/models/pig";
+import { Layers3, Table } from "lucide-react";
+import TreatmentGuideGridList from "./_components/treatment-guide-grid-list";
+import CommonDiseaseGridList from "./_components/common-disease-grid-list";
+import TreatmentStages from "./_components/treatment-stages";
+import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@oursrc/components/ui/sheet";
+import { GiCage } from "react-icons/gi";
+import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
 
 const Treatment = () => {
   const router = useRouter();
-  const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
   const [selectedTreatmentId, setSelectedTreatmentId] = React.useState(new Set<string>());
-  const [treatmentData, setTreatmentData] = React.useState<TreatmentData | undefined>(treatmentDetail);
-  const [herd, setHerd] = React.useState<HerdInfo>();
-  const [filterStatus, setFilterStatus] = React.useState("not-done");
-  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
-  const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
-  const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
-  const [selectedVaccination, setSelectedVaccination] = React.useState<CreateTreatmentStageProps>();
-
-  const filterValue = React.useMemo(() => {
-    if (filterStatus === "all") {
-      return "Tất cả";
-    } else if (filterStatus === "done") {
-      return "Đã tiêm";
-    } else {
-      return "Chưa tiêm";
-    }
-  }, [filterStatus]);
-
-  const filterTreatment = (status: string) => {
-    const data = treatmentData?.treatmentStages || [];
-    console.log(data);
-    if (status === "all") {
-      return data;
-    } else if (status === "done") {
-      return data.filter((treatment) => treatment.isDone === true);
-    } else {
-      return data.filter((treatment) => treatment.isDone === false);
-    }
-  };
-
-  const getMedicineInStage = async (id: string) => {
-    try {
-      // const res: any = await vaccinationService.getMedicineInStage(id);
-      // if (res.isSuccess) {
-      //   setMedicineList(res.data.medicine || []);
-      // }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: error.message || "Có lỗi xảy ra",
-      });
-    }
-  };
-
-  const calculateProgress = (startDate: string, endDate: string) => {
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
-    const now = new Date().getTime();
-    return ((now - start) / (end - start)) * 100;
-  };
+  const [treatmentData, setTreatmentData] = React.useState<TreatmentData | undefined>();
+  const [diseaseReports, setDiseaseReports] = React.useState<DiseaseReport[]>([]);
+  const [pigs, setPigs] = React.useState<Pig[]>([]);
+  const [selectedTreatment, setSelectedTreatment] = React.useState<CreateTreatmentStageProps>();
+  const [selectedTreatmentGuide, setSelectedTreatmentGuide] = React.useState<TreatmentGuide>();
 
   const findTreatmentPlan = async (id: string) => {
     try {
-      // setLoading(true);
-      // // const vaccinationId = "4b75d78c-7c38-4447-9fe7-ebbcaff55faf";
-      // const res: ResponseObject<any> = await vaccinationService.getVaccinationPlan(id);
-      // if (res && res.isSuccess) {
-      //   setVaccinationData(res.data);
-      // } else {
-      //   console.log("Error: ", res.errorMessage);
-      // }
-      // const response: ResponseObject<HerdInfo> = await herdService.getHerdByVaccinationPlanId(id);
-      // if (response && response.isSuccess) {
-      //   setHerd(response.data);
-      // } else {
-      //   console.log("Error: ", response.errorMessage);
-      // }
+      setLoading(true);
+      const res: ResponseObject<TreatmentData> = await treatmentPlanService.getTreatmentPlan(id);
+      if (res.isSuccess) {
+        setTreatmentData(res.data);
+      } else {
+        console.log("Error: ", res.errorMessage);
+      }
+      const response: ResponseObjectList<Pig> = await treatmentPlanService.getPigList(id, 1, 5);
+      if (response.isSuccess) {
+        setPigs(response.data.data);
+      } else {
+        console.log("Error: ", response.errorMessage);
+      }
+      const result: ResponseObject<any> = await treatmentPlanService.getDiseaseReport(id);
+      if (result.isSuccess) {
+        if (result.data !== "Kế hoạch này chưa được áp dụng cho báo cáo bệnh nào cả!") {
+          setDiseaseReports(result.data);
+        }
+      } else {
+        console.log("Error: ", result.errorMessage);
+      }
     } catch (error) {
       console.log("Error: ", error);
     } finally {
@@ -141,14 +70,18 @@ const Treatment = () => {
   React.useEffect(() => {
     if (selectedTreatmentId.size > 0) {
       findTreatmentPlan(selectedTreatmentId.values().next().value);
+    } else {
+      setTreatmentData(undefined);
+      setDiseaseReports([]);
+      setPigs([]);
     }
   }, [selectedTreatmentId]);
 
   React.useEffect(() => {
-    if (!selectedVaccination) {
+    if (!selectedTreatment) {
       findTreatmentPlan(selectedTreatmentId.values().next().value);
     }
-  }, [selectedVaccination]);
+  }, [selectedTreatment]);
 
   return (
     <div>
@@ -174,8 +107,9 @@ const Treatment = () => {
                     <Button
                       variant="solid"
                       color="primary"
+                      isDisabled={!selectedTreatmentGuide}
                       onPress={() => {
-                        router.push("/veterinarian/treatment/create-plan");
+                        router.push(`/veterinarian/treatment/${selectedTreatmentGuide?.id}/create-plan`);
                       }}
                     >
                       Tạo kế hoạch mới
@@ -186,20 +120,63 @@ const Treatment = () => {
               </div>
               <div className="w-1/2 ml-2 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
                 <p className="m-2 text-xl font-semibold">Dấu hiệu bất thường</p>
-                <div className="my-2 max-h-[300px] overflow-auto">
-                  <div className="mx-2 my-3 flex justify-between items-center">
-                    <div className="flex justify-start items-center">
-                      <IoIosAlert className="mr-3 text-danger-500" size={30} />
-                      <div>
-                        <p className="font-semibold">Chuồng 001</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                        <p className="text-zinc-400 text-sm">bây giờ</p>
+                <div className="my-2 max-h-[500px] overflow-auto">
+                  <Sheet>
+                    <SheetTrigger className="w-full">
+                      <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
+                        <div className="flex justify-start items-center">
+                          <IoIosAlert className="mr-3 text-danger-500" size={30} />
+                          <div className="text-start">
+                            <p className="font-semibold">Chuồng 001</p>
+                            <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
+                            <p className="text-zinc-400 text-sm">bây giờ</p>
+                          </div>
+                        </div>
+                        <GoDotFill className="text-blue-500" />
                       </div>
-                    </div>
-                    <GoDotFill className="text-blue-500" />
-                  </div>
+                    </SheetTrigger>
+                    <SheetContent className="w-3/4">
+                      <SheetHeader>
+                        <SheetTitle>
+                          <p className="text-2xl font-bold">Chi tiết cảnh báo</p>
+                        </SheetTitle>
+                      </SheetHeader>
+                      <div className="p-5">
+                        <div className="grid grid-cols-12 gap-4">
+                          <div className="col-span-6 flex flex-col items-center">
+                            <GiCage className="text-4xl" />
+                            <p className="text-md font-light">Chuồng</p>
+                            <p className="text-lg">CAGE001</p>
+                          </div>
+                          <div className="col-span-6 flex flex-col items-center">
+                            <CiClock2 className="text-4xl" />
+                            <p className="text-md font-light">Thời gian</p>
+                            <p className="text-lg">1 phút trước</p>
+                          </div>
+                          <div className="col-span-12 flex flex-col items-center">
+                            <CiStickyNote className="text-4xl" />
+                            <p className="text-md font-light">Nội dung</p>
+                            <p className="text-lg">Có 1 cá thể có dấu hiệu bất thường</p>
+                          </div>
+                        </div>
+                      </div>
+                      <SheetFooter>
+                        <SheetClose asChild>
+                          <Button
+                            variant="solid"
+                            color="primary"
+                            onPress={() => {
+                              router.push(`/veterinarian/treatment/${selectedTreatmentGuide?.id}/create-plan`);
+                            }}
+                          >
+                            Tạo kế hoạch mới
+                          </Button>
+                        </SheetClose>
+                      </SheetFooter>
+                    </SheetContent>
+                  </Sheet>
                   <Divider className="my-2" orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center">
+                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
                     <div className="flex justify-start items-center">
                       <IoIosAlert className="mr-3" size={30} />
                       <div>
@@ -210,7 +187,7 @@ const Treatment = () => {
                     </div>
                   </div>
                   <Divider orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center">
+                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
                     <div className="flex justify-start items-center">
                       <IoIosAlert className="mr-3" size={30} />
                       <div>
@@ -221,7 +198,7 @@ const Treatment = () => {
                     </div>
                   </div>
                   <Divider orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center">
+                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
                     <div className="flex justify-start items-center">
                       <IoIosAlert className="mr-3" size={30} />
                       <div>
@@ -245,197 +222,13 @@ const Treatment = () => {
                 ))}
               </div>
             ) : (
-              <div className="w-full mb-3 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-                <div className="flex flex-shrink gap-5">
-                  <div className="p-3 border-2 rounded-2xl w-1/2">
-                    <p className="text-xl font-semibold">Chi tiết kế hoạch điều trị</p>
-                    {treatmentData ? (
-                      <div>
-                        <div className="mby-2 flex items-center">
-                          <FaRegCalendarPlus className="my-auto mr-4 text-3xl" />
-                          <p className="my-auto text-2xl font-bold mt-3">{treatmentData.title}</p>
-                        </div>
-                        <p className="text-lg mt-3">{treatmentData.description}</p>
-                        <div className="flex justify-between">
-                          <p className="text-md mt-3">Đàn:</p>
-                          <p className="text-lg mt-3 font-semibold">{treatmentData.herdId}</p>
-                        </div>
-                        <div className="flex justify-between">
-                          <p className="text-md mt-3">Ngày bắt đầu</p>
-                          <p className="text-md mt-3">Ngày kết thúc (dự kiến)</p>
-                        </div>
-                        <Progress value={calculateProgress(treatmentData.startDate, treatmentData.expectedEndDate)} />
-                        <div className="flex justify-between">
-                          <p className="text-lg mt-3 font-semibold">{dateConverter(treatmentData.startDate)}</p>
-                          <p className="text-lg mt-3 font-semibold">{dateConverter(treatmentData.expectedEndDate)}</p>
-                        </div>
-                        {treatmentData.actualEndDate && (
-                          <div className="flex justify-between">
-                            <p className="text-md mt-3">Ngày kết thúc (thực tế):</p>
-                            <p className="text-lg mt-3 font-semibold">{treatmentData.actualEndDate}</p>
-                          </div>
-                        )}
-                        <div className="flex justify-between">
-                          <p className="text-md mt-3">Ghi chú:</p>
-                          <p className="text-lg mt-3 font-semibold">{treatmentData.note ? treatmentData.note : "Không có"}</p>
-                        </div>
-                        <div className="flex justify-between">
-                          <p className="text-md mt-3">Tình trạng</p>
-                          <p
-                            className={`text-lg mt-3 font-semibold ${
-                              statusMap.find((status) => status.value === treatmentData.status)?.value === 1
-                                ? "text-blue-500"
-                                : statusMap.find((status) => status.value === treatmentData.status)?.value === 2
-                                ? "text-green-500"
-                                : "text-red-500"
-                            }`}
-                          >
-                            {statusMap.find((status) => status.value === treatmentData.status)?.name}
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-center text-lg mt-3">Chưa chọn kế hoạch điều trị</p>
-                    )}
-                  </div>
-                  <div className="p-3 border-2 rounded-2xl w-1/2">
-                    <Accordion variant="splitted">
-                      <AccordionItem key="1" title="Thông tin đàn heo" startContent={<BiDetail className="text-sky-500" size={25} />}>
-                        {/* <p className="text-xl font-semibold">Thông tin đàn heo</p> */}
-                        {herd ? (
-                          <div>
-                            <div className="mt-3 flex justify-between">
-                              <p className="text-md">Tên đàn:</p>
-                              <p className="text-lg font-semibold">{herd.code}</p>
-                            </div>
-                            <div className="mt-3 flex justify-between">
-                              <p className="text-md">Số lượng:</p>
-                              <p className="text-lg font-semibold">{herd.totalNumber}</p>
-                            </div>
-                            <div className="mt-3 flex justify-between">
-                              <p className="text-md">Giống:</p>
-                              <p className="text-lg font-semibold">{herd.breed}</p>
-                            </div>
-                            {/* <div className="mt-3 flex justify-between">
-                  <Accordion variant="splitted" defaultExpandedKeys={["1"]}>
-                    <AccordionItem key={1} title="Danh sách chuồng">
-                      <div className="flex justify-between">
-                        <p className="text-xs font-light">Mã code</p>
-                        <p className="text-xs font-light">Tên chuồng</p>
-                        <p className="text-xs font-light">Số lượng</p>
-                      </div>
-                      {herd.barns.map((barn) => (
-                        <div key={barn.id} className="flex justify-between">
-                          <p className="text-lg mt-2">{barn.code}</p>
-                          <p className="text-lg mt-2">{barn.name}</p>
-                          <p className="text-lg mt-2">{barn.quantity}</p>
-                        </div>
-                      ))}
-                    </AccordionItem>
-                  </Accordion>
-                </div> */}
-                          </div>
-                        ) : (
-                          <p className="text-center text-lg mt-3">Chưa chọn kế hoạch điều trị</p>
-                        )}
-                      </AccordionItem>
-                      <AccordionItem key="2" title="Báo cáo bệnh" startContent={<HiOutlineDocumentReport className="text-emerald-500" size={25} />}></AccordionItem>
-                    </Accordion>
-                  </div>
-                </div>
-                {treatmentData?.treatmentStages && (
-                  <div>
-                    <div className="mt-5 mb-3 flex justify-between items-center">
-                      <p className="text-xl font-semibold">Các giai đoạn điều trị</p>
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button variant="bordered" className="capitalize">
-                            {filterValue}
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                          aria-label="Single selection example"
-                          variant="flat"
-                          disallowEmptySelection
-                          selectionMode="single"
-                          selectedKeys={filterStatus ? [filterStatus] : []}
-                          onSelectionChange={(selectedKeys: any) => {
-                            setFilterStatus(selectedKeys.values().next().value);
-                          }}
-                        >
-                          <DropdownItem key="all">Tất cả</DropdownItem>
-                          <DropdownItem key="done">Đã tiêm</DropdownItem>
-                          <DropdownItem key="not-done">Chưa tiêm</DropdownItem>
-                        </DropdownMenu>
-                      </Dropdown>
-                    </div>
-                    {treatmentData?.treatmentStages.length === 0 || filterTreatment(filterStatus).length === 0 ? (
-                      <p className="text-center text-lg mt-3">Không có lịch trình tiêm phòng</p>
-                    ) : (
-                      filterTreatment(filterStatus)
-                        // ?.filter((vaccination: TreatmentStageProps) => vaccination.applyStageTime >= new Date().toISOString())
-                        // ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
-                        ?.map((stage) => (
-                          <div key={stage.id} className="my-4 grid grid-cols-12 p-2 border-2 rounded-xl">
-                            <div className="col-span-2 flex items-center justify-center border-r-2">
-                              <p className="text-center text-lg p-2">{dateConverter(stage.applyStageTime)}</p>
-                            </div>
-                            <div className="col-span-2 border-r-2 flex items-center justify-center">
-                              <FaClock className="text-lg" />
-                              <p className="text-lg p-2">{stage.timeSpan}</p>
-                            </div>
-                            <div className="col-span-4 border-r-2 mx-3 flex flex-col items-start">
-                              <p>Nội dung</p>
-                              <p className="text-lg">{stage.title}</p>
-                            </div>
-                            <div className="col-span-2 border-r-2 mr-3 flex flex-col items-start justify-center">
-                              <p>Trạng thái</p>
-                              <p className={`text-lg ${stage.isDone ? "text-green-500" : "text-red-500"}`}>{stage.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
-                            </div>
-                            <div className="space-y-2">
-                              <Button
-                                variant="ghost"
-                                color="primary"
-                                endContent={<TbMedicineSyrup size={20} />}
-                                onPress={() => {
-                                  setSelectedVaccination(stage);
-                                  getMedicineInStage(stage.id ? stage.id : "");
-                                  onOpenDetail();
-                                }}
-                              >
-                                Xem thuốc
-                              </Button>
-                              {!stage.isDone && (
-                                <Button
-                                  variant="solid"
-                                  color="primary"
-                                  endContent={<CiEdit size={20} />}
-                                  onPress={() => {
-                                    setSelectedVaccination(stage);
-                                    onOpenUpdate();
-                                  }}
-                                >
-                                  Cập nhật kết quả
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        ))
-                    )}
-                    {/* {isOpenDetail && selectedVaccination && medicineList && (
-                  <DetailPlan isOpen={isOpenDetail} onClose={onCloseDetail} selectedVaccination={selectedVaccination} medicineList={medicineList} />
-                )}
-                {isOpenUpdate && selectedVaccination && (
-                  <UpdatePlanStatus
-                    isOpen={isOpenUpdate}
-                    onClose={onCloseUpdate}
-                    selectedVaccination={selectedVaccination}
-                    setSelectedVaccination={setSelectedVaccination}
-                  />
-                )} */}
-                  </div>
-                )}
-              </div>
+              <TreatmentStages
+                treatmentData={treatmentData}
+                diseaseReports={diseaseReports}
+                pigs={pigs}
+                selectedTreatment={selectedTreatment}
+                setSelectedTreatment={setSelectedTreatment}
+              />
             )}
           </div>
         </Tab>
@@ -448,7 +241,36 @@ const Treatment = () => {
             </div>
           }
         >
-          <TreatmentGuideList />
+          <div className="flex flex-col justify-end">
+            <Card className="mb-5 mx-20">
+              <CardBody>
+                <p className="text-lg text-center font-semibold">Hướng dẫn điều trị đã chọn</p>
+                {selectedTreatmentGuide ? (
+                  <div className="">
+                    <p className="">
+                      <strong>Tên bệnh:</strong> {selectedTreatmentGuide.diseaseTitle}
+                    </p>
+                    <p className="">
+                      <strong>Mô tả bệnh:</strong> {selectedTreatmentGuide.treatmentDescription}
+                    </p>
+                    <p className="">
+                      <strong>Triệu chứng:</strong> {selectedTreatmentGuide.diseaseSymptoms}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-center">Chưa chọn hướng dẫn điều trị</p>
+                )}
+              </CardBody>
+            </Card>
+            <Tabs size="md" color="primary" variant="solid" defaultSelectedKey="mode-1">
+              <Tab key="mode-1" title={<Layers3 size={20} />}>
+                <TreatmentGuideGridList gridColumns={1} selectedTreatmentGuide={selectedTreatmentGuide} setSelectedTreatmentGuide={setSelectedTreatmentGuide} />
+              </Tab>
+              <Tab key="mode-2" title={<Table size={20} />}>
+                <TreatmentGuideList selectedTreatmentGuide={selectedTreatmentGuide} setSelectedTreatmentGuide={setSelectedTreatmentGuide} />
+              </Tab>
+            </Tabs>
+          </div>
         </Tab>
         <Tab
           key="3"
@@ -459,7 +281,14 @@ const Treatment = () => {
             </div>
           }
         >
-          <CommonDiseaseList />
+          <Tabs size="md" color="primary" variant="solid" defaultSelectedKey="mode-1">
+            <Tab key="mode-1" title={<Layers3 size={20} />}>
+              <CommonDiseaseGridList gridColumns={1} />
+            </Tab>
+            <Tab key="mode-2" title={<Table size={20} />}>
+              <CommonDiseaseList />
+            </Tab>
+          </Tabs>
         </Tab>
       </Tabs>
     </div>

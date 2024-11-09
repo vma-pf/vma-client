@@ -1,8 +1,6 @@
 "use client";
 import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/react";
 import { useToast } from "@oursrc/hooks/use-toast";
-import { setNextTreatmentProgressStep } from "@oursrc/lib/features/treatment-progress-step/treatment-progress-step-slice";
-import { useAppDispatch } from "@oursrc/lib/hooks";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { DiseaseReport } from "@oursrc/lib/models/treatment";
 import { diseaseReportService } from "@oursrc/lib/services/diseaseReportService";

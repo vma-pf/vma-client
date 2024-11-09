@@ -3,7 +3,7 @@ import React from "react";
 import VaccinationList from "./_components/vaccination-list";
 import { FaClock, FaRegCalendarPlus } from "react-icons/fa6";
 import { VaccinationData, VaccinationStageProps } from "../../../../lib/models/vaccination";
-import { Accordion, AccordionItem, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Progress, Skeleton, useDisclosure } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button, Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Progress, Skeleton, useDisclosure } from "@nextui-org/react";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { dateConverter } from "@oursrc/lib/utils";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
@@ -13,9 +13,12 @@ import { useRouter } from "next/navigation";
 import { StageMedicine } from "@oursrc/lib/models/medicine";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { TbMedicineSyrup } from "react-icons/tb";
-import { CiEdit } from "react-icons/ci";
+import { CiBoxList, CiEdit } from "react-icons/ci";
 import DetailPlan from "./_components/_modals/detail-plan";
 import UpdatePlanStatus from "./_components/_modals/update-plan-status";
+import { FaCheckCircle } from "react-icons/fa";
+import { IoMdCloseCircle } from "react-icons/io";
+import { GrStatusGoodSmall } from "react-icons/gr";
 
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
@@ -234,7 +237,7 @@ const Vaccination = () => {
                 <p className="text-xl font-semibold">Thông tin đàn heo</p>
                 {herds.length > 0 ? (
                   herds.map((herd) => (
-                    <div>
+                    <div key={herd.id}>
                       <div className="mt-3 flex justify-between">
                         <p className="text-md">Tên đàn:</p>
                         <p className="text-lg font-semibold">{herd.code}</p>
@@ -302,59 +305,69 @@ const Vaccination = () => {
                     </DropdownMenu>
                   </Dropdown>
                 </div>
-                {vaccinationData?.vaccinationStages.length === 0 || filterVaccination(filterStatus).length === 0 ? (
-                  <p className="text-center text-lg mt-3">Không có lịch trình tiêm phòng</p>
-                ) : (
-                  filterVaccination(filterStatus)
-                    // ?.filter((vaccination: VaccinationStageProps) => vaccination.applyStageTime < new Date().toISOString())
-                    ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
-                    ?.map((stage) => (
-                      <div key={stage.id} className="my-4 grid grid-cols-12 p-2 border-2 rounded-xl">
-                        <div className="col-span-2 flex items-center justify-center border-r-2">
-                          <p className="text-center text-lg p-2">{dateConverter(stage.applyStageTime)}</p>
-                        </div>
-                        <div className="col-span-2 border-r-2 flex items-center justify-center">
-                          <FaClock className="text-lg" />
-                          <p className="text-lg p-2">{stage.timeSpan}</p>
-                        </div>
-                        <div className="col-span-4 border-r-2 mx-3 flex flex-col items-start">
-                          <p>Nội dung</p>
-                          <p className="text-lg">{stage.title}</p>
-                        </div>
-                        <div className="col-span-2 border-r-2 mr-3 flex flex-col items-start justify-center">
-                          <p>Trạng thái</p>
-                          <p className={`text-lg ${stage.isDone ? "text-green-500" : "text-red-500"}`}>{stage.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
-                        </div>
-                        <div className="space-y-2">
-                          <Button
-                            variant="ghost"
-                            color="primary"
-                            endContent={<TbMedicineSyrup size={20} />}
-                            onPress={() => {
-                              setSelectedVaccination(stage);
-                              getMedicineInStage(stage.id ? stage.id : "");
-                              onOpenDetail();
-                            }}
-                          >
-                            Xem thuốc
-                          </Button>
-                          {!stage.isDone && (
-                            <Button
-                              variant="solid"
-                              color="primary"
-                              endContent={<CiEdit size={20} />}
-                              onPress={() => {
-                                setSelectedVaccination(stage);
-                                onOpenUpdate();
-                              }}
-                            >
-                              Cập nhật kết quả
-                            </Button>
+                <div className="relative after:absolute after:inset-y-0 after:w-px after:bg-muted-foreground/20">
+                  {vaccinationData?.vaccinationStages.length === 0 || filterVaccination(filterStatus).length === 0 ? (
+                    <p className="text-center text-lg mt-3">Không có lịch trình tiêm phòng</p>
+                  ) : (
+                    filterVaccination(filterStatus)
+                      // ?.filter((vaccination: VaccinationStageProps) => vaccination.applyStageTime < new Date().toISOString())
+                      ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
+                      ?.map((stage) => (
+                        <div key={stage.id} className="grid ml-16 relative">
+                          {stage.isDone ? (
+                            <FaCheckCircle size={20} className={`text-primary absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
+                          ) : (
+                            <GrStatusGoodSmall size={20} className={`text-danger absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
                           )}
+                          <div className="mb-10 grid gap-3">
+                            <Divider orientation="vertical" className="absolute left-0 translate-x-[-24.3px] z-0 top-1" />
+                            <div className="text-lg font-semibold">{dateConverter(stage.applyStageTime)}</div>
+                            <div className="text-lg font-extrabold">{stage.title}</div>
+                            {/* <div className="">{stage.timeSpan}</div> */}
+                            <div className="flex items-center gap-2">
+                              <div className={`w-3 h-3 ${stage.isDone ? "bg-green-500" : "bg-red-500"} rounded-full`} />
+                              <div className={`${stage.isDone ? "text-green-500" : "text-red-500"}`}>{stage.isDone ? "Đã tiêm" : "Chưa tiêm"}</div>
+                            </div>
+                            <div className="flex gap-2">
+                              <CiBoxList className="text-primary" size={25} />
+                              <p className="text-lg">Các công việc cần thực hiện:</p>
+                            </div>
+                            <ul className="list-disc pl-5">
+                              {stage.vaccinationToDos.map((todo, idx) => (
+                                <li key={idx}>{todo.description}</li>
+                              ))}
+                            </ul>
+                            <div className="space-x-2">
+                              <Button
+                                variant="ghost"
+                                color="primary"
+                                endContent={<TbMedicineSyrup size={20} />}
+                                onPress={() => {
+                                  setSelectedVaccination(stage);
+                                  getMedicineInStage(stage.id ? stage.id : "");
+                                  onOpenDetail();
+                                }}
+                              >
+                                Xem thuốc
+                              </Button>
+                              <Button
+                                variant="solid"
+                                color="primary"
+                                endContent={<CiEdit size={20} />}
+                                isDisabled={stage.isDone || stage.applyStageTime > new Date().toISOString() || medicineList.some((medicine) => medicine.status !== 2)}
+                                onPress={() => {
+                                  setSelectedVaccination(stage);
+                                  onOpenUpdate();
+                                }}
+                              >
+                                Cập nhật kết quả
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))
-                )}
+                      ))
+                  )}
+                </div>
                 {isOpenDetail && selectedVaccination && medicineList && (
                   <DetailPlan isOpen={isOpenDetail} onClose={onCloseDetail} selectedVaccination={selectedVaccination} medicineList={medicineList} />
                 )}

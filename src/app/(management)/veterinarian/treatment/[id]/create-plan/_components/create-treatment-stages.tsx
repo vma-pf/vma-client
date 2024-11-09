@@ -1,10 +1,27 @@
 import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
-import { Accordion, AccordionItem, Button, Card, CardBody, DatePicker, DateValue, Input, Tooltip } from "@nextui-org/react";
+import {
+  Accordion,
+  AccordionItem,
+  Button,
+  Card,
+  CardBody,
+  DatePicker,
+  DateValue,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Tooltip,
+  useDisclosure,
+} from "@nextui-org/react";
 import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
 import { Plus, Trash } from "lucide-react";
 import React from "react";
 import { v4 } from "uuid";
 import MedicineListInStage from "./medine-list-in-stage";
+import { TreatmentTemplate } from "@oursrc/lib/models/plan-template";
 
 const CreateTreatmentStage = ({
   stages,
@@ -15,6 +32,9 @@ const CreateTreatmentStage = ({
   setStages: React.Dispatch<React.SetStateAction<CreateTreatmentStageProps[]>>;
   date: DateValue | null;
 }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedStage, setSelectedStage] = React.useState<CreateTreatmentStageProps | undefined>(undefined);
+
   const onStageChange = (event: string, field: string, index: string) => {
     setStages(
       stages.map((stage: CreateTreatmentStageProps) => {
@@ -48,8 +68,12 @@ const CreateTreatmentStage = ({
       },
     ]);
   };
-  const onDeleteStage = (stage: CreateTreatmentStageProps) => {
-    setStages([...stages.filter((x: CreateTreatmentStageProps) => x.id !== stage.id)]);
+  const onDeleteStage = () => {
+    if (selectedStage) {
+      setStages([...stages.filter((x: CreateTreatmentStageProps) => x.id !== selectedStage.id)]);
+      onClose();
+    }
+    setSelectedStage(undefined);
   };
   const onAddTodoInStage = (stageIndex: number) => {
     const newStages = stages.map((stage: CreateTreatmentStageProps, index: number) => {
@@ -66,11 +90,11 @@ const CreateTreatmentStage = ({
   };
 
   const onDeleteTodoInStage = (stageIndex: number, todoIndex: number) => {
-    const newStages = stages.map((stage: CreateTreatmentStageProps, index: number) => {
-      if (index === stageIndex) {
+    const newStages = stages.map((stage, sIndex) => {
+      if (sIndex === stageIndex) {
         return {
           ...stage,
-          treatmentTodos: stage.treatmentToDos.filter((_, i) => i !== todoIndex),
+          treatmentToDos: stage.treatmentToDos.filter((todo, tIndex) => tIndex !== todoIndex),
         };
       }
       return stage;
@@ -98,36 +122,6 @@ const CreateTreatmentStage = ({
     setStages(newStages);
   };
 
-  const updateMedicine = (e: any, stageIndex: number) => {
-    setStages((prevStages) => {
-      const updatedStages = [...prevStages];
-      const selectedStage = updatedStages[stageIndex];
-
-      if (!selectedStage) {
-        console.error(`Stage at index ${stageIndex} not found`);
-        return prevStages;
-      }
-
-      const currentMedicines = selectedStage.inventoryRequest.medicines;
-      const updatedMedicines = [...currentMedicines]; // Start with a copy of current medicines
-
-      e.medicines.forEach((newMedicine: any) => {
-        const existingMedicineIndex = updatedMedicines.findIndex((medicine) => medicine.medicineId === newMedicine.medicineId);
-        if (existingMedicineIndex !== -1) {
-          updatedMedicines[existingMedicineIndex] = newMedicine;
-        } else {
-          updatedMedicines.push(newMedicine);
-        }
-      });
-
-      selectedStage.inventoryRequest = {
-        ...selectedStage.inventoryRequest,
-        medicines: updatedMedicines,
-      };
-      updatedStages[stageIndex] = selectedStage;
-      return updatedStages;
-    });
-  };
   return (
     <div>
       <CardBody>
@@ -148,7 +142,15 @@ const CreateTreatmentStage = ({
                     <span className="text-lg text-danger cursor-pointer active:opacity-50">
                       {stages.length > 1 && (
                         <Tooltip color="danger" content="Xóa giai đoạn">
-                          <Button isIconOnly color="danger" size="sm" onClick={() => onDeleteStage(stage)}>
+                          <Button
+                            isIconOnly
+                            color="danger"
+                            size="sm"
+                            onClick={() => {
+                              onOpen();
+                              setSelectedStage(stage);
+                            }}
+                          >
                             <Trash size={20} color="#ffffff" />
                           </Button>
                         </Tooltip>
@@ -210,7 +212,7 @@ const CreateTreatmentStage = ({
                     {/* todo */}
                     <div className="grid grid-cols-3 gap-4">
                       <div className="col-span-2">
-                        <MedicineListInStage medicineInStageProp={stage.inventoryRequest} updateMedicines={(e: any) => updateMedicine(e, stageIndex)} />
+                        <MedicineListInStage stage={stage} setStages={setStages} />
                       </div>
                       <div>
                         <Tooltip color="primary" content={`Các bước cần thực hiện trong giai đoạn ${stageIndex + 1}`}>
@@ -265,6 +267,26 @@ const CreateTreatmentStage = ({
           })}
         </Accordion>
       </CardBody>
+      {isOpen && selectedStage && (
+        <Modal isOpen={isOpen} onClose={onClose} size="md">
+          <ModalContent>
+            <ModalHeader>
+              <p className="text-lg">Xác nhận xóa giai đoạn</p>
+            </ModalHeader>
+            <ModalBody>
+              <p>Bạn có chắc chắn muốn xóa giai đoạn?</p>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="danger" variant="solid" onClick={onClose}>
+                Hủy
+              </Button>
+              <Button color="primary" variant="solid" onClick={onDeleteStage}>
+                Xác nhận
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
     </div>
   );
 };

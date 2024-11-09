@@ -2,7 +2,7 @@ import { Button, Divider, Modal, ModalBody, ModalContent, ModalFooter, ModalHead
 import { useToast } from "@oursrc/hooks/use-toast";
 import { StageMedicine } from "@oursrc/lib/models/medicine";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
-import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
+import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
 import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
 import { dateConverter } from "@oursrc/lib/utils";
 import Image from "next/image";
@@ -28,12 +28,12 @@ const statusColorMap = [
 const DetailPlan = ({
   isOpen,
   onClose,
-  selectedVaccination,
+  selectedTreatment,
   medicineList,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  selectedVaccination: VaccinationStageProps;
+  selectedTreatment: CreateTreatmentStageProps;
   medicineList: StageMedicine[];
 }) => {
   const { toast } = useToast();
@@ -75,22 +75,22 @@ const DetailPlan = ({
               <div className="col-span-6 flex flex-col items-center">
                 <PiSubtitlesLight className="text-5xl" />
                 <p className="text-md font-light">Nội dung</p>
-                <p className="text-lg">{selectedVaccination?.title}</p>
+                <p className="text-lg">{selectedTreatment?.title}</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
                 <CiClock2 className="text-5xl" />
                 <p className="text-md font-light">Thời gian</p>
-                <p className="text-lg">{selectedVaccination?.timeSpan}</p>
+                <p className="text-lg">{selectedTreatment?.timeSpan}</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
                 <CiCalendar className="text-5xl" />
                 <p className="text-md font-light">Ngày áp dụng</p>
-                <p className="text-lg">{selectedVaccination && dateConverter(selectedVaccination?.applyStageTime)}</p>
+                <p className="text-lg">{selectedTreatment && dateConverter(selectedTreatment?.applyStageTime)}</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
-                <GrStatusGoodSmall className={`text-5xl ${selectedVaccination?.isDone ? "text-green-500" : "text-red-500"}`} />
+                <GrStatusGoodSmall className={`text-5xl ${selectedTreatment?.isDone ? "text-green-500" : "text-red-500"}`} />
                 <p className="text-md font-light">Trạng thái</p>
-                <p className={`text-lg ${selectedVaccination?.isDone ? "text-green-500" : "text-red-500"}`}>{selectedVaccination?.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
+                <p className={`text-lg ${selectedTreatment?.isDone ? "text-green-500" : "text-red-500"}`}>{selectedTreatment?.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
               </div>
             </div>
             <p className="text-lg mt-3">Danh sách thuốc cần tiêm</p>

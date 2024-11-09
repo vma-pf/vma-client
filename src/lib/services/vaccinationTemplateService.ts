@@ -3,7 +3,7 @@ import { ResponseObject, ResponseObjectList } from "../models/response-object";
 import {
   CreateVaccinationTemplate,
   VaccinationTemplate,
-} from "../models/vaccination-template";
+} from "../models/plan-template";
 const endpoint = "api/vaccinationTemplates";
 export const vaccinationTemplateService = {
   getVaccinationTemplate: (pageIndex: number, pageSize: number) =>

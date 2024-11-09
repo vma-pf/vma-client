@@ -10,6 +10,13 @@ export const vaccinationService = {
         pageSize: pageSize?.toString() || "",
       },
     }),
+  getMyVaccinationPlan: (page: number, pageSize: number) =>
+    http.get<ResponseObject<any>>("api/my-vaccination-plans", {
+      params: {
+        pageIndex: page?.toString() || "",
+        pageSize: pageSize?.toString() || "",
+      },
+    }),
   getVaccinationPlan: (id: string) =>
     http.get<ResponseObject<any>>(`get-vaccination-plan/${id}`),
   getMedicineInStage: (id: string) =>

@@ -1,40 +1,46 @@
-import { TreatmentGuide } from "./treatment-guide"
+export type VaccinationTemplate = {
+  titleTemplate: string,
+  contentTemplate: string
+}
 
-export type CreatePlanTemplate = {
-  treatmentGuideId?: string | null,
+export type CreateVaccinationTemplate = {
+  titleTemplate: string,
+  createVaccinationPlanIncludeStageRequest: string
+}
+
+export type TreatmentTemplate = {
   name: string,
-  stageTemplates: CreatePlanStageTemplate[]
+  stageTemplates: StageTemplate[],
+  treatmentGuide: {
+    commonDiseaseId: string,
+    title: string,
+    description: string,
+    cure: string,
+    authorId: string,
+    id: string
+  },
+  id: string,
 }
 
-export type CreatePlanStageTemplate = {
-  title: string,
-  timeSpan: string,
-  numberOfDays: number
-  toDoTemplates: TodoTemplate[],
-  medicineTemplates: MedicineTemplate[],
-}
-
-export type PlanTemplate = {
-  name: string,
-  stageTemplates: PlanStagesTemplate[]
-  treatmentGuide?: TreatmentGuide
-}
-
-export type PlanStagesTemplate = {
+export type StageTemplate = {
   planTemplateId: string,
   title: string,
   timeSpan: string,
-  numberOfDays: number
-  toDoTemplates: TodoTemplate[],
+  numberOfDays: number,
+  toDoTemplates: [
+    {
+      id: string,
+      description: string,
+    }
+  ],
   medicineTemplates: MedicineTemplate[],
-}
-
-export type TodoTemplate = {
-  description: string
+  id: string,
 }
 
 export type MedicineTemplate = {
+  stageTemplateId: string,
   medicineId: string,
-  portionOfPig?: number,
-  medicineName?: string
+  portionEachPig: number,
+  medicineName: string,
+  id: string
 }

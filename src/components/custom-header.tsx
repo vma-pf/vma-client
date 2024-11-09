@@ -71,6 +71,9 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
         case "Yêu cầu tiêm phòng":
           router.push("/farm-assist/medicine");
           break;
+        case "Yêu cầu cấp phát thuốc":
+          router.push("/farm-assist/medicine");
+          break;
         default:
           break;
       }
@@ -140,7 +143,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
 
   const toggleMode = () => setTheme(theme === "light" ? "dark" : "light");
   return (
-    <div className="bg-slate-200 dark:bg-zinc-800 px-4 py-2 rounded-2xl flex justify-between">
+    <div className="bg-slate-100 dark:bg-zinc-800 px-4 py-2 flex justify-between">
       <p className="font-bold text-3xl">{titleMap[filteredPath] || ""}</p>
       <div className="flex items-center">
         {/* <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "/farmer" ? "Farmer" : "/farm-assist" ? "Farm Assistant" : ""}</p> */}

@@ -24,11 +24,11 @@ import { BiSolidInjection } from "react-icons/bi";
 import { FaStar } from "react-icons/fa6";
 import { HiChevronDown } from "react-icons/hi2";
 
-// const statusMapColor = {
-//   pending: "warning",
-//   approved: "success",
-//   rejected: "danger",
-// };
+const statusColorMap = {
+  "Chờ xử lý": "warning",
+  "Đã duyệt": "success",
+  "Từ chối": "danger",
+};
 
 const RequestMedicineList = () => {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -38,6 +38,7 @@ const RequestMedicineList = () => {
   const filterValue = React.useMemo(() => {
     if (filterStatus === "all") return "Tất cả";
     else if (filterStatus === "Chờ xử lý") return "Chờ xử lý";
+    else if (filterStatus === "Đã yêu cầu") return "Đã yêu cầu";
     else if (filterStatus === "Đã duyệt") return "Đã duyệt";
     else if (filterStatus === "Từ chối") return "Từ chối";
   }, [filterStatus]);
@@ -46,6 +47,7 @@ const RequestMedicineList = () => {
     const data = requestMedicineList || [];
     if (status === "all") return data;
     else if (status === "Chờ xử lý") return data.filter((item) => item.status === "Chờ xử lý");
+    else if (status === "Đã yêu cầu") return data.filter((item) => item.status === "Đã yêu cầu");
     else if (status === "Đã duyệt") return data.filter((item) => item.status === "Đã duyệt");
     else if (status === "Từ chối") return data.filter((item) => item.status === "Từ chối");
     else return data;
@@ -112,17 +114,21 @@ const RequestMedicineList = () => {
         ) : (
           filterMedicineRequest(filterStatus).map((request: MedicineRequest) => (
             <div key={request.id}>
-              <div className="my-2 flex items-center hover:bg-gray-100 p-2 rounded-lg">
+              <div className="my-2 flex items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-3 rounded-lg">
                 <BiSolidInjection size={25} className="text-primary" />
                 <div className="ml-3">
                   {request.newMedicineName && <p className="text-xl mb-3">{request.newMedicineName}</p>}
-                  {request.medicineId && <p className="text-xl mb-3">{request.medicineId}</p>}
+                  {request.medicineName && <p className="text-xl mb-3">{request.medicineName}</p>}
                   <p>
                     Số lượng:<strong> {request.quantity}</strong>
                   </p>
                   <p>
                     Trạng thái:{" "}
-                    <strong className={`text-${request.status === "Chờ xử lý" ? "warning" : request.status === "Đã duyệt" ? "success" : "danger"}-500`}>
+                    <strong
+                      className={`text-${
+                        request.status === "Chờ xử lý" ? "warning" : request.status === "Đã duyệt" ? "success" : request.status === "Đã yêu cầu" ? "sky" : "danger"
+                      }-500`}
+                    >
                       {request.status}
                     </strong>
                   </p>
