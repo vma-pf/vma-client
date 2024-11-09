@@ -1,7 +1,7 @@
 import { TreatmentGuide } from "./treatment-guide"
 
 export type CreatePlanTemplate = {
-  treatmentGuideId?: string
+  treatmentGuideId?: string | null,
   name: string,
   stageTemplates: CreatePlanStageTemplate[]
 }
@@ -35,6 +35,6 @@ export type TodoTemplate = {
 
 export type MedicineTemplate = {
   medicineId: string,
-  portionOfPig: number,
+  portionOfPig?: number,
   medicineName?: string
 }

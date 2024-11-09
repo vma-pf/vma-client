@@ -15,7 +15,7 @@ export const planTemplateService = {
     }),
   create: (model: CreatePlanTemplate) =>
     http.post(endpoint, {
-      treatmentGuideId: model.treatmentGuideId ?? "",
+      treatmentGuideId: model.treatmentGuideId,
       name: model.name,
       stageTemplates: model.stageTemplates,
     }),
