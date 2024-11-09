@@ -42,10 +42,9 @@ import { v4 } from "uuid";
 import CreateVaccinationStages from "./create-vaccination-stages";
 import SelectedPigsList from "./selected-pigs-list";
 
-const CreateVaccination = () => {
+const CreateVaccination = ({pigIds = []}: {pigIds?: string[]}) => {
   const router = useRouter();
   //State
-  const [vaccinationTemplatesOptions, setVaccinationTemplatesOptions] = React.useState<{ key: string; label: string }[]>([]);
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
@@ -497,48 +496,50 @@ const CreateVaccination = () => {
               <CreateVaccinationStages stages={stages} setStages={setStages} date={stageDate} />
             </CardBody>
           </Card>
-          <Card>
-            <CardBody>
-              <p className="text-2xl font-semibold">Chọn heo cho kế hoạch tiêm phòng</p>
-              <div className="mt-2 grid grid-cols-2 gap-4">
-                <div>
-                  <Card className="mt-2" radius="sm">
-                    <CardBody>
-                      <div className="mb-1 flex justify-between">
-                        <p className="text-lg">Chọn heo theo {openBy === "cage" ? "Chuồng" : "Đàn"}</p>
-                        <Popover key="select" placement="bottom">
-                          <PopoverTrigger>
-                            <Button isIconOnly color="primary" size="sm">
-                              <Filter size={15} color="#ffffff" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent>
-                            <div className="flex flex-col px-1 py-2">
-                              <Button className="mb-2" color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("herd")}>
-                                <p className="text-white">Chọn theo đàn</p>
+          {pigIds.length === 0 && (
+            <Card>
+              <CardBody>
+                <p className="text-2xl font-semibold">Chọn heo cho kế hoạch tiêm phòng</p>
+                <div className="mt-2 grid grid-cols-2 gap-4">
+                  <div>
+                    <Card className="mt-2" radius="sm">
+                      <CardBody>
+                        <div className="mb-1 flex justify-between">
+                          <p className="text-lg">Chọn heo theo {openBy === "cage" ? "Chuồng" : "Đàn"}</p>
+                          <Popover key="select" placement="bottom">
+                            <PopoverTrigger>
+                              <Button isIconOnly color="primary" size="sm">
+                                <Filter size={15} color="#ffffff" />
                               </Button>
-                              <Button color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("cage")}>
-                                <p className="text-white">Chọn theo chuồng</p>
-                              </Button>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      <Divider orientation="horizontal" className="my-2 b-2" />
-                      {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCages} /> : <HerdListReadOnly setSelected={setSelectedHerds} />}
-                    </CardBody>
-                  </Card>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                              <div className="flex flex-col px-1 py-2">
+                                <Button className="mb-2" color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("herd")}>
+                                  <p className="text-white">Chọn theo đàn</p>
+                                </Button>
+                                <Button color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("cage")}>
+                                  <p className="text-white">Chọn theo chuồng</p>
+                                </Button>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <Divider orientation="horizontal" className="my-2 b-2" />
+                        {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCages} /> : <HerdListReadOnly setSelected={setSelectedHerds} />}
+                      </CardBody>
+                    </Card>
+                  </div>
+                  <div>
+                    <Card className="mt-2" radius="sm">
+                      <CardBody>
+                        <SelectedPigsList pigList={allSelectedPigs} />
+                      </CardBody>
+                    </Card>
+                  </div>
                 </div>
-                <div>
-                  <Card className="mt-2" radius="sm">
-                    <CardBody>
-                      <SelectedPigsList pigList={allSelectedPigs} />
-                    </CardBody>
-                  </Card>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
+              </CardBody>
+            </Card>
+          )}
         </form>
       </div>
     </div>

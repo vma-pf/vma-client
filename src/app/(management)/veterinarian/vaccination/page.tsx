@@ -19,6 +19,7 @@ import UpdatePlanStatus from "./_components/_modals/update-plan-status";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoMdCloseCircle } from "react-icons/io";
 import { GrStatusGoodSmall } from "react-icons/gr";
+import ChangeVaccinationPlan from "./_components/_modals/change-vaccination-plan";
 
 const statusMap = [
   { name: "Chưa bắt đầu", value: 0 },
@@ -65,6 +66,7 @@ const Vaccination = () => {
   const [filterStatus, setFilterStatus] = React.useState("not-done");
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
+  const { isOpen: isOpenChangeVaccinationPlanModal, onOpen: onOpenChangeVaccinationPlanModal, onClose: onCloseChangeVaccinationPlanModal } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
   const [selectedVaccination, setSelectedVaccination] = React.useState<VaccinationStageProps>();
 
@@ -283,27 +285,38 @@ const Vaccination = () => {
               <div>
                 <div className="mt-5 mb-3 flex justify-between items-center">
                   <p className="text-xl font-semibold">Các giai đoạn tiêm phòng</p>
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <Button variant="bordered" className="capitalize">
-                        {filterValue}
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      aria-label="Single selection example"
-                      variant="flat"
-                      disallowEmptySelection
-                      selectionMode="single"
-                      selectedKeys={filterStatus ? [filterStatus] : []}
-                      onSelectionChange={(selectedKeys: any) => {
-                        setFilterStatus(selectedKeys.values().next().value);
-                      }}
+                  <div>
+                    <Button
+                      variant="solid"
+                      color="primary"
+                      endContent={<CiEdit size={20} />}
+                      className="mr-2"
+                      onClick={onOpenChangeVaccinationPlanModal}
                     >
-                      <DropdownItem key="all">Tất cả</DropdownItem>
-                      <DropdownItem key="done">Đã tiêm</DropdownItem>
-                      <DropdownItem key="not-done">Chưa tiêm</DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
+                      Đổi lịch tiêm phòng
+                    </Button>
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button variant="bordered" className="capitalize">
+                          {filterValue}
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu
+                        aria-label="Single selection example"
+                        variant="flat"
+                        disallowEmptySelection
+                        selectionMode="single"
+                        selectedKeys={filterStatus ? [filterStatus] : []}
+                        onSelectionChange={(selectedKeys: any) => {
+                          setFilterStatus(selectedKeys.values().next().value);
+                        }}
+                      >
+                        <DropdownItem key="all">Tất cả</DropdownItem>
+                        <DropdownItem key="done">Đã tiêm</DropdownItem>
+                        <DropdownItem key="not-done">Chưa tiêm</DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                  </div>
                 </div>
                 <div className="relative after:absolute after:inset-y-0 after:w-px after:bg-muted-foreground/20">
                   {vaccinationData?.vaccinationStages.length === 0 || filterVaccination(filterStatus).length === 0 ? (
@@ -377,6 +390,12 @@ const Vaccination = () => {
                     onClose={onCloseUpdate}
                     selectedVaccination={selectedVaccination}
                     setSelectedVaccination={setSelectedVaccination}
+                  />
+                )}
+                {isOpenChangeVaccinationPlanModal && (
+                  <ChangeVaccinationPlan 
+                    isOpen={isOpenChangeVaccinationPlanModal}
+                    onClose={onCloseChangeVaccinationPlanModal}
                   />
                 )}
               </div>
