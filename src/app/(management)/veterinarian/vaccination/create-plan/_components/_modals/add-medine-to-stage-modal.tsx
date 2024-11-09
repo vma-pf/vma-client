@@ -24,6 +24,7 @@ const AddMedicineToStageModal = ({
   const [currentTab, setCurrentTab] = React.useState<React.Key>("existed");
   const [selectedMed, setSelectedMed] = React.useState<{}>({});
   const [portionEachPig, setPortionEachPig] = React.useState<number>(1);
+  const [newMedicineName, setNewMedicineName] = React.useState<string>("");
 
   const handlePortionChange = (event: string) => {
     let numericValue = event.replace(/[^0-9]/g, "");
@@ -74,6 +75,7 @@ const AddMedicineToStageModal = ({
                 <Tabs onSelectionChange={(e) => setCurrentTab(e)}>
                   <Tab key="existed" title="Thuốc trong kho">
                     <Input
+                      className="mb-2"
                       type="text"
                       label="Số lượng liều mỗi con"
                       defaultValue="1"
@@ -82,6 +84,26 @@ const AddMedicineToStageModal = ({
                       onValueChange={(event) => handlePortionChange(event)}
                     />
                     <MedicinesListReadOnly setSelected={setSelectedMed} />
+                  </Tab>
+                  <Tab key="new" title="Thuốc mới ">
+                    <Input
+                      className="mb-2"
+                      type="text"
+                      label="Số lượng liều mỗi con"
+                      defaultValue="1"
+                      min={1}
+                      value={portionEachPig.toString()}
+                      onValueChange={(event) => handlePortionChange(event)}
+                    />
+                    <Input
+                      className="mb-2"
+                      type="text"
+                      label="Tên thuốc mới"
+                      defaultValue="1"
+                      min={1}
+                      value={portionEachPig.toString()}
+                      onValueChange={(event) => handlePortionChange(event)}
+                    />
                   </Tab>
                 </Tabs>
               </ModalBody>

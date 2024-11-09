@@ -1,6 +1,7 @@
 export type VaccinationTemplate = {
-  titleTemplate: string,
-  contentTemplate: string
+  name: string,
+  stageTemplates: StageTemplate[],
+  id: string,
 }
 
 export type CreateVaccinationTemplate = {
