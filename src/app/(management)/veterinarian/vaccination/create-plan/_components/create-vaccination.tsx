@@ -42,7 +42,7 @@ import { v4 } from "uuid";
 import CreateVaccinationStages from "./create-vaccination-stages";
 import SelectedPigsList from "./selected-pigs-list";
 
-const FirstVaccinationStep = () => {
+const CreateVaccination = () => {
   const router = useRouter();
   //State
   const [vaccinationTemplatesOptions, setVaccinationTemplatesOptions] = React.useState<{ key: string; label: string }[]>([]);
@@ -544,4 +544,4 @@ const FirstVaccinationStep = () => {
     </div>
   );
 };
-export default FirstVaccinationStep;
+export default CreateVaccination;
