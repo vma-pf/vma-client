@@ -23,13 +23,15 @@ import {
   Accordion,
   AccordionItem,
   Tooltip,
+  Tabs,
+  Tab,
 } from "@nextui-org/react";
 import { useForm } from "react-hook-form";
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { CreateTreatmentStageProps, DiseaseReport } from "@oursrc/lib/models/treatment";
 import { v4 } from "uuid";
 import CreateTreatmentStage from "./_components/create-treatment-stages";
-import { Check, ChevronDown, Filter, Plus, SaveAll, Trash } from "lucide-react";
+import { Check, ChevronDown, Edit, Filter, Plus, SaveAll, Trash } from "lucide-react";
 import { useToast } from "@oursrc/hooks/use-toast";
 import CageListReadOnly from "@oursrc/components/cages/cage-list-read-only";
 import HerdListReadOnly from "@oursrc/components/herds/herd-list-read-only";
@@ -41,12 +43,17 @@ import { pigService } from "@oursrc/lib/services/pigService";
 import CreateDiseaseReport from "./_components/_modals/create-disease-report";
 import { useRouter } from "next/navigation";
 import SelectedPigsList from "./_components/selected-pig-list";
-import { planTemplateService } from "@oursrc/lib/services/planTemplate";
+import { planTemplateService } from "@oursrc/lib/services/planTemplateService";
 import { MdOutlineKeyboardDoubleArrowLeft } from "react-icons/md";
 import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTrigger } from "@oursrc/components/ui/sheet";
 import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
 import { treatmentGuideService } from "@oursrc/lib/services/treatmentGuideService";
-import { TreatmentTemplate } from "@oursrc/lib/models/plan-template";
+import { PlanTemplate, StageTemplate } from "@oursrc/lib/models/plan-template";
+// import PlanTemplate from "@oursrc/components/template/plan-template";
+import { AiOutlineSchedule } from "react-icons/ai";
+import { TbTemplate } from "react-icons/tb";
+import UpdateDeleteTemplate from "@oursrc/components/template/modals/update-delete-template";
+import CommonPlanTemplate from "@oursrc/components/template/plan-template";
 
 export type TreatmentPlanStep = {
   id: number;
@@ -66,8 +73,11 @@ const CreatePLan = ({
   const { toast } = useToast();
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenUpdateTemplate, onOpen: onOpenUpdateTemplate, onClose: onCloseUpdateTemplate } = useDisclosure();
+  const { isOpen: isOpenDeleteTemplate, onOpen: onOpenDeleteTemplate, onClose: onCloseDeleteTemplate } = useDisclosure();
   const [openSaveTemplate, setOpenSaveTemplate] = React.useState<boolean>(false);
   const [openTreatmentGuide, setOpenTreatmentGuide] = React.useState<boolean>(false);
+  const [openChooseTemplate, setOpenChooseTemplate] = React.useState<boolean>(false);
   const [openBy, setOpenBy] = React.useState<string>("herd");
   const [diseaseReport, setDiseaseReport] = React.useState<DiseaseReport | undefined>();
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
@@ -76,8 +86,9 @@ const CreatePLan = ({
   const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);
   const [templateName, setTemplateName] = React.useState<string>("");
   const [treatmentGuide, setTreatmentGuide] = React.useState<TreatmentGuide | undefined>();
-  const [templates, setTemplates] = React.useState<TreatmentTemplate[]>();
-  const [selectedTemplate, setSelectedTemplate] = React.useState<TreatmentTemplate | undefined>();
+  const [templates, setTemplates] = React.useState<PlanTemplate[]>();
+  const [selectedTemplate, setSelectedTemplate] = React.useState<PlanTemplate | undefined>();
+  const [selectedUpdateTemplate, setSelectedUpdateTemplate] = React.useState<PlanTemplate | undefined>();
   const {
     register,
     handleSubmit,
@@ -86,7 +97,7 @@ const CreatePLan = ({
   } = useForm();
 
   // Form State
-  const [date, setDate] = React.useState<DateValue | null>(today(getLocalTimeZone()));
+  // const [date, setDate] = React.useState<DateValue | null>(today(getLocalTimeZone()));
   const [stages, setStages] = React.useState<CreateTreatmentStageProps[]>([
     {
       id: v4(),
@@ -144,7 +155,7 @@ const CreatePLan = ({
 
   const fetchTemplate = async () => {
     try {
-      const res: ResponseObjectList<TreatmentTemplate> = await planTemplateService.getTreatmentPlanTemplate(1, 500);
+      const res: ResponseObjectList<PlanTemplate> = await planTemplateService.getTreatmentPlanTemplate(1, 500);
       if (res.isSuccess) {
         setTemplates(res.data.data);
       }
@@ -160,7 +171,7 @@ const CreatePLan = ({
         (stage) =>
           stage.title && stage.timeSpan && stage.applyStageTime && stage.treatmentToDos.every((todo) => todo.description) && stage.inventoryRequest.medicines.length > 0
       ) &&
-      date &&
+      // date &&
       Object.keys(errors).length === 0 &&
       selectedPigs.length > 0
     );
@@ -172,9 +183,12 @@ const CreatePLan = ({
       // console.log(stages);
       // console.log(new Date(date?.year ?? 0, date?.month ?? 0, date?.day ?? 0).toISOString());
       // console.log(allSelectedPigs);
+
+      // find the last date and the timeSpan of the that stage
+      const lastStage = stages.reduce((prev, current) => (new Date(prev.applyStageTime) > new Date(current.applyStageTime) ? prev : current));
       const payload = {
         ...data,
-        expectedTimePeriod: new Date(date?.year ?? 0, date?.month ?? 0, date?.day ?? 0).toISOString(),
+        expectedTimePeriod: new Date(new Date(lastStage.applyStageTime).setDate(new Date(lastStage.applyStageTime).getDate() + Number(lastStage.timeSpan))).toISOString(),
         treatmentStages: stages.map((stage) => ({
           ...stage,
           note: "",
@@ -285,9 +299,8 @@ const CreatePLan = ({
     }
   };
 
-  const handleChooseTemplate = (keys: Selection) => {
-    const selectedKeysArray = Array.from(keys);
-    if (selectedKeysArray.length === 0) {
+  const handleChooseTemplate = (template: PlanTemplate) => {
+    if (template.id === selectedTemplate?.id) {
       setSelectedTemplate(undefined);
       setStages([
         {
@@ -304,11 +317,12 @@ const CreatePLan = ({
           },
         },
       ]);
+      setOpenChooseTemplate(false);
       return;
     }
-    const template = templates?.filter((item) => item.id && selectedKeysArray.includes(item.id))[0] || undefined;
+    // const template = templates?.filter((item) => item.id && selectedKeysArray.includes(item.id))[0] || undefined;
     setSelectedTemplate(template);
-    const newStages = template?.stageTemplates
+    const newStages = template.stageTemplates
       .sort((a, b) => a.numberOfDays - b.numberOfDays)
       .map((templateStage: any) => {
         const applyStageDate = new Date();
@@ -336,6 +350,33 @@ const CreatePLan = ({
         };
       }) as CreateTreatmentStageProps[];
     setStages(newStages);
+    setOpenChooseTemplate(false);
+  };
+
+  const handleUpdateTemplate = async () => {
+    try {
+      console.log(selectedTemplate);
+      // const firstStage = stages[0].applyStageTime;
+      // const payload = {
+      //   ...selectedTemplate,
+      //   stageTemplates: stages.map((stage) => ({
+      //     title: stage.title,
+      //     timeSpan: stage.timeSpan,
+      //     numberOfDays: (new Date(stage.applyStageTime).getTime() - new Date(firstStage).getTime()) / (1000 * 60 * 60 * 24),
+      //     medicineTemplates: stage.inventoryRequest.medicines.map((medicine: any) => ({
+      //       medicineId: medicine.type === "existed" ? medicine.medicineId : null,
+      //       portionEachPig: medicine.portionEachPig,
+      //     })),
+      //     toDoTemplates: stage.treatmentToDos.map((todo, index) => ({
+      //       id: `todo-${index}`, // Generate or use an existing id
+      //       description: todo.description,
+      //     })),
+      //   })),
+      // };
+      // console.log(payload);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   React.useEffect(() => {
@@ -394,92 +435,158 @@ const CreatePLan = ({
           </SheetFooter> */}
         </SheetContent>
       </Sheet>
-      {isOpen && <CreateDiseaseReport isOpen={isOpen} onOpen={onOpen} onClose={onClose} setDiseaseReport={setDiseaseReport} />}
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Card className="mt-4">
-          <CardBody>
-            <div className="flex justify-end space-x-3">
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button variant="ghost" color="primary" endContent={<ChevronDown size={20} />}>
-                    Chọn mẫu điều trị
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  selectionMode="single"
-                  items={templates}
-                  selectedKeys={selectedTemplate && selectedTemplate.id ? new Set([selectedTemplate?.id]) : new Set<string>()}
-                  onSelectionChange={(keys: Selection) => handleChooseTemplate(keys)}
-                >
-                  {(item) => (
-                    <DropdownItem key={item.id} description={item.treatmentGuide.title}>
-                      <p className="font-semibold">{item.name}</p>
-                    </DropdownItem>
-                  )}
-                </DropdownMenu>
-              </Dropdown>
-              <Popover placement="bottom" isOpen={openSaveTemplate} onOpenChange={(open) => setOpenSaveTemplate(open)}>
-                <PopoverTrigger>
-                  <Button color="default" variant="solid" isIconOnly>
-                    <Tooltip placement="bottom" content="Lưu mẫu điều trị" closeDelay={200}>
-                      <SaveAll size={20} />
-                    </Tooltip>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent>
-                  <div className="flex flex-row items-center gap-2">
-                    <Input
-                      className="my-2"
-                      type="text"
-                      radius="sm"
-                      size="sm"
-                      label="Tên mẫu"
-                      labelPlacement="inside"
-                      isRequired
-                      value={templateName}
-                      onValueChange={(e) => setTemplateName(e)}
-                    />
-                    <Button
-                      color="primary"
-                      isIconOnly
-                      onClick={() => {
-                        handleCreateTemplate();
-                        setOpenSaveTemplate(false);
-                      }}
-                      isDisabled={!isFormFilled() || !templateName}
-                    >
-                      <Check />
-                    </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <Button color="primary" onClick={onOpen} isDisabled={diseaseReport ? true : false}>
-                Tạo báo cáo bệnh
-              </Button>
-              <Button color="primary" type="submit" isDisabled={!isFormFilled()}>
-                Tạo kế hoạch
-              </Button>
+      {/* {selectedUpdateTemplate && isOpenUpdateTemplate && (
+        <UpdateDeleteTemplate
+          isOpen={isOpenUpdateTemplate}
+          onClose={onCloseUpdateTemplate}
+          operation="edit"
+          planType="treatment"
+          planTemplate={selectedUpdateTemplate}
+          setPlanTemplate={setSelectedUpdateTemplate}
+        />
+      )}
+      {selectedUpdateTemplate && isOpenDeleteTemplate && (
+        <UpdateDeleteTemplate
+          isOpen={isOpenDeleteTemplate}
+          onClose={onCloseDeleteTemplate}
+          operation="delete"
+          planType="treatment"
+          planTemplate={selectedUpdateTemplate}
+          setPlanTemplate={setSelectedUpdateTemplate}
+        />
+      )} */}
+      <Tabs defaultSelectedKey={1} color="primary" size="lg">
+        <Tab
+          key={1}
+          title={
+            <div className="flex items-center">
+              <AiOutlineSchedule size={20} />
+              <span className="ml-2">Kế hoạch điều trị</span>
             </div>
-          </CardBody>
-        </Card>
-        <Card className="my-4">
-          <CardBody>
-            <p className="text-2xl mb-2 font-semibold">Thông tin kế hoạch điều trị</p>
-            <div className="grid grid-cols-2 gap-4 mt-3">
-              <Input
-                className="mb-5"
-                type="text"
-                radius="sm"
-                size="lg"
-                label="Tiêu đề"
-                placeholder="Nhập tiêu đề"
-                labelPlacement="outside"
-                isRequired
-                isInvalid={errors.title ? true : false}
-                errorMessage="Tiêu đề không được để trống"
-                {...register("title", { required: true })}
-              />
-              <DatePicker
+          }
+        >
+          {isOpen && <CreateDiseaseReport isOpen={isOpen} onOpen={onOpen} onClose={onClose} setDiseaseReport={setDiseaseReport} />}
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Card className="mt-4">
+              <CardBody>
+                <div className="flex justify-end space-x-3">
+                  {/* <Popover placement="bottom" isOpen={openChooseTemplate} onOpenChange={(open) => setOpenChooseTemplate(open)}>
+                    <PopoverTrigger>
+                      <Button color="default" variant="solid" endContent={<ChevronDown size={20} />}>
+                        {selectedTemplate ? selectedTemplate.name : "Chọn mẫu"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <div className="flex flex-col gap-2">
+                        {templates?.map((template) => (
+                          <div key={template.id} className="m-2 cursor-pointer flex items-center gap-2">
+                            <div onClick={() => handleChooseTemplate(template)} className="p-3 flex hover:bg-emerald-100 rounded-xl">
+                              {selectedTemplate?.id === template.id && <Check size={20} />}
+                              <p className="text-medium font-medium ml-2">{template.name}</p>
+                            </div>
+                            <Tooltip content="Chỉnh sửa" closeDelay={200}>
+                              <Edit
+                                className="text-warning"
+                                size={20}
+                                onClick={() => {
+                                  setOpenChooseTemplate(false);
+                                  setSelectedUpdateTemplate(template);
+                                  onOpenUpdateTemplate();
+                                }}
+                              />
+                            </Tooltip>
+                            <Tooltip content="Xóa" closeDelay={200}>
+                              <Trash
+                                className="text-danger"
+                                size={20}
+                                onClick={() => {
+                                  setOpenChooseTemplate(false);
+                                  setSelectedUpdateTemplate(template);
+                                  onOpenDeleteTemplate();
+                                }}
+                              />
+                            </Tooltip>
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover> */}
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button color="default" variant="solid" endContent={<ChevronDown size={20} />}>
+                        {selectedTemplate ? selectedTemplate.name : "Chọn mẫu"}
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu selectionMode="single" selectedKeys={selectedTemplate ? [selectedTemplate.id] : []} items={templates}>
+                      {(item) => (
+                        <DropdownItem key={item.id} onClick={() => handleChooseTemplate(item)}>
+                          {item.name}
+                        </DropdownItem>
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
+                  <Popover placement="bottom" isOpen={openSaveTemplate} onOpenChange={(open) => setOpenSaveTemplate(open)}>
+                    <PopoverTrigger>
+                      <Button color="default" variant="solid" isIconOnly>
+                        <Tooltip placement="bottom" content="Lưu mẫu điều trị" closeDelay={200}>
+                          <SaveAll size={20} />
+                        </Tooltip>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                      <div className="flex flex-row items-center gap-2">
+                        <Input
+                          className="my-2"
+                          type="text"
+                          radius="sm"
+                          size="sm"
+                          label="Tên mẫu"
+                          labelPlacement="inside"
+                          isRequired
+                          value={templateName}
+                          onValueChange={(e) => setTemplateName(e)}
+                        />
+                        <Button
+                          color="primary"
+                          isIconOnly
+                          onClick={() => {
+                            handleCreateTemplate();
+                            setOpenSaveTemplate(false);
+                          }}
+                          isDisabled={!isFormFilled() || !templateName}
+                        >
+                          <Check />
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  <Button color="primary" onClick={onOpen} isDisabled={diseaseReport ? true : false}>
+                    Tạo báo cáo bệnh
+                  </Button>
+                  <Button color="primary" type="submit" isDisabled={!isFormFilled()}>
+                    Tạo kế hoạch
+                  </Button>
+                </div>
+              </CardBody>
+            </Card>
+            <Card className="my-4">
+              <CardBody>
+                <p className="text-2xl mb-2 font-semibold">Thông tin kế hoạch điều trị</p>
+                <div className="grid grid-cols-2 gap-4 mt-3">
+                  <Input
+                    className="mb-5 col-span-2"
+                    type="text"
+                    radius="sm"
+                    size="lg"
+                    label="Tiêu đề"
+                    placeholder="Nhập tiêu đề"
+                    labelPlacement="outside"
+                    isRequired
+                    isInvalid={errors.title ? true : false}
+                    errorMessage="Tiêu đề không được để trống"
+                    {...register("title", { required: true })}
+                  />
+                  {/* <DatePicker
                 label="Ngày kết thúc (dự kiến)"
                 radius="md"
                 size="lg"
@@ -491,88 +598,108 @@ const CreatePLan = ({
                 errorMessage="Ngày kết thúc không được để trống"
                 value={date ? date : null}
                 onChange={(event) => setDate(event)}
+                isReadOnly
+              /> */}
+                  <Textarea
+                    radius="md"
+                    size="lg"
+                    label="Mô tả"
+                    placeholder="Nhập mô tả"
+                    labelPlacement="outside"
+                    isRequired
+                    isInvalid={errors.description ? true : false}
+                    errorMessage="Mô tả không được để trống"
+                    {...register("description", { required: true })}
+                  />
+                  <Textarea
+                    radius="md"
+                    size="lg"
+                    label="Ghi chú"
+                    placeholder="Nhập ghi chú"
+                    labelPlacement="outside"
+                    isRequired
+                    isInvalid={errors.note ? true : false}
+                    errorMessage="Ghi chú không được để trống"
+                    {...register("note", { required: true })}
+                  />
+                </div>
+              </CardBody>
+            </Card>
+          </form>
+          <Card className="my-4">
+            <CardBody>
+              <CreateTreatmentStage
+                stages={stages}
+                setStages={setStages}
+                selectedTemplate={selectedTemplate}
+                setSelectedTemplate={setSelectedTemplate}
+                // date={date}
               />
-              <Textarea
-                radius="md"
-                size="lg"
-                label="Mô tả"
-                placeholder="Nhập mô tả"
-                labelPlacement="outside"
-                isRequired
-                isInvalid={errors.description ? true : false}
-                errorMessage="Mô tả không được để trống"
-                {...register("description", { required: true })}
-              />
-              <Textarea
-                radius="md"
-                size="lg"
-                label="Ghi chú"
-                placeholder="Nhập ghi chú"
-                labelPlacement="outside"
-                isRequired
-                isInvalid={errors.note ? true : false}
-                errorMessage="Ghi chú không được để trống"
-                {...register("note", { required: true })}
-              />
-            </div>
-          </CardBody>
-        </Card>
-      </form>
-      <Card className="my-4">
-        <CardBody>
-          <CreateTreatmentStage stages={stages} setStages={setStages} date={date} />
-        </CardBody>
-      </Card>
-      <Card className="mt-3">
-        <CardBody>
-          <div>
-            <p className="text-2xl font-semibold">Chọn heo cho kế hoạch điều trị</p>
-            <div className="mt-2 grid grid-cols-2 gap-4">
+            </CardBody>
+          </Card>
+          <Card className="mt-3">
+            <CardBody>
               <div>
-                <Card className="mt-2" radius="sm">
-                  <CardBody>
-                    <div className="mb-1 flex justify-between">
-                      <p className="text-lg">Chọn heo theo {openByValue === "cage" ? "chuồng" : "đàn"}</p>
-                      <Dropdown>
-                        <DropdownTrigger>
-                          <Button isIconOnly color="primary" size="sm">
-                            <Filter size={15} />
-                          </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                          disallowEmptySelection
-                          selectionMode="single"
-                          selectedKeys={openBy}
-                          onSelectionChange={(selectedKeys: Selection) => {
-                            const selectedKeysArray = Array.from(selectedKeys);
-                            setOpenBy(selectedKeysArray[0].toString());
-                          }}
-                        >
-                          <DropdownItem color="primary" key="herd">
-                            Chọn theo đàn
-                          </DropdownItem>
-                          <DropdownItem color="primary" key="cage">
-                            Chọn theo chuồng
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </Dropdown>
-                    </div>
-                    <Divider orientation="horizontal" className="my-2 b-2" />
-                    {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCages} /> : <HerdListReadOnly setSelected={setSelectedHerds} />}
-                  </CardBody>
-                </Card>
+                <p className="text-2xl font-semibold">Chọn heo cho kế hoạch điều trị</p>
+                <div className="mt-2 grid grid-cols-2 gap-4">
+                  <div>
+                    <Card className="mt-2" radius="sm">
+                      <CardBody>
+                        <div className="mb-1 flex justify-between">
+                          <p className="text-lg">Chọn heo theo {openByValue === "cage" ? "chuồng" : "đàn"}</p>
+                          <Dropdown>
+                            <DropdownTrigger>
+                              <Button isIconOnly color="primary" size="sm">
+                                <Filter size={15} />
+                              </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                              disallowEmptySelection
+                              selectionMode="single"
+                              selectedKeys={openBy}
+                              onSelectionChange={(selectedKeys: Selection) => {
+                                const selectedKeysArray = Array.from(selectedKeys);
+                                setOpenBy(selectedKeysArray[0].toString());
+                              }}
+                            >
+                              <DropdownItem color="primary" key="herd">
+                                Chọn theo đàn
+                              </DropdownItem>
+                              <DropdownItem color="primary" key="cage">
+                                Chọn theo chuồng
+                              </DropdownItem>
+                            </DropdownMenu>
+                          </Dropdown>
+                        </div>
+                        <Divider orientation="horizontal" className="my-2 b-2" />
+                        {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCages} /> : <HerdListReadOnly setSelected={setSelectedHerds} />}
+                      </CardBody>
+                    </Card>
+                  </div>
+                  <div>
+                    <Card className="mt-2" radius="sm">
+                      <CardBody>
+                        <SelectedPigsList pigList={allSelectedPigs} selectedPigs={selectedPigs} setSelectedPigs={setSelectedPigs} />
+                      </CardBody>
+                    </Card>
+                  </div>
+                </div>
               </div>
-              <div>
-                <Card className="mt-2" radius="sm">
-                  <CardBody>
-                    <SelectedPigsList pigList={allSelectedPigs} selectedPigs={selectedPigs} setSelectedPigs={setSelectedPigs} />
-                  </CardBody>
-                </Card>
-              </div>
+            </CardBody>
+          </Card>
+        </Tab>
+        <Tab
+          key={2}
+          title={
+            <div className="flex items-center">
+              <TbTemplate size={20} />
+              <span className="ml-2">Mẫu kế hoạch</span>
             </div>
-          </div>
-        </CardBody>
-      </Card>
+          }
+        >
+          <CommonPlanTemplate planType="treatment" />
+        </Tab>
+      </Tabs>
     </motion.div>
   );
 };

@@ -17,11 +17,11 @@ import { TbMedicineSyrup } from "react-icons/tb";
 import DetailPlan from "./_modals/detail-plan";
 import UpdatePlanStatus from "./_modals/update-plan-status";
 
-const statusMap = [
-  { name: "Chưa bắt đầu", value: 0 },
-  { name: "Đang diễn ra", value: 1 },
-  { name: "Đã hoàn thành", value: 2 },
-  { name: "Đã hủy", value: 3 },
+const statusColorMap = [
+  { status: "Đã hoàn thành", color: "text-primary" },
+  { status: "Đang diễn ra", color: "text-sky-500" },
+  { status: "Chưa bắt đầu", color: "text-warning" },
+  { status: "Đã hủy", color: "text-danger" },
 ];
 
 const TreatmentStages = ({
@@ -120,16 +120,8 @@ const TreatmentStages = ({
               </div>
               <div className="flex justify-between">
                 <p className="text-md mt-3">Tình trạng</p>
-                <p
-                  className={`text-lg mt-3 font-semibold ${
-                    statusMap.find((status) => status.value === treatmentData.status)?.value === 1
-                      ? "text-blue-500"
-                      : statusMap.find((status) => status.value === treatmentData.status)?.value === 2
-                      ? "text-green-500"
-                      : "text-red-500"
-                  }`}
-                >
-                  {statusMap.find((status) => status.value === treatmentData.status)?.name}
+                <p className={`text-lg mt-3 font-semibold ${statusColorMap.find((status) => status.status === String(treatmentData.status))?.color}`}>
+                  {treatmentData.status}
                 </p>
               </div>
             </div>

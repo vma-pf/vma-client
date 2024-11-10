@@ -15,4 +15,5 @@ export const planTemplateService = {
         },
     }),
     createPlanTemplate: (model: any) => http.post(endpoint, model),
+    updatePlanTemplate: (id: string, model: any) => http.put(`${endpoint}/${id}`, model),
 }

@@ -17,20 +17,22 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
-import { Plus, Trash } from "lucide-react";
+import { Edit, Plus, Trash } from "lucide-react";
 import React from "react";
 import { v4 } from "uuid";
 import MedicineListInStage from "./medine-list-in-stage";
-import { TreatmentTemplate } from "@oursrc/lib/models/plan-template";
+import { StageTemplate, PlanTemplate } from "@oursrc/lib/models/plan-template";
 
 const CreateTreatmentStage = ({
   stages,
   setStages,
-  date,
+  selectedTemplate,
+  setSelectedTemplate,
 }: {
   stages: CreateTreatmentStageProps[];
   setStages: React.Dispatch<React.SetStateAction<CreateTreatmentStageProps[]>>;
-  date: DateValue | null;
+  selectedTemplate: PlanTemplate | undefined;
+  setSelectedTemplate: React.Dispatch<React.SetStateAction<PlanTemplate | undefined>>;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedStage, setSelectedStage] = React.useState<CreateTreatmentStageProps | undefined>(undefined);
@@ -125,7 +127,7 @@ const CreateTreatmentStage = ({
   return (
     <div>
       <CardBody>
-        <div className="mb-2 flex flex-row justify-between">
+        <div className="mb-4 flex flex-row justify-between items-center">
           <p className="text-2xl font-semibold">Giai đoạn tiêm phòng</p>
           <Button color="primary" endContent={<Plus />} onClick={onAddStage}>
             Thêm giai đoạn
@@ -183,7 +185,7 @@ const CreateTreatmentStage = ({
                         label="Ngày tiêm"
                         value={stage.applyStageTime ? parseDate(stage.applyStageTime) : undefined}
                         isDateUnavailable={(date: DateValue) => stages.some((x: CreateTreatmentStageProps) => x.applyStageTime === date.toString() && x.id !== stage.id)}
-                        minValue={date ? date : today(getLocalTimeZone())}
+                        minValue={today(getLocalTimeZone())}
                         // maxValue={date.end}
                         labelPlacement="outside"
                         isRequired

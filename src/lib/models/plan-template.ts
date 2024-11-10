@@ -9,10 +9,10 @@ export type CreateVaccinationTemplate = {
   createVaccinationPlanIncludeStageRequest: string
 }
 
-export type TreatmentTemplate = {
+export type PlanTemplate = {
   name: string,
   stageTemplates: StageTemplate[],
-  treatmentGuide: {
+  treatmentGuide?: {
     commonDiseaseId: string,
     title: string,
     description: string,
@@ -28,14 +28,13 @@ export type StageTemplate = {
   title: string,
   timeSpan: string,
   numberOfDays: number,
-  toDoTemplates: [
-    {
-      id: string,
-      description: string,
-    }
-  ],
+  toDoTemplates:
+  {
+    id: string | null,
+    description: string,
+  }[],
   medicineTemplates: MedicineTemplate[],
-  id: string,
+  id: string | null,
 }
 
 export type MedicineTemplate = {
@@ -45,3 +44,9 @@ export type MedicineTemplate = {
   medicineName: string,
   id: string
 }
+
+// VaccinationTemplate
+// export type VaccinationTemplate = {
+//   titleTemplate: string,
+//   contentTemplate: string
+// }
