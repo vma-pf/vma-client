@@ -1,4 +1,3 @@
-import { TreatmentPlanStep } from "@oursrc/app/(management)/veterinarian/treatment/create-plan/[id]/page";
 import http from "../http";
 
 const endpoint = "api/treatmentPlans";

@@ -6,15 +6,11 @@ import CreateVaccination from "./_components/create-vaccination";
 import { Tab, Tabs } from "@nextui-org/react";
 import { TbVaccine } from "react-icons/tb";
 import { ClipboardCheck } from "lucide-react";
+import CommonPlanTemplate from "@oursrc/components/template/plan-template";
 
 const CreatePlan = () => {
   return (
-    <motion.div
-      initial={{ x: "100%" }}
-      animate={{ x: 0 }}
-      exit={{ x: "100%" }}
-      transition={{ duration: 0.4 }}
-    >
+    <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.4 }}>
       <Tabs size="lg" color="primary" variant="solid" defaultSelectedKey="1">
         <Tab
           key="1"
@@ -36,9 +32,7 @@ const CreatePlan = () => {
             </div>
           }
         >
-          <div>
-            asc
-          </div>
+          <CommonPlanTemplate planType="vaccination" />
         </Tab>
       </Tabs>
     </motion.div>

@@ -55,6 +55,12 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
       }
     } else {
       // fetch vaccination template
+      const response: ResponseObjectList<PlanTemplate> = await planTemplateService.getVaccinationPlanTemplate(page, rowsPerPage);
+      if (response.isSuccess) {
+        setPlanTemplate(response.data.data);
+      } else {
+        console.log(response.errorMessage);
+      }
     }
   };
 
