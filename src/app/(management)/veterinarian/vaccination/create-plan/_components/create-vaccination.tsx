@@ -5,6 +5,7 @@ import {
   CalendarDate,
   Card,
   CardBody,
+  DatePicker,
   DateRangePicker,
   DateValue,
   Divider,
@@ -13,13 +14,19 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   Popover,
   PopoverContent,
   PopoverTrigger,
   RangeValue,
   Selection,
   Textarea,
-  Tooltip
+  Tooltip,
+  useDisclosure,
 } from "@nextui-org/react";
 import CageListReadOnly from "@oursrc/components/cages/cage-list-read-only";
 import HerdListReadOnly from "@oursrc/components/herds/herd-list-read-only";
@@ -29,30 +36,34 @@ import { Herd } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
 import { VaccinationTemplate } from "@oursrc/lib/models/plan-template";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { CreateVaccinationStageProps, VaccinationStageProps } from "@oursrc/lib/models/vaccination";
+import {
+  CreateVaccinationStageProps,
+  VaccinationStageProps,
+} from "@oursrc/lib/models/vaccination";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { planTemplateService } from "@oursrc/lib/services/planTemplate";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { pluck } from "@oursrc/lib/utils/dev-utils";
 import { Check, ChevronDown, Filter, SaveAll } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { Key } from "react";
 import { useForm } from "react-hook-form";
 import { v4 } from "uuid";
 import CreateVaccinationStages from "./create-vaccination-stages";
 import SelectedPigsList from "./selected-pigs-list";
 
-const CreateVaccination = () => {
+const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const router = useRouter();
   //State
-  const [vaccinationTemplatesOptions, setVaccinationTemplatesOptions] = React.useState<{ key: string; label: string }[]>([]);
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
   const [openBy, setOpenBy] = React.useState<string>("");
   const [templateName, setTemplateName] = React.useState("");
   const [templates, setTemplates] = React.useState<VaccinationTemplate[]>();
-  const [selectedTemplate, setSelectedTemplate] = React.useState<VaccinationTemplate | undefined>();
+  const [selectedTemplate, setSelectedTemplate] = React.useState<
+    VaccinationTemplate | undefined
+  >();
 
   const [stages, setStages] = React.useState<VaccinationStageProps[]>([
     {
@@ -71,10 +82,20 @@ const CreateVaccination = () => {
   ]);
   const [date, setDate] = React.useState<RangeValue<CalendarDate>>({
     start: parseDate(new Date().toJSON().slice(0, 10)),
-    end: parseDate(new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)),
+    end: parseDate(
+      new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)
+    ),
   });
-  const [stageDate, setStageDate] = React.useState<DateValue | null>(today(getLocalTimeZone()));
-
+  const [stageDate, setStageDate] = React.useState<DateValue | null>(
+    today(getLocalTimeZone())
+  );
+  const [templateKeys, setTemplateKeys] = React.useState<Key[]>([]);
+  const [firstStageDate, setFirstStageDate] = React.useState<DateValue>(today(getLocalTimeZone()));
+  const {
+    isOpen: isOpenChooseStageDate,
+    onOpen: onOpenChooseStageDate,
+    onClose: onCloseChooseStageDate,
+  } = useDisclosure();
   const {
     register,
     handleSubmit,
@@ -109,7 +130,8 @@ const CreateVaccination = () => {
 
   const fetchTemplates = async () => {
     try {
-      const res: ResponseObjectList<VaccinationTemplate> = await planTemplateService.getVaccinationPlanTemplate(1, 500);
+      const res: ResponseObjectList<VaccinationTemplate> =
+        await planTemplateService.getVaccinationPlanTemplate(1, 500);
       if (res.isSuccess) {
         setTemplates(res.data.data);
       }
@@ -122,13 +144,18 @@ const CreateVaccination = () => {
     try {
       let fetchedPigs: Pig[] = [];
       if (fetchBy === "herd") {
-        const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerds[0]?.id ?? "", 1, 100);
+        const response: ResponseObjectList<Pig> =
+          await pigService.getPigsByHerdId(selectedHerds[0]?.id ?? "", 1, 100);
         if (response.isSuccess) {
           fetchedPigs = [...response.data.data, ...fetchedPigs];
         }
       } else {
         for (let i = 0; i < selectedCages.length; i++) {
-          const response = await pigService.getPigsByCageId(selectedCages[i]?.id ?? "", 1, 100);
+          const response = await pigService.getPigsByCageId(
+            selectedCages[i]?.id ?? "",
+            1,
+            100
+          );
           if (response.isSuccess) {
             fetchedPigs = [...response.data.data, ...fetchedPigs];
           } else {
@@ -143,7 +170,7 @@ const CreateVaccination = () => {
     }
   };
 
-  const checkStep1Completed = (): boolean => {
+  const validate = (): boolean => {
     const validateStages = stages.filter(
       (x: VaccinationStageProps) =>
         x.title === "" ||
@@ -189,31 +216,14 @@ const CreateVaccination = () => {
     }
   };
 
-  const onApplyTemplate = async (event: any) => {
-    const data = JSON.parse(event.target.value);
-    setStages(
-      data.stages.map((x: any, index: number) => {
-        const newDate = new Date(x.applyStageTime);
-        newDate.setDate(newDate.getDate() + x.numberOfDays);
-        return {
-          ...x,
-          applyStageTime: newDate.toJSON().slice(0, 10),
-        };
-      })
-    );
-    // setDate({
-    //   start: parseDate(data.startDate.split("T")[0]),
-    //   end: parseDate(data.expectedEndDate.split("T")[0]),
-    // });
-    toast({
-      variant: "success",
-      title: "Áp dụng mẫu lịch tiêm phòng thành công!!!",
-      description: "Lưu ý: những thông tin yêu cầu ngày giờ sẽ không được áp dụng",
-    });
-  };
-
-  const handleChooseTemplate = (keys: Selection) => {
+  const handleTemplateChanges = (keys: Selection) => {
     const selectedKeysArray = Array.from(keys);
+    setTemplateKeys(selectedKeysArray);
+    onOpenChooseStageDate();
+  };
+  const handleChooseTemplate = () => {
+    onCloseChooseStageDate();
+    const selectedKeysArray = templateKeys;
     if (selectedKeysArray.length === 0) {
       setSelectedTemplate(undefined);
       setStages([
@@ -233,14 +243,16 @@ const CreateVaccination = () => {
       ]);
       return;
     }
-    const template = templates?.filter((item) => item.id && selectedKeysArray.includes(item.id))[0] || undefined;
+    const template =
+      templates?.filter(
+        (item) => item.id && selectedKeysArray.includes(item.id)
+      )[0] || undefined;
     setSelectedTemplate(template);
     const newStages = template?.stageTemplates
       .sort((a, b) => a.numberOfDays - b.numberOfDays)
       .map((templateStage: any) => {
-        const applyStageDate = new Date();
-        applyStageDate.setDate(applyStageDate.getDate() + templateStage.numberOfDays);
-        const applyStageDateString = applyStageDate.toISOString().split("T")[0];
+        const applyStageDate = firstStageDate.add({ days: templateStage.numberOfDays});
+        const applyStageDateString = applyStageDate.toString();
         return {
           id: v4(),
           title: templateStage.title,
@@ -266,16 +278,28 @@ const CreateVaccination = () => {
   };
 
   const handleCreateTemplate = async () => {
-    const templateRequest = stages.map((x: VaccinationStageProps, index: number) => ({
-      title: x.title,
-      timeSpan: x.timeSpan,
-      numberOfDays: index === 0 ? 0 : Math.round((new Date(x.applyStageTime).valueOf() - new Date(stages[0].applyStageTime).valueOf()) / (1000 * 3600 * 24)) + 1,
-      medicineTemplates: x.inventoryRequest.medicines.map((medicine: any) => ({
-        medicineId: medicine.type === "existed" ? medicine.medicineId : null,
-        portionEachPig: medicine.portionEachPig,
-      })),
-      toDoTemplates: x.vaccinationToDos as TodoTemplate[],
-    }));
+    const templateRequest = stages.map(
+      (x: VaccinationStageProps, index: number) => ({
+        title: x.title,
+        timeSpan: x.timeSpan,
+        numberOfDays:
+          index === 0
+            ? 0
+            : Math.round(
+                (new Date(x.applyStageTime).valueOf() -
+                  new Date(stages[0].applyStageTime).valueOf()) /
+                  (1000 * 3600 * 24)
+              ) + 1,
+        medicineTemplates: x.inventoryRequest.medicines.map(
+          (medicine: any) => ({
+            medicineId:
+              medicine.type === "existed" ? medicine.medicineId : null,
+            portionEachPig: medicine.portionEachPig,
+          })
+        ),
+        toDoTemplates: x.vaccinationToDos as TodoTemplate[],
+      })
+    );
     if (!checkStages()) {
       return;
     }
@@ -290,7 +314,8 @@ const CreateVaccination = () => {
         toast({
           variant: "success",
           title: "Lưu mẫu lịch tiêm phòng thành công!!!",
-          description: "Đã tạo thành công mẫu lịch tiêm phòng! Vui lòng hoàn thành các bước còn lại để kết thúc",
+          description:
+            "Đã tạo thành công mẫu lịch tiêm phòng! Vui lòng hoàn thành các bước còn lại để kết thúc",
         });
       } else {
         throw new AggregateError([new Error()], response.errorMessage);
@@ -310,7 +335,7 @@ const CreateVaccination = () => {
       data.startDate = new Date(date.start.toString()).toISOString();
       data.expectedEndDate = new Date(date.end.toString()).toISOString();
 
-      if (!checkStep1Completed()) {
+      if (!validate()) {
         return;
       }
 
@@ -337,7 +362,8 @@ const CreateVaccination = () => {
         toast({
           variant: "success",
           title: "Tạo thành công lịch tiêm phòng",
-          description: "Đã tạo thành công lịch tiêm phòng! Xem chi tiết tại màn hình thống kê",
+          description:
+            "Đã tạo thành công lịch tiêm phòng! Xem chi tiết tại màn hình thống kê",
         });
         router.push("/veterinarian/vaccination");
       } else {
@@ -352,7 +378,6 @@ const CreateVaccination = () => {
     } finally {
     }
   };
-
 
   const handleVaccinationDateChange = (event: RangeValue<CalendarDate>) => {
     setDate({
@@ -373,32 +398,45 @@ const CreateVaccination = () => {
             <CardBody>
               <div className="flex justify-end">
                 <div className="w-2/5 mr-2 flex justify-end">
-                <Dropdown>
-                  <DropdownTrigger>
-                    <Button variant="ghost" color="primary" endContent={<ChevronDown size={20} />}>
-                      Chọn mẫu tiêm phòng
-                    </Button>
-                  </DropdownTrigger>
-                  <DropdownMenu
-                    selectionMode="single"
-                    items={templates}
-                    selectedKeys={selectedTemplate && selectedTemplate.id ? new Set([selectedTemplate?.id]) : new Set<string>()}
-                    onSelectionChange={(keys: Selection) => handleChooseTemplate(keys)}
-                  >
-                    {(item) => (
-                      <DropdownItem key={item.id} description={item.name}>
-                        <p className="font-semibold">{item.name}</p>
-                      </DropdownItem>
-                    )}
-                  </DropdownMenu>
-                </Dropdown>
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button
+                        variant="ghost"
+                        color="primary"
+                        endContent={<ChevronDown size={20} />}
+                      >
+                        Chọn mẫu tiêm phòng
+                      </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                      selectionMode="single"
+                      items={templates}
+                      selectedKeys={
+                        selectedTemplate && selectedTemplate.id
+                          ? new Set([selectedTemplate?.id])
+                          : new Set<string>()
+                      }
+                      onSelectionChange={(keys: Selection) =>
+                        handleTemplateChanges(keys)
+                      }
+                    >
+                      {(item) => (
+                        <DropdownItem key={item.id} description={item.name}>
+                          <p className="font-semibold">{item.name}</p>
+                        </DropdownItem>
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
                 </div>
 
                 <div className="mr-2">
                   <Popover placement="bottom">
                     <PopoverTrigger>
                       <Button color="default" variant="solid" isIconOnly>
-                        <Tooltip placement="bottom" content="Lưu lịch tiêm phòng thành mẫu">
+                        <Tooltip
+                          placement="bottom"
+                          content="Lưu lịch tiêm phòng thành mẫu"
+                        >
                           <SaveAll size={20} />
                         </Tooltip>
                       </Button>
@@ -416,21 +454,32 @@ const CreateVaccination = () => {
                           value={templateName}
                           onChange={(e) => setTemplateName(e.target.value)}
                         />
-                        <Button color="primary" isIconOnly onClick={handleCreateTemplate}>
+                        <Button
+                          color="primary"
+                          isIconOnly
+                          onClick={handleCreateTemplate}
+                        >
                           <Check />
                         </Button>
                       </div>
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Button color="primary" variant="solid" isDisabled={errors && Object.keys(errors).length > 0} type="submit">
+                <Button
+                  color="primary"
+                  variant="solid"
+                  isDisabled={errors && Object.keys(errors).length > 0}
+                  type="submit"
+                >
                   Xác nhận lịch tiêm phòng
                 </Button>
               </div>
             </CardBody>
           </Card>
           <Card className="p-4 mt-4">
-            <p className="text-2xl mb-2 font-semibold">Thông tin kế hoạch tiêm phòng</p>
+            <p className="text-2xl mb-2 font-semibold">
+              Thông tin kế hoạch tiêm phòng
+            </p>
             <div className="grid grid-flow-row grid-cols-2 gap-4 mt-2">
               <div className="flex flex-col w-full flex-wrap md:flex-nowrap">
                 <Input
@@ -494,53 +543,118 @@ const CreateVaccination = () => {
           </Card>
           <Card className="my-4">
             <CardBody>
-              <CreateVaccinationStages stages={stages} setStages={setStages} date={stageDate} />
+              <CreateVaccinationStages
+                stages={stages}
+                setStages={setStages}
+                date={stageDate}
+              />
             </CardBody>
           </Card>
-          <Card>
-            <CardBody>
-              <p className="text-2xl font-semibold">Chọn heo cho kế hoạch tiêm phòng</p>
-              <div className="mt-2 grid grid-cols-2 gap-4">
-                <div>
-                  <Card className="mt-2" radius="sm">
-                    <CardBody>
-                      <div className="mb-1 flex justify-between">
-                        <p className="text-lg">Chọn heo theo {openBy === "cage" ? "Chuồng" : "Đàn"}</p>
-                        <Popover key="select" placement="bottom">
-                          <PopoverTrigger>
-                            <Button isIconOnly color="primary" size="sm">
-                              <Filter size={15} color="#ffffff" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent>
-                            <div className="flex flex-col px-1 py-2">
-                              <Button className="mb-2" color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("herd")}>
-                                <p className="text-white">Chọn theo đàn</p>
+          {pigIds.length === 0 && (
+            <Card>
+              <CardBody>
+                <p className="text-2xl font-semibold">
+                  Chọn heo cho kế hoạch tiêm phòng
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-4">
+                  <div>
+                    <Card className="mt-2" radius="sm">
+                      <CardBody>
+                        <div className="mb-1 flex justify-between">
+                          <p className="text-lg">
+                            Chọn heo theo {openBy === "cage" ? "Chuồng" : "Đàn"}
+                          </p>
+                          <Popover key="select" placement="bottom">
+                            <PopoverTrigger>
+                              <Button isIconOnly color="primary" size="sm">
+                                <Filter size={15} color="#ffffff" />
                               </Button>
-                              <Button color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("cage")}>
-                                <p className="text-white">Chọn theo chuồng</p>
-                              </Button>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      <Divider orientation="horizontal" className="my-2 b-2" />
-                      {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCages} /> : <HerdListReadOnly setSelected={setSelectedHerds} />}
-                    </CardBody>
-                  </Card>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                              <div className="flex flex-col px-1 py-2">
+                                <Button
+                                  className="mb-2"
+                                  color="primary"
+                                  variant="solid"
+                                  isDisabled={false}
+                                  size="sm"
+                                  onClick={() =>
+                                    onOpenSelectedPigsByHerdCage("herd")
+                                  }
+                                >
+                                  <p className="text-white">Chọn theo đàn</p>
+                                </Button>
+                                <Button
+                                  color="primary"
+                                  variant="solid"
+                                  isDisabled={false}
+                                  size="sm"
+                                  onClick={() =>
+                                    onOpenSelectedPigsByHerdCage("cage")
+                                  }
+                                >
+                                  <p className="text-white">Chọn theo chuồng</p>
+                                </Button>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <Divider
+                          orientation="horizontal"
+                          className="my-2 b-2"
+                        />
+                        {openBy === "cage" ? (
+                          <CageListReadOnly setSelected={setSelectedCages} />
+                        ) : (
+                          <HerdListReadOnly setSelected={setSelectedHerds} />
+                        )}
+                      </CardBody>
+                    </Card>
+                  </div>
+                  <div>
+                    <Card className="mt-2" radius="sm">
+                      <CardBody>
+                        <SelectedPigsList pigList={allSelectedPigs} />
+                      </CardBody>
+                    </Card>
+                  </div>
                 </div>
-                <div>
-                  <Card className="mt-2" radius="sm">
-                    <CardBody>
-                      <SelectedPigsList pigList={allSelectedPigs} />
-                    </CardBody>
-                  </Card>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
+              </CardBody>
+            </Card>
+          )}
         </form>
       </div>
+      <Modal
+        size="3xl"
+        isOpen={isOpenChooseStageDate}
+        onClose={onCloseChooseStageDate}
+      >
+        <ModalContent>
+          <ModalHeader> Chọn ngày bắt đầu cho giai đoạn 1</ModalHeader>
+          <ModalBody>
+            <DatePicker
+              label="Nhập ngày bắt đầu"
+              radius="md"
+              size="lg"
+              labelPlacement="outside"
+              isRequired
+              isInvalid={firstStageDate ? false : true}
+              errorMessage="Nhập ngày bắt đầu không được để trống"
+              minValue={today(getLocalTimeZone())}
+              validationBehavior="native"
+              value={
+                firstStageDate
+              }
+              onChange={(event) => setFirstStageDate(event)}
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" variant="solid" disabled={!firstStageDate} onClick={handleChooseTemplate}>
+              Xác nhận
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };
