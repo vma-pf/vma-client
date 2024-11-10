@@ -8,5 +8,12 @@ export const planTemplateService = {
             pageSize: pageSize?.toString() || "",
         },
     }),
+    getVaccinationPlanTemplate: (pageIndex: number, pageSize: number) => http.get(`${endpoint}/vaccination-template`, {
+        params: {
+            pageIndex: pageIndex?.toString() || "",
+            pageSize: pageSize?.toString() || "",
+        },
+    }),
     createPlanTemplate: (model: any) => http.post(endpoint, model),
+    updatePlanTemplate: (id: string, model: any) => http.put(`${endpoint}/${id}`, model),
 }

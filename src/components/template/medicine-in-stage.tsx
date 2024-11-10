@@ -15,21 +15,14 @@ import {
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react";
-import { MedicineEachStage, MedicineInStage } from "@oursrc/lib/models/vaccination";
 import { Plus, Trash2Icon } from "lucide-react";
 import React from "react";
 import { pluck } from "@oursrc/lib/utils/dev-utils";
 import AddMedicineToStageModal from "@oursrc/components/medicines/modals/add-medine-to-stage-modal";
-import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
 import { v4 } from "uuid";
+import { MedicineTemplate, PlanTemplate, StageTemplate } from "@oursrc/lib/models/plan-template";
 
-const MedicineListInStage = ({
-  stage,
-  setStages,
-}: {
-  stage: CreateTreatmentStageProps;
-  setStages: React.Dispatch<React.SetStateAction<CreateTreatmentStageProps[]>>;
-}) => {
+const MedicineListInStage = ({ stage, setPlan }: { stage: StageTemplate; setPlan: React.Dispatch<React.SetStateAction<PlanTemplate | undefined>> }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenConfirm, onOpen: onOpenConfirm, onClose: onCloseConfirm } = useDisclosure();
   // const [medicineEachStage, setMedicinesEachStage] = React.useState<MedicineEachStage[]>([]);
@@ -38,9 +31,9 @@ const MedicineListInStage = ({
 
   React.useEffect(() => {
     if (Object.entries(selectedMedicine).length > 0) {
-      let newMedicines: MedicineEachStage[];
-      if (stage.inventoryRequest.medicines.length > 0) {
-        const existingMedicine = stage.inventoryRequest.medicines.find(
+      let newMedicines: MedicineTemplate[];
+      if (stage.medicineTemplates.length > 0) {
+        const existingMedicine = stage.medicineTemplates.find(
           (medicine) => medicine.medicineId === selectedMedicine.id || medicine.medicineName === selectedMedicine.name
         );
         if (existingMedicine) {
@@ -48,37 +41,54 @@ const MedicineListInStage = ({
             ...existingMedicine,
             portionEachPig: existingMedicine.portionEachPig + selectedMedicine.portionEachPig,
           };
-          newMedicines = stage.inventoryRequest.medicines.map((medicine) =>
+          newMedicines = stage.medicineTemplates.map((medicine) =>
             medicine.medicineId === selectedMedicine.id || medicine.medicineName === selectedMedicine.name ? updatedMedicine : medicine
           );
         } else {
-          newMedicines = [...stage.inventoryRequest.medicines, selectedMedicine];
+          newMedicines = [
+            ...stage.medicineTemplates,
+            {
+              medicineId: selectedMedicine.id,
+              medicineName: selectedMedicine.name,
+              stageTemplateId: stage.id ?? "",
+              portionEachPig: selectedMedicine.portionEachPig,
+              id: v4(),
+            },
+          ];
         }
       } else {
         newMedicines = [selectedMedicine];
       }
       const newMedicinesInStage = {
-        ...stage.inventoryRequest,
-        medicines: newMedicines.map((x: any) => ({ ...x, medicineId: x.id, medicineName: x.name })),
+        ...stage,
+        medicineTemplates: newMedicines,
       };
-      setStages((prevStages) => {
-        const newStages = prevStages.map((x) => (x.id === stage.id ? { ...x, inventoryRequest: newMedicinesInStage } : x));
-        return newStages;
+
+      setPlan((prevPlan) => {
+        if (prevPlan) {
+          const newStages = prevPlan.stageTemplates.map((x) => (x.id === stage.id ? newMedicinesInStage : x));
+          return { ...prevPlan, stageTemplates: newStages };
+        }
+        return prevPlan;
       });
+
       setSelectedMedicine({});
     }
   }, [selectedMedicine]);
 
   const onRemove = () => {
-    if (stage.inventoryRequest.medicines.length > 0) {
+    if (stage.medicineTemplates.length > 0) {
       const newMedicinesInStage = {
-        ...stage.inventoryRequest,
-        medicines: stage.inventoryRequest.medicines.filter((x) => x.medicineId !== selectedMedicineId),
+        ...stage,
+        medicineTemplates: stage.medicineTemplates.filter((x) => x.medicineId !== selectedMedicineId),
       };
 
-      setStages((prevStages) => {
-        const newStages = prevStages.map((x) => (x.id === stage.id ? { ...x, inventoryRequest: newMedicinesInStage } : x));
-        return newStages;
+      setPlan((prevPlan) => {
+        if (prevPlan) {
+          const newStages = prevPlan.stageTemplates.map((x) => (x.id === stage.id ? newMedicinesInStage : x));
+          return { ...prevPlan, stageTemplates: newStages };
+        }
+        return prevPlan;
       });
       onCloseConfirm();
     }
@@ -88,26 +98,18 @@ const MedicineListInStage = ({
   const columns = [
     { name: "", uid: "actions" },
     { name: "TÊN THUỐC", uid: "medicineName" },
-    { name: "PHÂN LOẠI", uid: "type" },
     { name: "SỐ LIỀU CHO TỪNG CON", uid: "portionEachPig" },
-    { name: "SỐ LƯỢNG TRONG KHO", uid: "quantity" },
-    { name: "TRỌNG LƯỢNG", uid: "netWeight" },
-    { name: "ĐƠN VỊ", uid: "unit" },
   ];
 
-  const renderCell = React.useCallback((data: MedicineEachStage, columnKey: React.Key) => {
-    const cellValue = data[columnKey as keyof MedicineEachStage];
+  const renderCell = React.useCallback((data: MedicineTemplate, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof MedicineTemplate];
     switch (columnKey) {
       case "medicineName":
-      case "netWeight":
-      case "unit":
         return (
           <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
             <p className="truncate cursor-default">{cellValue}</p>
           </Tooltip>
         );
-      case "type":
-        return cellValue === "new" ? "Mới tạo" : "Có sẵn";
       case "actions":
         return (
           <div>
@@ -137,7 +139,7 @@ const MedicineListInStage = ({
             </TableColumn>
           )}
         </TableHeader>
-        <TableBody emptyContent={"Chưa chọn thuốc cho giai đoạn này"} items={stage.inventoryRequest.medicines}>
+        <TableBody emptyContent={"Chưa chọn thuốc cho giai đoạn này"} items={stage.medicineTemplates}>
           {(item) => (
             <TableRow key={item.id ?? item.medicineId} className="h-12">
               {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
