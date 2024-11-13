@@ -106,9 +106,9 @@ const SelectedPigsList = ({
                 <CircleAlert size={30} color="#da1010" />
               </Tooltip>
             )}
-            <span className="mt-1 text-default-400 text-small">
-              Tổng số <strong>{pigList.length}</strong> con được chọn để tiêm phòng
-            </span>
+            {/* <span className="mt-1 text-default-400 text-small">
+              Tổng số <strong>{selectedKeys === "all" ? pigList.length : selectedKeys.size}</strong> con được chọn để điều trị
+            </span> */}
           </div>
         </div>
       </div>

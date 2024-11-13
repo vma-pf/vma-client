@@ -1,14 +1,3 @@
-export type VaccinationTemplate = {
-  name: string,
-  stageTemplates: StageTemplate[],
-  id: string,
-}
-
-export type CreateVaccinationTemplate = {
-  titleTemplate: string,
-  createVaccinationPlanIncludeStageRequest: string
-}
-
 export type PlanTemplate = {
   name: string,
   stageTemplates: StageTemplate[],

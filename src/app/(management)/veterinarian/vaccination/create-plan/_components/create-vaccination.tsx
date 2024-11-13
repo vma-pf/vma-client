@@ -34,7 +34,7 @@ import { toast } from "@oursrc/hooks/use-toast";
 import { Cage } from "@oursrc/lib/models/cage";
 import { Herd } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
-import { VaccinationTemplate } from "@oursrc/lib/models/plan-template";
+import { PlanTemplate } from "@oursrc/lib/models/plan-template";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { CreateVaccinationStageProps, VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { pigService } from "@oursrc/lib/services/pigService";
@@ -57,8 +57,8 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
   const [openBy, setOpenBy] = React.useState<string>("");
   const [templateName, setTemplateName] = React.useState("");
-  const [templates, setTemplates] = React.useState<VaccinationTemplate[]>();
-  const [selectedTemplate, setSelectedTemplate] = React.useState<VaccinationTemplate | undefined>();
+  const [templates, setTemplates] = React.useState<PlanTemplate[]>();
+  const [selectedTemplate, setSelectedTemplate] = React.useState<PlanTemplate | undefined>();
 
   const [stages, setStages] = React.useState<VaccinationStageProps[]>([
     {
@@ -79,16 +79,11 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
     start: parseDate(new Date().toJSON().slice(0, 10)),
     end: parseDate(new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)),
   });
-  const [stageDate, setStageDate] = React.useState<DateValue | null>(today(getLocalTimeZone()));
-  const [templateKeys, setTemplateKeys] = React.useState<Key[]>([]);
   const [firstStageDate, setFirstStageDate] = React.useState<DateValue>(today(getLocalTimeZone()));
   const { isOpen: isOpenChooseStageDate, onOpen: onOpenChooseStageDate, onClose: onCloseChooseStageDate } = useDisclosure();
   const {
     register,
     handleSubmit,
-    control,
-    setValue,
-    getValues,
     formState: { errors },
   } = useForm({
     shouldUnregister: false,
@@ -117,7 +112,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
 
   const fetchTemplates = async () => {
     try {
-      const res: ResponseObjectList<VaccinationTemplate> = await planTemplateService.getVaccinationPlanTemplate(1, 500);
+      const res: ResponseObjectList<PlanTemplate> = await planTemplateService.getVaccinationPlanTemplate(1, 500);
       if (res.isSuccess) {
         setTemplates(res.data.data);
       }
@@ -199,13 +194,8 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
 
   const handleTemplateChanges = (keys: Selection) => {
     const selectedKeysArray = Array.from(keys);
-    setTemplateKeys(selectedKeysArray);
-    onOpenChooseStageDate();
-  };
-  const handleChooseTemplate = () => {
-    onCloseChooseStageDate();
-    const selectedKeysArray = templateKeys;
-    if (selectedKeysArray.length === 0) {
+    const template = templates?.filter((item) => item.id && selectedKeysArray.includes(item.id))[0] || undefined;
+    if (!template) {
       setSelectedTemplate(undefined);
       setStages([
         {
@@ -224,9 +214,11 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
       ]);
       return;
     }
-    const template = templates?.filter((item) => item.id && selectedKeysArray.includes(item.id))[0] || undefined;
     setSelectedTemplate(template);
-    const newStages = template?.stageTemplates
+    onOpenChooseStageDate();
+  };
+  const handleChooseTemplate = () => {
+    const newStages = selectedTemplate?.stageTemplates
       .sort((a, b) => a.numberOfDays - b.numberOfDays)
       .map((templateStage: any) => {
         const applyStageDate = firstStageDate.add({ days: templateStage.numberOfDays });
@@ -253,6 +245,8 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         };
       }) as CreateVaccinationStageProps[];
     setStages(newStages);
+    onCloseChooseStageDate();
+    setFirstStageDate(today(getLocalTimeZone()));
   };
 
   const handleCreateTemplate = async () => {
@@ -356,190 +350,181 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
 
   return (
     <div>
-      <div className="container mx-auto">
-        <form onSubmit={handleSubmit(handleSubmitForm)}>
-          <Card className="w-full">
-            <CardBody>
-              <div className="flex justify-end">
-                <div className="w-2/5 mr-2 flex justify-end">
-                  <Dropdown>
-                    <DropdownTrigger>
-                      <Button variant="ghost" color="primary" endContent={<ChevronDown size={20} />}>
-                        Chọn mẫu tiêm phòng
-                      </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                      selectionMode="single"
-                      items={templates}
-                      selectedKeys={selectedTemplate && selectedTemplate.id ? new Set([selectedTemplate?.id]) : new Set<string>()}
-                      onSelectionChange={(keys: Selection) => handleTemplateChanges(keys)}
-                    >
-                      {(item) => (
-                        <DropdownItem key={item.id} description={item.name}>
-                          <p className="font-semibold">{item.name}</p>
-                        </DropdownItem>
-                      )}
-                    </DropdownMenu>
-                  </Dropdown>
-                </div>
+      <form onSubmit={handleSubmit(handleSubmitForm)}>
+        <Card className="w-full">
+          <CardBody>
+            <div className="flex justify-end">
+              <div className="w-2/5 mr-2 flex justify-end">
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button variant="ghost" color="primary" endContent={<ChevronDown size={20} />}>
+                      Chọn mẫu tiêm phòng
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    selectionMode="single"
+                    items={templates}
+                    selectedKeys={selectedTemplate && selectedTemplate.id ? new Set([selectedTemplate?.id]) : new Set<string>()}
+                    onSelectionChange={(keys: Selection) => handleTemplateChanges(keys)}
+                  >
+                    {(item) => (
+                      <DropdownItem key={item.id} description={item.name}>
+                        <p className="font-semibold">{item.name}</p>
+                      </DropdownItem>
+                    )}
+                  </DropdownMenu>
+                </Dropdown>
+              </div>
 
-                <div className="mr-2">
-                  <Popover placement="bottom">
-                    <PopoverTrigger>
-                      <Button color="default" variant="solid" isIconOnly>
-                        <Tooltip placement="bottom" content="Lưu lịch tiêm phòng thành mẫu">
-                          <SaveAll size={20} />
-                        </Tooltip>
+              <div className="mr-2">
+                <Popover placement="bottom">
+                  <PopoverTrigger>
+                    <Button color="default" variant="solid" isIconOnly>
+                      <Tooltip placement="bottom" content="Lưu lịch tiêm phòng thành mẫu">
+                        <SaveAll size={20} />
+                      </Tooltip>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <div className="flex flex-row items-center gap-2">
+                      <Input
+                        className="my-2"
+                        type="text"
+                        radius="sm"
+                        size="sm"
+                        label="Tên mẫu"
+                        labelPlacement="inside"
+                        isRequired
+                        value={templateName}
+                        onChange={(e) => setTemplateName(e.target.value)}
+                      />
+                      <Button color="primary" isIconOnly onClick={handleCreateTemplate}>
+                        <Check />
                       </Button>
-                    </PopoverTrigger>
-                    <PopoverContent>
-                      <div className="flex flex-row items-center gap-2">
-                        <Input
-                          className="my-2"
-                          type="text"
-                          radius="sm"
-                          size="sm"
-                          label="Tên mẫu"
-                          labelPlacement="inside"
-                          isRequired
-                          value={templateName}
-                          onChange={(e) => setTemplateName(e.target.value)}
-                        />
-                        <Button color="primary" isIconOnly onClick={handleCreateTemplate}>
-                          <Check />
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <Button color="primary" variant="solid" isDisabled={errors && Object.keys(errors).length > 0} type="submit">
-                  Xác nhận lịch tiêm phòng
-                </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
-            </CardBody>
-          </Card>
-          <Card className="p-4 mt-4">
-            <p className="text-2xl mb-2 font-semibold">Thông tin kế hoạch tiêm phòng</p>
-            <div className="grid grid-flow-row grid-cols-2 gap-4 mt-2">
-              <div className="flex flex-col w-full flex-wrap md:flex-nowrap">
-                <Input
-                  className="mb-5"
-                  type="text"
-                  radius="sm"
-                  size="lg"
-                  label="Tiêu đề"
-                  placeholder="Nhập tiêu đề"
-                  labelPlacement="outside"
-                  isRequired
-                  isInvalid={errors.title ? true : false}
-                  errorMessage="Tiêu đề không được để trống"
-                  {...register("title", { required: true })}
-                />
-                <DateRangePicker
-                  label="Ngày bắt đầu - Ngày kết thúc (dự kiến)"
-                  radius="sm"
-                  size="lg"
-                  labelPlacement="outside"
-                  isRequired
-                  isInvalid={date.end <= date.start ? true : false}
-                  errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
-                  minValue={today(getLocalTimeZone())}
-                  validationBehavior="native"
-                  value={date || ""}
-                  onChange={(event) => {
-                    handleVaccinationDateChange(event);
-                  }}
-                />
-                <Textarea
-                  type="text"
-                  radius="sm"
-                  size="lg"
-                  label="Ghi chú"
-                  placeholder="Nhập ghi chú"
-                  labelPlacement="outside"
-                  isRequired
-                  isInvalid={errors.note ? true : false}
-                  errorMessage="Ghi chú không được để trống"
-                  {...register("note", { required: true })}
-                />
-              </div>
-              <div className="flex flex-col">
-                <Textarea
-                  minRows={20}
-                  type="text"
-                  radius="sm"
-                  size="md"
-                  label="Mô tả"
-                  placeholder="Nhập mô tả"
-                  labelPlacement="outside"
-                  cacheMeasurements
-                  isRequired
-                  isInvalid={errors.description ? true : false}
-                  errorMessage="Mô tả không được để trống"
-                  {...register("description", { required: true })}
-                />
-              </div>
+              <Button color="primary" variant="solid" isDisabled={errors && Object.keys(errors).length > 0} type="submit">
+                Xác nhận lịch tiêm phòng
+              </Button>
             </div>
-          </Card>
-          <Card className="my-4">
+          </CardBody>
+        </Card>
+        <Card className="p-4 mt-4">
+          <p className="text-2xl mb-2 font-semibold">Thông tin kế hoạch tiêm phòng</p>
+          <div className="grid grid-flow-row grid-cols-2 gap-4 mt-2">
+            <div className="flex flex-col w-full flex-wrap md:flex-nowrap">
+              <Input
+                className="mb-5"
+                type="text"
+                radius="sm"
+                size="lg"
+                label="Tiêu đề"
+                placeholder="Nhập tiêu đề"
+                labelPlacement="outside"
+                isRequired
+                isInvalid={errors.title ? true : false}
+                errorMessage="Tiêu đề không được để trống"
+                {...register("title", { required: true })}
+              />
+              <DateRangePicker
+                label="Ngày bắt đầu - Ngày kết thúc (dự kiến)"
+                radius="sm"
+                size="lg"
+                labelPlacement="outside"
+                isRequired
+                isInvalid={date.end <= date.start ? true : false}
+                errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
+                minValue={today(getLocalTimeZone())}
+                validationBehavior="native"
+                value={date || ""}
+                onChange={(event) => {
+                  handleVaccinationDateChange(event);
+                }}
+              />
+              <Textarea
+                type="text"
+                radius="sm"
+                size="lg"
+                label="Ghi chú"
+                placeholder="Nhập ghi chú"
+                labelPlacement="outside"
+                isRequired
+                isInvalid={errors.note ? true : false}
+                errorMessage="Ghi chú không được để trống"
+                {...register("note", { required: true })}
+              />
+            </div>
+            <div className="flex flex-col">
+              <Textarea
+                minRows={20}
+                type="text"
+                radius="sm"
+                size="md"
+                label="Mô tả"
+                placeholder="Nhập mô tả"
+                labelPlacement="outside"
+                cacheMeasurements
+                isRequired
+                isInvalid={errors.description ? true : false}
+                errorMessage="Mô tả không được để trống"
+                {...register("description", { required: true })}
+              />
+            </div>
+          </div>
+        </Card>
+        <Card className="my-4">
+          <CardBody>
+            <CreateVaccinationStages stages={stages} setStages={setStages} />
+          </CardBody>
+        </Card>
+        {pigIds.length === 0 && (
+          <Card>
             <CardBody>
-              <CreateVaccinationStages stages={stages} setStages={setStages} date={stageDate} />
+              <p className="text-2xl font-semibold">Chọn heo cho kế hoạch tiêm phòng</p>
+              <div className="mt-2 grid grid-cols-2 gap-4">
+                <div>
+                  <Card className="mt-2" radius="sm">
+                    <CardBody>
+                      <div className="mb-1 flex justify-between">
+                        <p className="text-lg">Chọn heo theo {openBy === "cage" ? "Chuồng" : "Đàn"}</p>
+                        <Popover key="select" placement="bottom">
+                          <PopoverTrigger>
+                            <Button isIconOnly color="primary" size="sm">
+                              <Filter size={15} color="#ffffff" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            <div className="flex flex-col px-1 py-2">
+                              <Button className="mb-2" color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("herd")}>
+                                <p className="text-white">Chọn theo đàn</p>
+                              </Button>
+                              <Button color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("cage")}>
+                                <p className="text-white">Chọn theo chuồng</p>
+                              </Button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <Divider orientation="horizontal" className="my-2 b-2" />
+                      {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCages} /> : <HerdListReadOnly setSelected={setSelectedHerds} />}
+                    </CardBody>
+                  </Card>
+                </div>
+                <div>
+                  <Card className="mt-2" radius="sm">
+                    <CardBody>
+                      <SelectedPigsList pigList={allSelectedPigs} />
+                    </CardBody>
+                  </Card>
+                </div>
+              </div>
             </CardBody>
           </Card>
-          {pigIds.length === 0 && (
-            <Card>
-              <CardBody>
-                <p className="text-2xl font-semibold">Chọn heo cho kế hoạch tiêm phòng</p>
-                <div className="mt-2 grid grid-cols-2 gap-4">
-                  <div>
-                    <Card className="mt-2" radius="sm">
-                      <CardBody>
-                        <div className="mb-1 flex justify-between">
-                          <p className="text-lg">Chọn heo theo {openBy === "cage" ? "Chuồng" : "Đàn"}</p>
-                          <Popover key="select" placement="bottom">
-                            <PopoverTrigger>
-                              <Button isIconOnly color="primary" size="sm">
-                                <Filter size={15} color="#ffffff" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent>
-                              <div className="flex flex-col px-1 py-2">
-                                <Button
-                                  className="mb-2"
-                                  color="primary"
-                                  variant="solid"
-                                  isDisabled={false}
-                                  size="sm"
-                                  onClick={() => onOpenSelectedPigsByHerdCage("herd")}
-                                >
-                                  <p className="text-white">Chọn theo đàn</p>
-                                </Button>
-                                <Button color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("cage")}>
-                                  <p className="text-white">Chọn theo chuồng</p>
-                                </Button>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        <Divider orientation="horizontal" className="my-2 b-2" />
-                        {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCages} /> : <HerdListReadOnly setSelected={setSelectedHerds} />}
-                      </CardBody>
-                    </Card>
-                  </div>
-                  <div>
-                    <Card className="mt-2" radius="sm">
-                      <CardBody>
-                        <SelectedPigsList pigList={allSelectedPigs} />
-                      </CardBody>
-                    </Card>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          )}
-        </form>
-      </div>
-      <Modal size="3xl" isOpen={isOpenChooseStageDate} onClose={onCloseChooseStageDate}>
+        )}
+      </form>
+      <Modal size="lg" isOpen={isOpenChooseStageDate} onClose={onCloseChooseStageDate}>
         <ModalContent>
           <ModalHeader> Chọn ngày bắt đầu cho giai đoạn 1</ModalHeader>
           <ModalBody>

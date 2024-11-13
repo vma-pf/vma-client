@@ -11,12 +11,12 @@ import { FaRegSave } from "react-icons/fa";
 
 const TreatmentGuideGridList = ({
   gridColumns = 1,
-  selectedTreatmentGuide,
-  setSelectedTreatmentGuide,
+  selectedGuideId,
+  setSelectedGuideId,
 }: {
   gridColumns: number;
-  selectedTreatmentGuide: TreatmentGuide | undefined;
-  setSelectedTreatmentGuide: React.Dispatch<React.SetStateAction<TreatmentGuide | undefined>>;
+  selectedGuideId: string | undefined;
+  setSelectedGuideId: React.Dispatch<React.SetStateAction<string | undefined>>;
 }) => {
   const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
   const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
@@ -124,14 +124,14 @@ const TreatmentGuideGridList = ({
                 <span>{x.diseaseTitle}</span>
               </div>
               <div className="flex flex-row">
-                {selectedTreatmentGuide?.id === x.id ? (
+                {selectedGuideId === x.id ? (
                   <span className="text-lg text-default-400 cursor-not-allowed">
                     <FaRegSave size={24} />
                   </span>
                 ) : (
                   <Tooltip content="Chọn" color="primary">
                     <span className="text-lg text-primary cursor-pointer active:opacity-50">
-                      <FaRegSave size={24} onClick={() => setSelectedTreatmentGuide(x)} />
+                      <FaRegSave size={24} onClick={() => setSelectedGuideId(x.id)} />
                     </span>
                   </Tooltip>
                 )}

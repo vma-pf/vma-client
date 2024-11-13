@@ -2,6 +2,26 @@ export const pluck = (pluckKey: string, data: any[]): any[] => {
   return data.map((x) => x[pluckKey]);
 };
 
+export const checkTime = (msg: any) => {
+  const diffTime = new Date().getTime() - new Date(msg.createdAt).getTime();
+  const minutes = Math.floor(diffTime / (1000 * 60));
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  const timeAgo =
+    minutes < 60
+      ? `${minutes} phút trước`
+      : hours < 24
+        ? `${hours} giờ trước`
+        : days < 7
+          ? `${days} ngày trước`
+          : days < 30
+            ? `${days} tuần trước`
+            : `${days} tháng trước`;
+
+  return timeAgo;
+};
+
 export const debounce = (func: any, delay: number) => {
   let timeout: any = null;
   return (...args: any) => {

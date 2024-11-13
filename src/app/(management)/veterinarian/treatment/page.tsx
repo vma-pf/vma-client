@@ -3,36 +3,70 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { Button, Card, CardBody, Divider, Skeleton, Tab, Tabs } from "@nextui-org/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  Divider,
+  Image,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Skeleton,
+  Tab,
+  Tabs,
+  Tooltip,
+  useDisclosure,
+} from "@nextui-org/react";
 import { CiClock2, CiStickyNote } from "react-icons/ci";
 import { TreatmentData, CreateTreatmentStageProps, DiseaseReport } from "@oursrc/lib/models/treatment";
 import TreatmentList from "./_components/treatment-list";
-import Image from "next/image";
 import { MdOutlineStickyNote2 } from "react-icons/md";
 import { IoIosAlert, IoIosCalendar } from "react-icons/io";
-import { PiNotebookDuotone } from "react-icons/pi";
+import { PiNotebookDuotone, PiStethoscope } from "react-icons/pi";
 import { GoDotFill } from "react-icons/go";
 import TreatmentGuideList from "./_components/treatment-guide-list";
 import CommonDiseaseList from "./_components/common-disease-list";
 import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
 import { Pig } from "@oursrc/lib/models/pig";
-import { Layers3, Table } from "lucide-react";
+import { Layers3, Star, Table } from "lucide-react";
 import TreatmentGuideGridList from "./_components/treatment-guide-grid-list";
 import CommonDiseaseGridList from "./_components/common-disease-grid-list";
 import TreatmentStages from "./_components/treatment-stages";
 import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@oursrc/components/ui/sheet";
 import { GiCage } from "react-icons/gi";
 import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
+import { Abnormality } from "@oursrc/lib/models/abnormality";
+import { abnormalityService } from "@oursrc/lib/services/abnormalityService";
+import { checkTime } from "@oursrc/lib/utils/dev-utils";
+import { CommonDisease } from "@oursrc/lib/models/common-disease";
+import { FaRegSave, FaStar } from "react-icons/fa";
+import { BsArrowReturnRight } from "react-icons/bs";
 
 const Treatment = () => {
   const router = useRouter();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [showFullText, setShowFullText] = React.useState<{ [key: string]: boolean }>({});
   const [loading, setLoading] = React.useState(false);
+
   const [selectedTreatmentId, setSelectedTreatmentId] = React.useState(new Set<string>());
   const [treatmentData, setTreatmentData] = React.useState<TreatmentData | undefined>();
   const [diseaseReports, setDiseaseReports] = React.useState<DiseaseReport[]>([]);
   const [pigs, setPigs] = React.useState<Pig[]>([]);
+  const [abnormalities, setAbnormalities] = React.useState<Abnormality[]>([]);
   const [selectedTreatment, setSelectedTreatment] = React.useState<CreateTreatmentStageProps>();
-  const [selectedTreatmentGuide, setSelectedTreatmentGuide] = React.useState<TreatmentGuide>();
+  const [selectedGuideId, setSelectedGuideId] = React.useState<string>();
+  const [selectedAbnormality, setSelectedAbnormality] = React.useState<Abnormality>();
+  const [commonDiseases, setCommonDiseases] = React.useState<CommonDisease[]>([]);
+
+  const toggleShowFullText = (id: string) => {
+    setShowFullText((prevState) => ({
+      ...prevState,
+      [id]: !prevState[id],
+    }));
+  };
 
   const findTreatmentPlan = async (id: string) => {
     try {
@@ -67,6 +101,32 @@ const Treatment = () => {
     // );
   };
 
+  const fetchAbnormalities = async () => {
+    try {
+      const res: ResponseObjectList<Abnormality> = await abnormalityService.getAll(1, 500);
+      if (res.isSuccess) {
+        setAbnormalities(res.data.data);
+      } else {
+        console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
+  const fetchCommonDiseases = async (id: string) => {
+    try {
+      const res: ResponseObject<CommonDisease[]> = await abnormalityService.getCommonDiseaseById(id);
+      if (res.isSuccess) {
+        setCommonDiseases(res.data);
+      } else {
+        console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
   React.useEffect(() => {
     if (selectedTreatmentId.size > 0) {
       findTreatmentPlan(selectedTreatmentId.values().next().value);
@@ -83,6 +143,9 @@ const Treatment = () => {
     }
   }, [selectedTreatment]);
 
+  React.useEffect(() => {
+    fetchAbnormalities();
+  }, []);
   return (
     <div>
       <Tabs size="lg" color="primary" variant="solid" defaultSelectedKey="1">
@@ -107,9 +170,9 @@ const Treatment = () => {
                     <Button
                       variant="solid"
                       color="primary"
-                      isDisabled={!selectedTreatmentGuide}
+                      isDisabled={!selectedGuideId}
                       onPress={() => {
-                        router.push(`/veterinarian/treatment/${selectedTreatmentGuide?.id}/create-plan`);
+                        router.push(`/veterinarian/treatment/${selectedGuideId}/create-plan`);
                       }}
                     >
                       Tạo kế hoạch mới
@@ -121,93 +184,30 @@ const Treatment = () => {
               <div className="w-1/2 ml-2 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
                 <p className="m-2 text-xl font-semibold">Dấu hiệu bất thường</p>
                 <div className="my-2 max-h-[500px] overflow-auto">
-                  <Sheet>
-                    <SheetTrigger className="w-full">
+                  {abnormalities.map((abnormality) => (
+                    <div
+                      key={abnormality.id}
+                      onClick={() => {
+                        fetchCommonDiseases(abnormality.id);
+                        setSelectedAbnormality(abnormality);
+                        onOpen();
+                      }}
+                      className="cursor-pointer"
+                    >
                       <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
                         <div className="flex justify-start items-center">
                           <IoIosAlert className="mr-3 text-danger-500" size={30} />
                           <div className="text-start">
-                            <p className="font-semibold">Chuồng 001</p>
-                            <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                            <p className="text-zinc-400 text-sm">bây giờ</p>
+                            <p className="font-semibold">{abnormality.cageCode}</p>
+                            <p className="my-2">{abnormality.title}</p>
+                            <p className="text-zinc-400 text-sm">{checkTime(abnormality.createdAt).toString()}</p>
                           </div>
                         </div>
                         <GoDotFill className="text-blue-500" />
                       </div>
-                    </SheetTrigger>
-                    <SheetContent className="w-3/4">
-                      <SheetHeader>
-                        <SheetTitle>
-                          <p className="text-2xl font-bold">Chi tiết cảnh báo</p>
-                        </SheetTitle>
-                      </SheetHeader>
-                      <div className="p-5">
-                        <div className="grid grid-cols-12 gap-4">
-                          <div className="col-span-6 flex flex-col items-center">
-                            <GiCage className="text-4xl" />
-                            <p className="text-md font-light">Chuồng</p>
-                            <p className="text-lg">CAGE001</p>
-                          </div>
-                          <div className="col-span-6 flex flex-col items-center">
-                            <CiClock2 className="text-4xl" />
-                            <p className="text-md font-light">Thời gian</p>
-                            <p className="text-lg">1 phút trước</p>
-                          </div>
-                          <div className="col-span-12 flex flex-col items-center">
-                            <CiStickyNote className="text-4xl" />
-                            <p className="text-md font-light">Nội dung</p>
-                            <p className="text-lg">Có 1 cá thể có dấu hiệu bất thường</p>
-                          </div>
-                        </div>
-                      </div>
-                      <SheetFooter>
-                        <SheetClose asChild>
-                          <Button
-                            variant="solid"
-                            color="primary"
-                            onPress={() => {
-                              router.push(`/veterinarian/treatment/${selectedTreatmentGuide?.id}/create-plan`);
-                            }}
-                          >
-                            Tạo kế hoạch mới
-                          </Button>
-                        </SheetClose>
-                      </SheetFooter>
-                    </SheetContent>
-                  </Sheet>
-                  <Divider className="my-2" orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
-                    <div className="flex justify-start items-center">
-                      <IoIosAlert className="mr-3" size={30} />
-                      <div>
-                        <p className="font-semibold">Chuồng 002</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                        <p className="text-zinc-400 text-sm">hôm qua</p>
-                      </div>
+                      <Divider className="my-2" orientation="horizontal" />
                     </div>
-                  </div>
-                  <Divider orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
-                    <div className="flex justify-start items-center">
-                      <IoIosAlert className="mr-3" size={30} />
-                      <div>
-                        <p className="font-semibold">Chuồng 001</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                        <p className="text-zinc-400 text-sm">tuần trước</p>
-                      </div>
-                    </div>
-                  </div>
-                  <Divider orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
-                    <div className="flex justify-start items-center">
-                      <IoIosAlert className="mr-3" size={30} />
-                      <div>
-                        <p className="font-semibold">Chuồng 001</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                        <p className="text-zinc-400 text-sm">tháng trước</p>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -230,6 +230,129 @@ const Treatment = () => {
                 setSelectedTreatment={setSelectedTreatment}
               />
             )}
+            {selectedAbnormality && isOpen && (
+              <Modal size="4xl" isOpen={isOpen} onClose={onClose} scrollBehavior="inside">
+                <ModalContent>
+                  <ModalHeader>
+                    <p className="text-2xl font-bold">Chi tiết cảnh báo</p>
+                  </ModalHeader>
+                  <ModalBody>
+                    <div className="p-5">
+                      <div className="grid grid-cols-12 gap-4">
+                        <div className="col-span-6 flex flex-col items-center">
+                          <GiCage className="text-4xl" />
+                          <p className="text-md font-light">Chuồng</p>
+                          <p className="text-lg">{selectedAbnormality.cageCode}</p>
+                        </div>
+                        <div className="col-span-6 flex flex-col items-center">
+                          <CiClock2 className="text-4xl" />
+                          <p className="text-md font-light">Thời gian</p>
+                          <p className="text-lg">{checkTime(selectedAbnormality.createdAt).toString()}</p>
+                        </div>
+                        <div className="col-span-6 flex flex-col items-center">
+                          <CiStickyNote className="text-4xl" />
+                          <p className="text-md font-light">Nội dung</p>
+                          <p className="text-lg">{selectedAbnormality.title}</p>
+                        </div>
+                        <div className="col-span-6 flex flex-col items-center">
+                          <CiStickyNote className="text-4xl" />
+                          <p className="text-md font-light">Loại cảnh báo</p>
+                          <p className="text-lg">{selectedAbnormality.abnormalityType}</p>
+                        </div>
+                        <div className="col-span-12 flex flex-col items-center">
+                          <CiStickyNote className="text-4xl" />
+                          <p className="text-md font-light">Mô tả</p>
+                          <p className="text-lg">{selectedAbnormality.description}</p>
+                        </div>
+                        <div className="col-span-12 flex flex-col items-center">
+                          <Image width={300} src={selectedAbnormality.imageUrl} alt="abnormality" sizes="4xl" />
+                          <p className="text-md font-light">Hình ảnh</p>
+                        </div>
+                      </div>
+                      <p className="text-xl font-bold">Bệnh có thể mắc phải:</p>
+                      {commonDiseases.length > 0 ? (
+                        commonDiseases.map((disease) => (
+                          <Card key={disease.id} className="flex items-center my-2 p-2">
+                            <CardBody>
+                              <div className="mb-2 flex items-center space-x-1">
+                                {Array.from({ length: Number(disease.diseaseType) }).map((_, index) => (
+                                  <FaStar key={index} size={17} className="text-yellow-500" />
+                                ))}
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <BsArrowReturnRight size={20} className="text-primary" />
+                                <p className="my-2 text-xl font-extrabold">{disease.title}</p>
+                              </div>
+                              <p>
+                                <strong>Mô tả: </strong>
+                                {disease.description}
+                              </p>
+                              <p>
+                                <strong>Triệu chứng: </strong>
+                                {disease.symptom}
+                              </p>
+                              <div className="my-3 flex items-center space-x-2">
+                                <PiStethoscope size={20} className="text-primary" />
+                                <p className="text-lg font-semibold">Một số hướng dẫn điều trị: </p>
+                              </div>
+                              {disease.treatmentGuides && disease.treatmentGuides?.length > 0 ? (
+                                disease.treatmentGuides.map((guide) => (
+                                  <div key={guide.id} className="flex space-x-2">
+                                    {selectedGuideId === guide.id ? (
+                                      <FaRegSave className="text-lg text-default-400 cursor-not-allowed" size={24} />
+                                    ) : (
+                                      <Tooltip content="Chọn" color="primary" closeDelay={200}>
+                                        <span>
+                                          <FaRegSave
+                                            className="text-lg text-primary cursor-pointer active:opacity-50"
+                                            size={24}
+                                            onClick={() => setSelectedGuideId(guide.id)}
+                                          />
+                                        </span>
+                                      </Tooltip>
+                                    )}
+                                    <div className="w-fit">
+                                      <span>{showFullText[guide.id] ? guide.cure : guide.cure.slice(0, 100) + "..."}</span>
+                                      {!showFullText[guide.id] && (
+                                        <span className="text-default-400 ml-2 cursor-pointer" onClick={() => toggleShowFullText(guide.id)}>
+                                          Xem thêm
+                                        </span>
+                                      )}
+                                      {showFullText[guide.id] && (
+                                        <span className="text-default-400 ml-2 cursor-pointer" onClick={() => toggleShowFullText(guide.id)}>
+                                          Thu gọn
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-center">Không có hướng dẫn điều trị nào</p>
+                              )}
+                            </CardBody>
+                          </Card>
+                        ))
+                      ) : (
+                        <p className="text-center">Không có bệnh nào phù hợp</p>
+                      )}
+                    </div>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      color="primary"
+                      variant="solid"
+                      isDisabled={!selectedGuideId}
+                      onPress={() => {
+                        router.push(`/veterinarian/treatment/${selectedGuideId}/create-plan`);
+                        onClose();
+                      }}
+                    >
+                      Đi tới tạo kế hoạch điều trị
+                    </Button>
+                  </ModalFooter>
+                </ModalContent>
+              </Modal>
+            )}
           </div>
         </Tab>
         <Tab
@@ -242,7 +365,7 @@ const Treatment = () => {
           }
         >
           <div className="flex flex-col justify-end">
-            <Card className="mb-5 mx-20">
+            {/* <Card className="mb-5 mx-20">
               <CardBody>
                 <p className="text-lg text-center font-semibold">Hướng dẫn điều trị đã chọn</p>
                 {selectedTreatmentGuide ? (
@@ -261,13 +384,13 @@ const Treatment = () => {
                   <p className="mt-3 text-center">Chưa chọn hướng dẫn điều trị</p>
                 )}
               </CardBody>
-            </Card>
+            </Card> */}
             <Tabs size="md" color="primary" variant="solid" defaultSelectedKey="mode-1">
               <Tab key="mode-1" title={<Layers3 size={20} />}>
-                <TreatmentGuideGridList gridColumns={1} selectedTreatmentGuide={selectedTreatmentGuide} setSelectedTreatmentGuide={setSelectedTreatmentGuide} />
+                <TreatmentGuideGridList gridColumns={1} selectedGuideId={selectedGuideId} setSelectedGuideId={setSelectedGuideId} />
               </Tab>
               <Tab key="mode-2" title={<Table size={20} />}>
-                <TreatmentGuideList selectedTreatmentGuide={selectedTreatmentGuide} setSelectedTreatmentGuide={setSelectedTreatmentGuide} />
+                <TreatmentGuideList selectedGuideId={selectedGuideId} setSelectedGuideId={setSelectedGuideId} />
               </Tab>
             </Tabs>
           </div>
