@@ -25,6 +25,11 @@ import {
   Tooltip,
   Tabs,
   Tab,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@nextui-org/react";
 import { useForm } from "react-hook-form";
 import { getLocalTimeZone, today } from "@internationalized/date";
@@ -75,6 +80,7 @@ const CreatePLan = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenUpdateTemplate, onOpen: onOpenUpdateTemplate, onClose: onCloseUpdateTemplate } = useDisclosure();
   const { isOpen: isOpenDeleteTemplate, onOpen: onOpenDeleteTemplate, onClose: onCloseDeleteTemplate } = useDisclosure();
+  const { isOpen: isOpenChooseStageDate, onOpen: onOpenChooseStageDate, onClose: onCloseChooseStageDate } = useDisclosure();
   const [openSaveTemplate, setOpenSaveTemplate] = React.useState<boolean>(false);
   const [openTreatmentGuide, setOpenTreatmentGuide] = React.useState<boolean>(false);
   const [openChooseTemplate, setOpenChooseTemplate] = React.useState<boolean>(false);
@@ -89,6 +95,8 @@ const CreatePLan = ({
   const [templates, setTemplates] = React.useState<PlanTemplate[]>();
   const [selectedTemplate, setSelectedTemplate] = React.useState<PlanTemplate | undefined>();
   const [selectedUpdateTemplate, setSelectedUpdateTemplate] = React.useState<PlanTemplate | undefined>();
+  const [firstStageDate, setFirstStageDate] = React.useState<DateValue>(today(getLocalTimeZone()));
+
   const {
     register,
     handleSubmit,
@@ -299,8 +307,10 @@ const CreatePLan = ({
     }
   };
 
-  const handleChooseTemplate = (template: PlanTemplate) => {
-    if (template.id === selectedTemplate?.id) {
+  const handleTemplateChanges = (keys: Selection) => {
+    const selectedKeysArray = Array.from(keys);
+    const template = templates?.filter((item) => item.id && selectedKeysArray.includes(item.id))[0] || undefined;
+    if (!template) {
       setSelectedTemplate(undefined);
       setStages([
         {
@@ -317,17 +327,18 @@ const CreatePLan = ({
           },
         },
       ]);
-      setOpenChooseTemplate(false);
       return;
     }
-    // const template = templates?.filter((item) => item.id && selectedKeysArray.includes(item.id))[0] || undefined;
     setSelectedTemplate(template);
-    const newStages = template.stageTemplates
+    onOpenChooseStageDate();
+  };
+
+  const handleChooseTemplate = () => {
+    const newStages = selectedTemplate?.stageTemplates
       .sort((a, b) => a.numberOfDays - b.numberOfDays)
       .map((templateStage: any) => {
-        const applyStageDate = new Date();
-        applyStageDate.setDate(applyStageDate.getDate() + templateStage.numberOfDays);
-        const applyStageDateString = applyStageDate.toISOString().split("T")[0];
+        const applyStageDate = firstStageDate.add({ days: templateStage.numberOfDays });
+        const applyStageDateString = applyStageDate.toString();
         return {
           id: v4(),
           title: templateStage.title,
@@ -350,7 +361,9 @@ const CreatePLan = ({
         };
       }) as CreateTreatmentStageProps[];
     setStages(newStages);
-    setOpenChooseTemplate(false);
+    onCloseChooseStageDate();
+    setFirstStageDate(today(getLocalTimeZone()));
+    // setOpenChooseTemplate(false);
   };
 
   const handleUpdateTemplate = async () => {
@@ -513,16 +526,17 @@ const CreatePLan = ({
                   </Popover> */}
                   <Dropdown>
                     <DropdownTrigger>
-                      <Button color="default" variant="solid" endContent={<ChevronDown size={20} />}>
+                      <Button color="primary" variant="ghost" endContent={<ChevronDown size={20} />}>
                         {selectedTemplate ? selectedTemplate.name : "Chọn mẫu"}
                       </Button>
                     </DropdownTrigger>
-                    <DropdownMenu selectionMode="single" selectedKeys={selectedTemplate ? [selectedTemplate.id] : []} items={templates}>
-                      {(item) => (
-                        <DropdownItem key={item.id} onClick={() => handleChooseTemplate(item)}>
-                          {item.name}
-                        </DropdownItem>
-                      )}
+                    <DropdownMenu
+                      selectionMode="single"
+                      selectedKeys={selectedTemplate ? [selectedTemplate.id] : []}
+                      onSelectionChange={(keys) => handleTemplateChanges(keys)}
+                      items={templates}
+                    >
+                      {(item) => <DropdownItem key={item.id}>{item.name}</DropdownItem>}
                     </DropdownMenu>
                   </Dropdown>
                   <Popover placement="bottom" isOpen={openSaveTemplate} onOpenChange={(open) => setOpenSaveTemplate(open)}>
@@ -687,6 +701,33 @@ const CreatePLan = ({
               </div>
             </CardBody>
           </Card>
+          {isOpenChooseStageDate && (
+            <Modal size="lg" isOpen={isOpenChooseStageDate} onClose={onCloseChooseStageDate}>
+              <ModalContent>
+                <ModalHeader> Chọn ngày bắt đầu cho giai đoạn 1</ModalHeader>
+                <ModalBody>
+                  <DatePicker
+                    label="Nhập ngày bắt đầu"
+                    radius="md"
+                    size="lg"
+                    labelPlacement="outside"
+                    isRequired
+                    isInvalid={firstStageDate ? false : true}
+                    errorMessage="Nhập ngày bắt đầu không được để trống"
+                    minValue={today(getLocalTimeZone())}
+                    validationBehavior="native"
+                    value={firstStageDate}
+                    onChange={(event) => setFirstStageDate(event)}
+                  />
+                </ModalBody>
+                <ModalFooter>
+                  <Button color="primary" variant="solid" disabled={!firstStageDate} onClick={handleChooseTemplate}>
+                    Xác nhận
+                  </Button>
+                </ModalFooter>
+              </ModalContent>
+            </Modal>
+          )}
         </Tab>
         <Tab
           key={2}

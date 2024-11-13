@@ -90,7 +90,6 @@ const MedicineListInStage = ({
     { name: "TÊN THUỐC", uid: "medicineName" },
     { name: "PHÂN LOẠI", uid: "type" },
     { name: "SỐ LIỀU CHO TỪNG CON", uid: "portionEachPig" },
-    { name: "SỐ LƯỢNG TRONG KHO", uid: "quantity" },
     { name: "TRỌNG LƯỢNG", uid: "netWeight" },
     { name: "ĐƠN VỊ", uid: "unit" },
   ];
@@ -112,13 +111,16 @@ const MedicineListInStage = ({
         return (
           <div>
             {data.medicineId !== "" && (
-              <Trash2Icon
-                className="text-lg text-danger cursor-pointer active:opacity-50"
-                onClick={() => {
-                  onOpenConfirm();
-                  setSelectedMedicineId(data.medicineId);
-                }}
-              />
+              <Tooltip color="danger" content="Xóa thuốc" closeDelay={200}>
+                <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                  <Trash2Icon
+                    onClick={() => {
+                      setSelectedMedicineId(data.medicineId);
+                      onOpenConfirm();
+                    }}
+                  />
+                </span>
+              </Tooltip>
             )}
           </div>
         );

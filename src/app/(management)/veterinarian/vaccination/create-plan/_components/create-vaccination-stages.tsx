@@ -1,5 +1,21 @@
 import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
-import { Accordion, AccordionItem, Button, Card, CardBody, DatePicker, DateValue, Input, Tooltip } from "@nextui-org/react";
+import {
+  Accordion,
+  AccordionItem,
+  Button,
+  Card,
+  CardBody,
+  DatePicker,
+  DateValue,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Tooltip,
+  useDisclosure,
+} from "@nextui-org/react";
 import { Plus, Trash } from "lucide-react";
 import React from "react";
 import { v4 } from "uuid";
@@ -9,12 +25,13 @@ import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 const CreateVaccinationStages = ({
   stages,
   setStages,
-  date,
 }: {
   stages: VaccinationStageProps[];
   setStages: React.Dispatch<React.SetStateAction<VaccinationStageProps[]>>;
-  date: DateValue | null;
 }) => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedStage, setSelectedStage] = React.useState<VaccinationStageProps | null>(null);
+
   const onStageChange = (event: string, field: string, index: string) => {
     setStages(
       stages.map((stage: VaccinationStageProps) => {
@@ -48,8 +65,12 @@ const CreateVaccinationStages = ({
       },
     ]);
   };
-  const onDeleteStage = (stage: VaccinationStageProps) => {
-    setStages([...stages.filter((x: VaccinationStageProps) => x.id !== stage.id)]);
+  const onDeleteStage = () => {
+    if (selectedStage) {
+      setStages([...stages.filter((x) => x.id !== selectedStage.id)]);
+      onClose();
+    }
+    setSelectedStage(null);
   };
   const onAddTodoInStage = (stageIndex: number) => {
     const newStages = stages.map((stage: VaccinationStageProps, index: number) => {
@@ -148,7 +169,15 @@ const CreateVaccinationStages = ({
                     <span className="text-lg text-danger cursor-pointer active:opacity-50">
                       {stages.length > 1 && (
                         <Tooltip color="danger" content="Xóa giai đoạn">
-                          <Button isIconOnly color="danger" size="sm" onClick={() => onDeleteStage(stage)}>
+                          <Button
+                            isIconOnly
+                            color="danger"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedStage(stage);
+                              onOpen();
+                            }}
+                          >
                             <Trash size={20} color="#ffffff" />
                           </Button>
                         </Tooltip>
@@ -181,7 +210,7 @@ const CreateVaccinationStages = ({
                         label="Ngày tiêm"
                         value={stage.applyStageTime ? parseDate(stage.applyStageTime) : undefined}
                         isDateUnavailable={(date: DateValue) => stages.some((x: VaccinationStageProps) => x.applyStageTime === date.toString() && x.id !== stage.id)}
-                        minValue={date ? date : today(getLocalTimeZone())}
+                        minValue={today(getLocalTimeZone())}
                         // maxValue={date.end}
                         labelPlacement="outside"
                         isRequired
@@ -210,7 +239,7 @@ const CreateVaccinationStages = ({
                     {/* todo */}
                     <div className="grid grid-cols-3 gap-4">
                       <div className="col-span-2">
-                        <MedicineListInStage medicineInStageProp={stage.inventoryRequest} updateMedicines={(e: any) => updateMedicine(e, stageIndex)} />
+                        <MedicineListInStage stage={stage} setStages={setStages} />
                       </div>
                       <div>
                         <Tooltip color="primary" content={`Các bước cần thực hiện trong giai đoạn ${stageIndex + 1}`}>
@@ -265,6 +294,26 @@ const CreateVaccinationStages = ({
           })}
         </Accordion>
       </CardBody>
+      {isOpen && selectedStage && (
+        <Modal isOpen={isOpen} onClose={onClose} size="md">
+          <ModalContent>
+            <ModalHeader>
+              <p className="text-lg">Xác nhận xóa giai đoạn</p>
+            </ModalHeader>
+            <ModalBody>
+              <p>Bạn có chắc chắn muốn xóa giai đoạn?</p>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="danger" variant="solid" onClick={onClose}>
+                Hủy
+              </Button>
+              <Button color="primary" variant="solid" onClick={onDeleteStage}>
+                Xác nhận
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
     </div>
   );
 };

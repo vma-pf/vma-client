@@ -54,11 +54,11 @@ const INITIAL_VISIBLE_COLUMNS = [
 const statusOptions = [{ name: "", uid: "" }];
 
 const TreatmentGuideList = ({
-  selectedTreatmentGuide,
-  setSelectedTreatmentGuide,
+  selectedGuideId,
+  setSelectedGuideId,
 }: {
-  selectedTreatmentGuide: TreatmentGuide | undefined;
-  setSelectedTreatmentGuide: React.Dispatch<React.SetStateAction<TreatmentGuide | undefined>>;
+  selectedGuideId: string | undefined;
+  setSelectedGuideId: React.Dispatch<React.SetStateAction<string | undefined>>;
 }) => {
   const { toast } = useToast();
 
@@ -335,11 +335,11 @@ const TreatmentGuideList = ({
           wrapper: "max-h-[750px]",
         }}
         selectionMode="single"
-        selectedKeys={selectedTreatmentGuide && selectedTreatmentGuide.id ? new Set([selectedTreatmentGuide.id]) : new Set<string>()}
+        selectedKeys={selectedGuideId ? new Set([selectedGuideId]) : new Set<string>()}
         onSelectionChange={(keys) => {
           const selectedKeysArray = Array.from(keys);
           const selectedTreatmentGuide = dataList.filter((data) => data.id && selectedKeysArray.includes(data.id));
-          setSelectedTreatmentGuide(selectedTreatmentGuide[0]);
+          setSelectedGuideId(selectedTreatmentGuide[0].id);
         }}
         sortDescriptor={sortDescriptor}
         topContent={topContent}

@@ -6,7 +6,15 @@ export type CommonDisease = {
   treatment: string,
   diseaseType: string,
   createdAt: string,
-  lastUpdatedAt: string
+  lastUpdatedAt: string,
+  treatmentGuides?: {
+    commonDiseaseId: string,
+    title: string,
+    description: string,
+    cure: string,
+    authorId: string,
+    id: string,
+  }[],
 }
 
 export type CreateCommonDisease = {

@@ -7,6 +7,7 @@ import { NotificationType } from "@oursrc/lib/models/notification";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { notificationService } from "@oursrc/lib/services/notificationService";
 import { ROLE, decodeToken } from "@oursrc/lib/utils";
+import { checkTime } from "@oursrc/lib/utils/dev-utils";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
 import { connected } from "process";
@@ -32,25 +33,6 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
 
   const [messages, setMessages] = useState<NotificationType[]>([]);
   const [connection, setConnection] = useState<HubConnection | null>(null);
-
-  const checkTime = (msg: NotificationType) => {
-    const diffTime = new Date().getTime() - new Date(msg.createdAt).getTime();
-    const minutes = Math.floor(diffTime / (1000 * 60));
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    const timeAgo =
-      minutes < 60
-        ? `${minutes} phút trước`
-        : hours < 24
-        ? `${hours} giờ trước`
-        : days < 7
-        ? `${days} ngày trước`
-        : days < 30
-        ? `${days} tuần trước`
-        : `${days} tháng trước`;
-    return timeAgo;
-  };
 
   const getNotificationList = async () => {
     try {
