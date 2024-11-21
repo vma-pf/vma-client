@@ -8,6 +8,12 @@ export const planTemplateService = {
             pageSize: pageSize?.toString() || "",
         },
     }),
+    getTemplateByTreatmentGuideId: (treatmentGuideId: string, pageIndex: number, pageSize: number) => http.get(`${endpoint}/treatmentGuide/${treatmentGuideId}`, {
+        params: {
+            pageIndex: pageIndex?.toString() || "",
+            pageSize: pageSize?.toString() || "",
+        },
+    }),
     getVaccinationPlanTemplate: (pageIndex: number, pageSize: number) => http.get(`${endpoint}/vaccination-template`, {
         params: {
             pageIndex: pageIndex?.toString() || "",

@@ -23,7 +23,6 @@ const FarmerAssistantLayout = ({
     "/vaccination": projectName + " - " + "Lịch tiêm phòng",
     "/treatment": projectName + " - " + "Kế hoạch điều trị",
     "/cage": projectName + " - " + "Quản lý chuồng",
-    "/alert": projectName + " - " + "Cảnh báo",
   };
   const navbarItems: NavbarItem[] = [
     {
@@ -55,11 +54,6 @@ const FarmerAssistantLayout = ({
       path: "/cage",
       title: "Quản lý chuồng",
       icon: <GiCage size={25} />,
-    },
-    {
-      path: "/alert",
-      title: "Cảnh báo",
-      icon: <HiBellAlert size={25} />,
     },
   ];
   return (

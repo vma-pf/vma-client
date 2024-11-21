@@ -85,7 +85,7 @@ const AssignInfo = ({
         height: data.height,
         width: data.width,
         code: pigInfo.Uid,
-        gender: gender,
+        gender: gender === "Male" ? "Đực" : "Cái",
         note: data.note || "",
       };
       const res: ResponseObject<any> = await pigService.assignPigToCage(pig);
@@ -113,7 +113,7 @@ const AssignInfo = ({
   };
 
   const handleSelectCage = (cage: Cage) => {
-    if (cage.availableQuantity >= cage.capacity) {
+    if (cage.availableQuantity && cage.availableQuantity >= cage.capacity) {
       return;
     }
     // check if a cage is already selected
@@ -167,7 +167,7 @@ const AssignInfo = ({
   return (
     <div>
       <Modal
-        size="2xl"
+        size="3xl"
         isOpen={isOpen}
         onClose={() => {
           if (selectedCage && height && width && weight && gender) {
@@ -253,20 +253,20 @@ const AssignInfo = ({
                   onValueChange={(e) => handleWidthChange(e)}
                 />
               </div>
-              <Textarea minRows={5} type="text" radius="sm" size="lg" label="Ghi chú" placeholder="Nhập ghi chú" labelPlacement="outside" {...register("note")} />
+              {/* <Textarea minRows={5} type="text" radius="sm" size="lg" label="Ghi chú" placeholder="Nhập ghi chú" labelPlacement="outside" {...register("note")} /> */}
               <p className="text-xl font-semibold">Danh sách chuồng</p>
               <div className="grid grid-cols-2">
                 {cages.map((cage) => (
                   <div
-                    className={`m-2 border-2 rounded-lg p-2 ${cage.availableQuantity >= cage.capacity ? "bg-gray-200 cursor-not-allowed" : "cursor-pointer"} ${
-                      selectedCage?.id === cage.id ? "bg-emerald-200" : ""
-                    }`}
+                    className={`m-2 border-2 rounded-lg p-2 ${
+                      cage.availableQuantity && cage.availableQuantity >= cage.capacity ? "bg-gray-200 cursor-not-allowed" : "cursor-pointer"
+                    } ${selectedCage?.id === cage.id ? "bg-emerald-200" : ""}`}
                     key={cage.id}
                     onClick={() => handleSelectCage(cage)}
                   >
                     <p className="text-lg">Chuồng: {cage.code}</p>
                     <p className="text-lg">
-                      Sức chứa: {cage.availableQuantity}/{cage.capacity}
+                      Sức chứa: {cage.availableQuantity ?? 0}/{cage.capacity}
                     </p>
                   </div>
                 ))}
@@ -281,10 +281,10 @@ const AssignInfo = ({
                   onClose();
                 }}
               >
-                Close
+                Đóng
               </Button>
               <Button color="primary" type="submit" isDisabled={selectedCage && height && width && weight && gender ? false : true}>
-                Done
+                Lưu
               </Button>
             </ModalFooter>
           </ModalContent>

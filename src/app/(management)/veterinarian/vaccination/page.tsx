@@ -278,13 +278,7 @@ const Vaccination = () => {
                 <div className="mt-5 mb-3 flex justify-between items-center">
                   <p className="text-xl font-semibold">Các giai đoạn tiêm phòng</p>
                   <div>
-                    <Button
-                      variant="solid"
-                      color="primary"
-                      endContent={<CiEdit size={20} />}
-                      className="mr-2"
-                      onClick={onOpenChangeVaccinationPlanModal}
-                    >
+                    <Button variant="solid" color="primary" endContent={<CiEdit size={20} />} className="mr-2" onClick={onOpenChangeVaccinationPlanModal}>
                       Đổi lịch tiêm phòng
                     </Button>
                     <Dropdown>
@@ -359,7 +353,9 @@ const Vaccination = () => {
                                 variant="solid"
                                 color="primary"
                                 endContent={<CiEdit size={20} />}
-                                isDisabled={stage.isDone || stage.applyStageTime > new Date().toISOString() || medicineList.some((medicine) => medicine.status !== 2)}
+                                isDisabled={
+                                  stage.isDone || stage.applyStageTime > new Date().toISOString() || medicineList.some((medicine) => medicine.status !== "Đã yêu cầu")
+                                }
                                 onPress={() => {
                                   setSelectedVaccination(stage);
                                   onOpenUpdate();
@@ -384,12 +380,7 @@ const Vaccination = () => {
                     setSelectedVaccination={setSelectedVaccination}
                   />
                 )}
-                {isOpenChangeVaccinationPlanModal && (
-                  <ChangeVaccinationPlan 
-                    isOpen={isOpenChangeVaccinationPlanModal}
-                    onClose={onCloseChangeVaccinationPlanModal}
-                  />
-                )}
+                {isOpenChangeVaccinationPlanModal && <ChangeVaccinationPlan isOpen={isOpenChangeVaccinationPlanModal} onClose={onCloseChangeVaccinationPlanModal} />}
               </div>
             )}
           </div>

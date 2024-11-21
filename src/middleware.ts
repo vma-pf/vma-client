@@ -5,6 +5,7 @@ import { ROLE, decodeToken } from "./lib/utils";
 const vetPaths = ["/veterinarian"];
 const farmerPaths = ["/farmer"];
 const farmerAssistantPaths = ["/farm-assist"];
+const adminPaths = ["/admin"];
 
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
@@ -23,7 +24,8 @@ export function middleware(request: NextRequest) {
       (role === ROLE.FARMER &&
         !farmerPaths.some((path) => pathname.startsWith(path))) ||
       (role === ROLE.FARMERASSISTANT &&
-        !farmerAssistantPaths.some((path) => pathname.startsWith(path)))
+        !farmerAssistantPaths.some((path) => pathname.startsWith(path))) ||
+      (role === ROLE.ADMIN && !adminPaths.some((path) => pathname.startsWith(path)))
     ) {
       return NextResponse.redirect(new URL("/_not-found", request.url));
     }
@@ -35,5 +37,5 @@ export function middleware(request: NextRequest) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: ["/login", "/register", "/veterinarian/:path*", "/farmer/:path*", "/farm-assist/:path*"],
+  matcher: ["/login", "/register", "/veterinarian/:path*", "/farmer/:path*", "/farm-assist/:path*", "/admin/:path*"],
 };

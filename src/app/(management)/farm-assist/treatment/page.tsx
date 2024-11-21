@@ -10,61 +10,81 @@ import {
   Accordion,
   AccordionItem,
   Button,
+  Card,
+  CardBody,
   Divider,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Image,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
   Progress,
   Skeleton,
   Tab,
   Tabs,
   useDisclosure,
 } from "@nextui-org/react";
-import { FaClock, FaRegCalendarPlus } from "react-icons/fa6";
+import { FaClock, FaRegCalendarPlus, FaStar } from "react-icons/fa6";
 import { TbMedicineSyrup } from "react-icons/tb";
-import { CiBoxList, CiEdit } from "react-icons/ci";
+import { CiBoxList, CiClock2, CiEdit, CiStickyNote } from "react-icons/ci";
 import { TreatmentData, CreateTreatmentStageProps, DiseaseReport } from "@oursrc/lib/models/treatment";
 import TreatmentList from "./_components/treatment-list";
-import Image from "next/image";
 import { MdCalendarToday, MdOutlineStickyNote2 } from "react-icons/md";
 import { IoIosAlert, IoIosCalendar } from "react-icons/io";
-import { PiNotebookDuotone } from "react-icons/pi";
+import { PiNotebookDuotone, PiStethoscope } from "react-icons/pi";
 import { BiDetail } from "react-icons/bi";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { GoDotFill } from "react-icons/go";
-import TreatmentGuideList from "./_components/treatment-guide-list";
-import CommonDiseaseList from "./_components/common-disease-list";
 import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { Pig } from "@oursrc/lib/models/pig";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle, FaRegSave } from "react-icons/fa";
 import { GrStatusGoodSmall } from "react-icons/gr";
-import DetailPlan from "./_components/_modals/detail-plan";
-// import UpdatePlanStatus from "./_components/_modals/update-plan-status";
 import { treatmentStageService } from "@oursrc/lib/services/treatmentStageService";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@oursrc/components/ui/drawer";
+import { Abnormality } from "@oursrc/lib/models/abnormality";
+import { CommonDisease } from "@oursrc/lib/models/common-disease";
+import { abnormalityService } from "@oursrc/lib/services/abnormalityService";
+import { checkTime } from "@oursrc/lib/utils/dev-utils";
+import { GiCage } from "react-icons/gi";
+import { BsArrowReturnRight } from "react-icons/bs";
+import { Tooltip } from "recharts";
+import { Layers3, Table } from "lucide-react";
+import TreatmentGuideGridList from "../../veterinarian/treatment/_components/treatment-guide-grid-list";
+import TreatmentGuideList from "../../veterinarian/treatment/_components/treatment-guide-list";
+import CommonDiseaseGridList from "../../veterinarian/treatment/_components/common-disease-grid-list";
+import CommonDiseaseList from "../../veterinarian/treatment/_components/common-disease-list";
 
-const statusMap = [
-  { name: "Chưa bắt đầu", value: 0 },
-  { name: "Đang diễn ra", value: 1 },
-  { name: "Đã hoàn thành", value: 2 },
-  { name: "Đã hủy", value: 3 },
+const statusColorMap = [
+  { status: "Đã hoàn thành", color: "text-primary" },
+  { status: "Đang diễn ra", color: "text-sky-500" },
+  { status: "Chưa bắt đầu", color: "text-warning" },
+  { status: "Đã hủy", color: "text-danger" },
 ];
 
 const Treatment = () => {
   const router = useRouter();
   const { toast } = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = React.useState(false);
   const [selectedTreatmentId, setSelectedTreatmentId] = React.useState(new Set<string>());
   const [treatmentData, setTreatmentData] = React.useState<TreatmentData | undefined>();
   const [pigs, setPigs] = React.useState<Pig[]>([]);
   const [diseaseReports, setDiseaseReports] = React.useState<DiseaseReport[]>([]);
+  const [abnormalities, setAbnormalities] = React.useState<Abnormality[]>([]);
+  const [selectedAbnormality, setSelectedAbnormality] = React.useState<Abnormality>();
+  const [commonDiseases, setCommonDiseases] = React.useState<CommonDisease[]>([]);
   const [filterStatus, setFilterStatus] = React.useState("not-done");
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
+  const [selectedGuideId, setSelectedGuideId] = React.useState<string>();
   const [selectedTreatment, setSelectedTreatment] = React.useState<CreateTreatmentStageProps>();
+  const [showFullText, setShowFullText] = React.useState<{ [key: string]: boolean }>({});
 
   const filterValue = React.useMemo(() => {
     if (filterStatus === "all") {
@@ -75,6 +95,13 @@ const Treatment = () => {
       return "Chưa tiêm";
     }
   }, [filterStatus]);
+
+  const toggleShowFullText = (id: string) => {
+    setShowFullText((prevState) => ({
+      ...prevState,
+      [id]: !prevState[id],
+    }));
+  };
 
   const filterTreatment = (status: string) => {
     const data = treatmentData?.treatmentStages || [];
@@ -141,6 +168,32 @@ const Treatment = () => {
     // );
   };
 
+  const fetchAbnormalities = async () => {
+    try {
+      const res: ResponseObjectList<Abnormality> = await abnormalityService.getAll(1, 500);
+      if (res.isSuccess) {
+        setAbnormalities(res.data.data);
+      } else {
+        console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
+  const fetchCommonDiseases = async (id: string) => {
+    try {
+      const res: ResponseObject<CommonDisease[]> = await abnormalityService.getCommonDiseaseById(id);
+      if (res.isSuccess) {
+        setCommonDiseases(res.data);
+      } else {
+        console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
   React.useEffect(() => {
     if (selectedTreatmentId.size > 0) {
       findTreatmentPlan(selectedTreatmentId.values().next().value);
@@ -152,6 +205,10 @@ const Treatment = () => {
       findTreatmentPlan(selectedTreatmentId.values().next().value);
     }
   }, [selectedTreatment]);
+
+  React.useEffect(() => {
+    fetchAbnormalities();
+  }, []);
 
   return (
     <div>
@@ -179,88 +236,34 @@ const Treatment = () => {
               <div className="w-1/2 ml-2 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
                 <p className="m-2 text-xl font-semibold">Dấu hiệu bất thường</p>
                 <div className="my-2 max-h-[500px] overflow-auto">
-                  <Drawer>
-                    <DrawerTrigger className="w-full">
-                      <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
-                        <div className="flex justify-start items-center">
-                          <IoIosAlert className="mr-3 text-danger-500" size={30} />
-                          <div className="text-start">
-                            <p className="font-semibold">Chuồng 001</p>
-                            <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                            <p className="text-zinc-400 text-sm">bây giờ</p>
+                  {abnormalities.length > 0 ? (
+                    abnormalities.map((abnormality) => (
+                      <div
+                        key={abnormality.id}
+                        onClick={() => {
+                          fetchCommonDiseases(abnormality.id);
+                          setSelectedAbnormality(abnormality);
+                          onOpen();
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
+                          <div className="flex justify-start items-center">
+                            <IoIosAlert className="mr-3 text-danger-500" size={30} />
+                            <div className="text-start">
+                              <p className="font-semibold">{abnormality.cageCode}</p>
+                              <p className="my-2">{abnormality.title}</p>
+                              <p className="text-zinc-400 text-sm">{checkTime(abnormality.createdAt).toString()}</p>
+                            </div>
                           </div>
+                          <GoDotFill className="text-blue-500" />
                         </div>
-                        <GoDotFill className="text-blue-500" />
+                        <Divider className="my-2" orientation="horizontal" />
                       </div>
-                    </DrawerTrigger>
-                    <DrawerContent className="rounded-t-3xl h-3/5">
-                      <div className="w-full">
-                        <DrawerHeader>
-                          <DrawerTitle>
-                            <p className="mx-auto text-2xl font-bold">Chi tiết cảnh báo</p>
-                          </DrawerTitle>
-                        </DrawerHeader>
-                        <div className="p-5">
-                          <p className="text-lg font-semibold">Chuồng 001</p>
-                          <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                          <p className="text-zinc-400 text-sm">bây giờ</p>
-
-                          <Divider orientation="horizontal" />
-                          <p className="mx-auto text-lg font-semibold mt-3">Bệnh có thể gặp phải</p>
-                          <p className="text-lg">Viêm phổi</p>
-                          <Divider orientation="horizontal" />
-                          <p className="mx-auto text-lg font-semibold mt-3">Gợi ý hướng dẫn điều trị</p>
-                          <p className="text-lg">Tiêm phòng</p>
-                        </div>
-                        <DrawerFooter>
-                          <DrawerClose>
-                            <Button
-                              variant="solid"
-                              color="primary"
-                              onPress={() => {
-                                router.push("/veterinarian/treatment/create-plan");
-                              }}
-                            >
-                              Tạo kế hoạch mới
-                            </Button>
-                          </DrawerClose>
-                        </DrawerFooter>
-                      </div>
-                    </DrawerContent>
-                  </Drawer>
-                  <Divider className="my-2" orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
-                    <div className="flex justify-start items-center">
-                      <IoIosAlert className="mr-3" size={30} />
-                      <div>
-                        <p className="font-semibold">Chuồng 002</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                        <p className="text-zinc-400 text-sm">hôm qua</p>
-                      </div>
-                    </div>
-                  </div>
-                  <Divider orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
-                    <div className="flex justify-start items-center">
-                      <IoIosAlert className="mr-3" size={30} />
-                      <div>
-                        <p className="font-semibold">Chuồng 001</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                        <p className="text-zinc-400 text-sm">tuần trước</p>
-                      </div>
-                    </div>
-                  </div>
-                  <Divider orientation="horizontal" />
-                  <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
-                    <div className="flex justify-start items-center">
-                      <IoIosAlert className="mr-3" size={30} />
-                      <div>
-                        <p className="font-semibold">Chuồng 001</p>
-                        <p className="my-2">Có 1 cá thể có dấu hiệu bất thường</p>
-                        <p className="text-zinc-400 text-sm">tháng trước</p>
-                      </div>
-                    </div>
-                  </div>
+                    ))
+                  ) : (
+                    <p className="text-center">Không có dấu hiệu bất thường</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -311,16 +314,8 @@ const Treatment = () => {
                         </div>
                         <div className="flex justify-between">
                           <p className="text-md mt-3">Tình trạng</p>
-                          <p
-                            className={`text-lg mt-3 font-semibold ${
-                              statusMap.find((status) => status.value === treatmentData.status)?.value === 1
-                                ? "text-blue-500"
-                                : statusMap.find((status) => status.value === treatmentData.status)?.value === 2
-                                ? "text-green-500"
-                                : "text-red-500"
-                            }`}
-                          >
-                            {statusMap.find((status) => status.value === treatmentData.status)?.name}
+                          <p className={`text-lg mt-3 font-semibold ${statusColorMap.find((status) => status.status === treatmentData.status)?.color}`}>
+                            {treatmentData.status}
                           </p>
                         </div>
                       </div>
@@ -439,44 +434,111 @@ const Treatment = () => {
                                     <li key={idx}>{todo.description}</li>
                                   ))}
                                 </ul>
-                                <div className="space-x-2">
-                                  <Button
-                                    variant="ghost"
-                                    color="primary"
-                                    endContent={<TbMedicineSyrup size={20} />}
-                                    onPress={() => {
-                                      setSelectedTreatment(stage);
-                                      getMedicineInStage(stage.id ? stage.id : "");
-                                      onOpenDetail();
-                                    }}
-                                  >
-                                    Xem thuốc
-                                  </Button>
-                                  {!stage.isDone && stage.applyStageTime < new Date().toISOString() && (
-                                    <Button
-                                      variant="solid"
-                                      color="primary"
-                                      endContent={<CiEdit size={20} />}
-                                      onPress={() => {
-                                        setSelectedTreatment(stage);
-                                        onOpenUpdate();
-                                      }}
-                                    >
-                                      Cập nhật kết quả
-                                    </Button>
-                                  )}
-                                </div>
                               </div>
                             </div>
                           ))
                       )}
                     </div>
-                    {isOpenDetail && selectedTreatment && medicineList && (
-                      <DetailPlan isOpen={isOpenDetail} onClose={onCloseDetail} selectedTreatment={selectedTreatment} medicineList={medicineList} />
-                    )}
                   </div>
                 )}
               </div>
+            )}
+            {selectedAbnormality && isOpen && (
+              <Modal size="4xl" isOpen={isOpen} onClose={onClose} scrollBehavior="inside">
+                <ModalContent>
+                  <ModalHeader>
+                    <p className="text-2xl font-bold">Chi tiết cảnh báo</p>
+                  </ModalHeader>
+                  <ModalBody>
+                    <div className="p-5">
+                      <div className="grid grid-cols-12 gap-4">
+                        <div className="col-span-6 flex flex-col items-center">
+                          <GiCage className="text-4xl" />
+                          <p className="text-md font-light">Chuồng</p>
+                          <p className="text-lg">{selectedAbnormality.cageCode}</p>
+                        </div>
+                        <div className="col-span-6 flex flex-col items-center">
+                          <CiClock2 className="text-4xl" />
+                          <p className="text-md font-light">Thời gian</p>
+                          <p className="text-lg">{checkTime(selectedAbnormality.createdAt).toString()}</p>
+                        </div>
+                        <div className="col-span-6 flex flex-col items-center">
+                          <CiStickyNote className="text-4xl" />
+                          <p className="text-md font-light">Nội dung</p>
+                          <p className="text-lg">{selectedAbnormality.title}</p>
+                        </div>
+                        <div className="col-span-6 flex flex-col items-center">
+                          <CiStickyNote className="text-4xl" />
+                          <p className="text-md font-light">Loại cảnh báo</p>
+                          <p className="text-lg">{selectedAbnormality.abnormalityType}</p>
+                        </div>
+                        <div className="col-span-12 flex flex-col items-center">
+                          <CiStickyNote className="text-4xl" />
+                          <p className="text-md font-light">Mô tả</p>
+                          <p className="text-lg">{selectedAbnormality.description}</p>
+                        </div>
+                        <div className="col-span-12 flex flex-col items-center">
+                          <Image width={300} src={selectedAbnormality.imageUrl} alt="abnormality" sizes="4xl" />
+                          <p className="text-md font-light">Hình ảnh</p>
+                        </div>
+                      </div>
+                      <p className="text-xl font-bold">Bệnh có thể mắc phải:</p>
+                      {commonDiseases.length > 0 ? (
+                        commonDiseases.map((disease) => (
+                          <Card key={disease.id} className="flex items-center my-2 p-2">
+                            <CardBody>
+                              <div className="mb-2 flex items-center space-x-1">
+                                {Array.from({ length: Number(disease.diseaseType) }).map((_, index) => (
+                                  <FaStar key={index} size={17} className="text-yellow-500" />
+                                ))}
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <BsArrowReturnRight size={20} className="text-primary" />
+                                <p className="my-2 text-xl font-extrabold">{disease.title}</p>
+                              </div>
+                              <p>
+                                <strong>Mô tả: </strong>
+                                {disease.description}
+                              </p>
+                              <p>
+                                <strong>Triệu chứng: </strong>
+                                {disease.symptom}
+                              </p>
+                              <div className="my-3 flex items-center space-x-2">
+                                <PiStethoscope size={20} className="text-primary" />
+                                <p className="text-lg font-semibold">Một số hướng dẫn điều trị: </p>
+                              </div>
+                              {disease.treatmentGuides && disease.treatmentGuides?.length > 0 ? (
+                                disease.treatmentGuides.map((guide) => (
+                                  <div key={guide.id} className="flex space-x-2">
+                                    <div className="w-fit">
+                                      <span>{showFullText[guide.id] ? guide.cure : guide.cure.slice(0, 100) + "..."}</span>
+                                      {!showFullText[guide.id] && (
+                                        <span className="text-default-400 ml-2 cursor-pointer" onClick={() => toggleShowFullText(guide.id)}>
+                                          Xem thêm
+                                        </span>
+                                      )}
+                                      {showFullText[guide.id] && (
+                                        <span className="text-default-400 ml-2 cursor-pointer" onClick={() => toggleShowFullText(guide.id)}>
+                                          Thu gọn
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <p className="text-center">Không có hướng dẫn điều trị nào</p>
+                              )}
+                            </CardBody>
+                          </Card>
+                        ))
+                      ) : (
+                        <p className="text-center">Không có bệnh nào phù hợp</p>
+                      )}
+                    </div>
+                  </ModalBody>
+                </ModalContent>
+              </Modal>
             )}
           </div>
         </Tab>
@@ -489,7 +551,14 @@ const Treatment = () => {
             </div>
           }
         >
-          <TreatmentGuideList />
+          <Tabs size="md" color="primary" variant="solid" defaultSelectedKey="mode-1">
+            <Tab key="mode-1" title={<Layers3 size={20} />}>
+              <TreatmentGuideGridList gridColumns={1} selectedGuideId={selectedGuideId} setSelectedGuideId={setSelectedGuideId} />
+            </Tab>
+            <Tab key="mode-2" title={<Table size={20} />}>
+              <TreatmentGuideList selectedGuideId={selectedGuideId} setSelectedGuideId={setSelectedGuideId} />
+            </Tab>
+          </Tabs>
         </Tab>
         <Tab
           key="3"
@@ -500,7 +569,14 @@ const Treatment = () => {
             </div>
           }
         >
-          <CommonDiseaseList />
+          <Tabs size="md" color="primary" variant="solid" defaultSelectedKey="mode-1">
+            <Tab key="mode-1" title={<Layers3 size={20} />}>
+              <CommonDiseaseGridList gridColumns={1} />
+            </Tab>
+            <Tab key="mode-2" title={<Table size={20} />}>
+              <CommonDiseaseList />
+            </Tab>
+          </Tabs>
         </Tab>
       </Tabs>
     </div>

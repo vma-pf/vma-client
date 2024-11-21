@@ -1,10 +1,4 @@
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { Button, Divider, Input, Spinner, Textarea } from "@nextui-org/react";
 import { toast } from "@oursrc/hooks/use-toast";
 import { CommonDisease } from "@oursrc/lib/models/common-disease";
@@ -64,10 +58,7 @@ const ModalCommonDisease = ({
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title:
-          error instanceof AggregateError
-            ? error.message
-            : "Lỗi hệ thống. Vui lòng thử lại sau!",
+        title: error instanceof AggregateError ? error.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
     } finally {
       onClose();
@@ -87,10 +78,7 @@ const ModalCommonDisease = ({
       if (response && response.isSuccess) {
         toast({
           variant: "success",
-          title:
-            context === "create"
-              ? "Tạo thành công"
-              : "Cập nhật thành công",
+          title: context === "create" ? "Tạo thành công" : "Cập nhật thành công",
         });
         onClose();
       } else {
@@ -124,15 +112,9 @@ const ModalCommonDisease = ({
           backdrop="opaque"
           isOpen={isOpen}
           size="4xl"
-          scrollBehavior="normal"
+          scrollBehavior="inside"
           onClose={() => {
-            if (
-              title ||
-              description ||
-              symptom ||
-              treatment ||
-              diseaseType
-            ) {
+            if (title || description || symptom || treatment || diseaseType) {
               onClose();
             }
           }}
@@ -156,13 +138,7 @@ const ModalCommonDisease = ({
                       labelPlacement="outside"
                       isRequired
                       value={title || ""}
-                      isInvalid={
-                        errors.title
-                          ? true
-                          : title
-                          ? false
-                          : true
-                      }
+                      isInvalid={errors.title ? true : title ? false : true}
                       errorMessage="Tiêu đề không được để trống"
                       {...register("title", { required: true })}
                     />
@@ -176,9 +152,7 @@ const ModalCommonDisease = ({
                       labelPlacement="outside"
                       isRequired
                       value={diseaseType || ""}
-                      isInvalid={
-                        errors.diseaseType ? true : diseaseType ? false : true
-                      }
+                      isInvalid={errors.diseaseType ? true : diseaseType ? false : true}
                       errorMessage="Mức độ không được để trống"
                       {...register("diseaseType", { required: true })}
                     />
@@ -194,13 +168,7 @@ const ModalCommonDisease = ({
                       labelPlacement="outside"
                       isRequired
                       value={description || ""}
-                      isInvalid={
-                        errors.description
-                          ? true
-                          : description
-                          ? false
-                          : true
-                      }
+                      isInvalid={errors.description ? true : description ? false : true}
                       errorMessage="Mô tả không được để trống"
                       {...register("description", { required: true })}
                     />
@@ -216,13 +184,7 @@ const ModalCommonDisease = ({
                       labelPlacement="outside"
                       isRequired
                       value={symptom || ""}
-                      isInvalid={
-                        errors.symptom
-                          ? true
-                          : symptom
-                          ? false
-                          : true
-                      }
+                      isInvalid={errors.symptom ? true : symptom ? false : true}
                       errorMessage="Triệu chứng không được để trống"
                       {...register("symptom", { required: true })}
                     />
@@ -238,13 +200,7 @@ const ModalCommonDisease = ({
                       labelPlacement="outside"
                       isRequired
                       value={treatment || ""}
-                      isInvalid={
-                        errors.treatment
-                          ? true
-                          : treatment
-                          ? false
-                          : true
-                      }
+                      isInvalid={errors.treatment ? true : treatment ? false : true}
                       errorMessage="Cách chữa bệnh không được để trống"
                       {...register("treatment", { required: true })}
                     />
@@ -254,12 +210,7 @@ const ModalCommonDisease = ({
                   <Button color="danger" onPress={onClose}>
                     <p className="text-white">Hủy</p>
                   </Button>
-                  <Button
-                    variant="solid"
-                    color="primary"
-                    isLoading={loading}
-                    type="submit"
-                  >
+                  <Button variant="solid" color="primary" isLoading={loading} type="submit">
                     <p className="text-white">{getTitle()}</p>
                   </Button>
                 </ModalFooter>
@@ -269,9 +220,7 @@ const ModalCommonDisease = ({
                 <ModalHeader>{getTitle()}</ModalHeader>
                 <ModalBody>
                   <p className="text-center">
-                    Bạn có chắc chắn muốn xóa{" "}
-                    <strong className="text-xl">{data?.title}</strong>{" "}
-                    không?
+                    Bạn có chắc chắn muốn xóa <strong className="text-xl">{data?.title}</strong> không?
                   </p>
                 </ModalBody>
                 <ModalFooter>

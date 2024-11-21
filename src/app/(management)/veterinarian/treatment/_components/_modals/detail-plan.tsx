@@ -11,18 +11,11 @@ import { CiCalendar, CiClock2 } from "react-icons/ci";
 import { GrStatusGoodSmall } from "react-icons/gr";
 import { PiSubtitlesLight } from "react-icons/pi";
 
-const statusMap = [
-  { status: 0, value: "Đang chờ duyệt" },
-  { status: 1, value: "Đã yêu cầu" },
-  { status: 2, value: "Chấp nhận" },
-  { status: 3, value: "Từ chối" },
-];
-
 const statusColorMap = [
-  { status: 0, color: "text-gray-500" },
-  { status: 1, color: "text-yellow-500" },
-  { status: 2, color: "text-green-500" },
-  { status: 3, color: "text-red-500" },
+  { status: "Chờ xử lý", color: "text-yellow-500" },
+  { status: "Đã yêu cầu", color: "text-sky-500" },
+  { status: "Đã duyệt", color: "text-green-500" },
+  { status: "Đã hủy", color: "text-danger-500" },
 ];
 
 const DetailPlan = ({
@@ -102,9 +95,7 @@ const DetailPlan = ({
                       <Image className="my-auto col-span-2" src="/assets/vma-logo.png" alt="medicine" width={70} height={70} />
                       <div className="my-auto col-span-8">
                         <p className="text-lg font-bold">{medicine.medicineName}</p>
-                        <p className={`text-md font-light ${statusColorMap.find((status) => status.status === medicine.status)?.color}`}>
-                          {statusMap.find((status) => status.status === medicine.status)?.value}
-                        </p>
+                        <p className={`text-md font-light ${statusColorMap.find((status) => status.status === medicine.status)?.color}`}>{medicine.status}</p>
                       </div>
                       <p className="my-auto col-span-2 mx-2 text-md font-semibold text-right">X{medicine.quantity}</p>
                     </div>
@@ -120,7 +111,7 @@ const DetailPlan = ({
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button variant="solid" color="primary" isDisabled={medicineList?.every((medicine) => medicine.status !== 0)} onClick={() => changeStatusRequest()}>
+          <Button variant="solid" color="primary" isDisabled={medicineList?.every((medicine) => medicine.status !== "Chờ xử lý")} onClick={() => changeStatusRequest()}>
             Xuất thuốc
           </Button>
         </ModalFooter>

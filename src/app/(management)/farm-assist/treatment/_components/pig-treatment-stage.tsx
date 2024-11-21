@@ -227,11 +227,6 @@ const PigTreatmentStage = ({
                 </Button>
               </DropdownTrigger>
               <DropdownMenu aria-label="Table Columns" selectedKeys={selectedCage} selectionMode="single" onSelectionChange={setSelectedCage} items={cages}>
-                {/* {cages.map((cage: Cage) => (
-                  <DropdownItem key={cage.id} className="capitalize">
-                    <p>{cage.code}</p>
-                  </DropdownItem>
-                ))} */}
                 {(item) => (
                   <DropdownItem key={item.code} className="capitalize">
                     <p>{item.code}</p>

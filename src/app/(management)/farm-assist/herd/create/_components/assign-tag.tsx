@@ -79,10 +79,7 @@ const AssignTag = () => {
       if (res && res.isSuccess) {
         setCages(res.data.data);
       } else {
-        toast({
-          variant: "destructive",
-          title: res.errorMessage || "Có lỗi xảy ra",
-        });
+        console.log(res.errorMessage);
       }
     } catch (error) {
       console.log(error);
@@ -98,10 +95,7 @@ const AssignTag = () => {
       if (res && res.isSuccess) {
         setAssignedPigs(res.data.data);
       } else {
-        toast({
-          variant: "destructive",
-          title: res.errorMessage || "Có lỗi xảy ra",
-        });
+        console.log(res.errorMessage);
       }
     } catch (error) {
       console.log(error);
@@ -182,10 +176,10 @@ const AssignTag = () => {
             <RiRfidLine
               className="mx-auto text-primary"
               size={150}
-              // onClick={() => {
-              //   setPigInfo({ Uid: v4(), Weight: 100, Height: 50, Width: 50 });
-              //   onOpen();
-              // }}
+              onClick={() => {
+                setPigInfo({ Uid: v4(), Weight: 0 });
+                onOpen();
+              }}
             />
           </motion.div>
           <p className="text-center text-lg mt-4">Quét tag bằng thiết bị RFID để gắn tag cho heo</p>

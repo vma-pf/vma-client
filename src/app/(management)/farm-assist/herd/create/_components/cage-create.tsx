@@ -9,7 +9,7 @@ import { useAppDispatch } from "@oursrc/lib/hooks";
 import { HiChevronDoubleRight } from "react-icons/hi2";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { cageService } from "@oursrc/lib/services/cageService";
-import { Cage, CreateCageRequest } from "@oursrc/lib/models/cage";
+import { Cage } from "@oursrc/lib/models/cage";
 import PrepareCageList from "./prepare-cage-list";
 
 const CageCreate = () => {

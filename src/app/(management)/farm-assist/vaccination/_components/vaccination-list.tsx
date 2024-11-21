@@ -6,17 +6,11 @@ import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
 
-const statusMapColor = [
-  { name: "red", value: 0 },
-  { name: "blue", value: 1 },
-  { name: "green", value: 2 },
-  { name: "red", value: 3 },
-];
-const statusMap = [
-  { name: "Chưa bắt đầu", value: 0 },
-  { name: "Đang thực hiện", value: 1 },
-  { name: "Đã hoàn thành", value: 2 },
-  { name: "Đã hủy", value: 3 },
+const statusColorMap = [
+  { status: "Đã hoàn thành", color: "text-primary" },
+  { status: "Đang diễn ra", color: "text-sky-500" },
+  { status: "Chưa bắt đầu", color: "text-warning" },
+  { status: "Đã hủy", color: "text-danger" },
 ];
 
 const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: any }) => {
@@ -38,9 +32,9 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
     if (hasSearchFilter) {
       filteredVaccination = filteredVaccination.filter((vaccination) => vaccination.title.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusMap.length) {
-      filteredVaccination = filteredVaccination.filter((vaccination) => Array.from(statusFilter).includes(vaccination.status as number));
-    }
+    // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusMap.length) {
+    //   filteredVaccination = filteredVaccination.filter((vaccination) => Array.from(statusFilter).includes(vaccination.status as number));
+    // }
 
     return filteredVaccination;
   }, [vaccinationList, filterValue, statusFilter]);
@@ -121,9 +115,7 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
             <TableCell>{dateTimeConverter(data.startDate)}</TableCell>
             <TableCell>{dateTimeConverter(data.expectedEndDate)}</TableCell>
             <TableCell>
-              <p className={`text-${statusMapColor.find((status) => status.value === data.status)?.name}-500 text-center`}>
-                {statusMap.find((status) => status.value === data.status)?.name}
-              </p>
+              <p className={`${statusColorMap.find((status) => status.status === String(data.status))?.color}`}>{data.status}</p>
             </TableCell>
           </TableRow>
         ))}

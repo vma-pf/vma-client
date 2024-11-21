@@ -59,6 +59,9 @@ import { AiOutlineSchedule } from "react-icons/ai";
 import { TbTemplate } from "react-icons/tb";
 import UpdateDeleteTemplate from "@oursrc/components/template/modals/update-delete-template";
 import CommonPlanTemplate from "@oursrc/components/template/plan-template";
+import AreaListReadOnly from "@oursrc/components/areas/area-list-read-only";
+import { Area } from "@oursrc/lib/models/area";
+import { areaService } from "@oursrc/lib/services/areaService";
 
 export type TreatmentPlanStep = {
   id: number;
@@ -78,23 +81,20 @@ const CreatePLan = ({
   const { toast } = useToast();
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isOpenUpdateTemplate, onOpen: onOpenUpdateTemplate, onClose: onCloseUpdateTemplate } = useDisclosure();
-  const { isOpen: isOpenDeleteTemplate, onOpen: onOpenDeleteTemplate, onClose: onCloseDeleteTemplate } = useDisclosure();
   const { isOpen: isOpenChooseStageDate, onOpen: onOpenChooseStageDate, onClose: onCloseChooseStageDate } = useDisclosure();
   const [openSaveTemplate, setOpenSaveTemplate] = React.useState<boolean>(false);
   const [openTreatmentGuide, setOpenTreatmentGuide] = React.useState<boolean>(false);
-  const [openChooseTemplate, setOpenChooseTemplate] = React.useState<boolean>(false);
-  const [openBy, setOpenBy] = React.useState<string>("herd");
+  const [openBy, setOpenBy] = React.useState<"herd" | "cage" | "area">("herd");
   const [diseaseReport, setDiseaseReport] = React.useState<DiseaseReport | undefined>();
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
+  const [selectedAreas, setSelectedAreas] = React.useState<Area[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
   const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);
   const [templateName, setTemplateName] = React.useState<string>("");
   const [treatmentGuide, setTreatmentGuide] = React.useState<TreatmentGuide | undefined>();
   const [templates, setTemplates] = React.useState<PlanTemplate[]>();
   const [selectedTemplate, setSelectedTemplate] = React.useState<PlanTemplate | undefined>();
-  const [selectedUpdateTemplate, setSelectedUpdateTemplate] = React.useState<PlanTemplate | undefined>();
   const [firstStageDate, setFirstStageDate] = React.useState<DateValue>(today(getLocalTimeZone()));
 
   const {
@@ -122,8 +122,6 @@ const CreatePLan = ({
     },
   ]);
 
-  const openByValue = React.useMemo(() => openBy !== "all" && Array.from(openBy).join(", ").replaceAll("_", " "), [openBy]);
-
   const fetchPigs = async (fetchBy: string) => {
     try {
       if (fetchBy === "herd") {
@@ -133,9 +131,18 @@ const CreatePLan = ({
         } else {
           console.log(response.errorMessage);
         }
-      } else {
+      } else if (fetchBy === "cage") {
         for (let i = 0; i < selectedCages.length; i++) {
           const response: ResponseObjectList<Pig> = await pigService.getPigsByCageId(selectedCages[i]?.id ?? "", 1, 500);
+          if (response.isSuccess) {
+            setAllSelectedPigs(response.data.data || []);
+          } else {
+            console.log(response.errorMessage);
+          }
+        }
+      } else if (fetchBy === "area") {
+        for (let i = 0; i < selectedAreas.length; i++) {
+          const response: ResponseObjectList<Pig> = await areaService.getPigsByAreaId(selectedAreas[i]?.id ?? "");
           if (response.isSuccess) {
             setAllSelectedPigs(response.data.data || []);
           } else {
@@ -163,7 +170,7 @@ const CreatePLan = ({
 
   const fetchTemplate = async () => {
     try {
-      const res: ResponseObjectList<PlanTemplate> = await planTemplateService.getTreatmentPlanTemplate(1, 500);
+      const res: ResponseObjectList<PlanTemplate> = await planTemplateService.getTemplateByTreatmentGuideId(treatmentGuideId, 1, 500);
       if (res.isSuccess) {
         setTemplates(res.data.data);
       }
@@ -366,32 +373,6 @@ const CreatePLan = ({
     // setOpenChooseTemplate(false);
   };
 
-  const handleUpdateTemplate = async () => {
-    try {
-      console.log(selectedTemplate);
-      // const firstStage = stages[0].applyStageTime;
-      // const payload = {
-      //   ...selectedTemplate,
-      //   stageTemplates: stages.map((stage) => ({
-      //     title: stage.title,
-      //     timeSpan: stage.timeSpan,
-      //     numberOfDays: (new Date(stage.applyStageTime).getTime() - new Date(firstStage).getTime()) / (1000 * 60 * 60 * 24),
-      //     medicineTemplates: stage.inventoryRequest.medicines.map((medicine: any) => ({
-      //       medicineId: medicine.type === "existed" ? medicine.medicineId : null,
-      //       portionEachPig: medicine.portionEachPig,
-      //     })),
-      //     toDoTemplates: stage.treatmentToDos.map((todo, index) => ({
-      //       id: `todo-${index}`, // Generate or use an existing id
-      //       description: todo.description,
-      //     })),
-      //   })),
-      // };
-      // console.log(payload);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   React.useEffect(() => {
     if (treatmentGuideId) {
       fetchTemplate();
@@ -409,6 +390,12 @@ const CreatePLan = ({
       fetchPigs("cage");
     }
   }, [selectedCages]);
+
+  React.useEffect(() => {
+    if (selectedAreas.length > 0) {
+      fetchPigs("area");
+    }
+  }, [selectedAreas]);
   return (
     <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.4 }}>
       <Sheet
@@ -431,21 +418,12 @@ const CreatePLan = ({
           <SheetHeader>
             <p className="text-2xl font-bold">Hướng dẫn điều trị</p>
           </SheetHeader>
-          <div className="p-5">
-            <div className="flex justify-between items-center">
-              <p className="text-lg">{treatmentGuide?.diseaseDescription}</p>
-            </div>
+          <div className="p-5 overflow-auto">
+            <p className="text-lg font-semibold">Bệnh:</p>
+            <p className="text-lg">{treatmentGuide?.diseaseDescription}</p>
+            <p className="text-lg mt-2">Cách điều trị:</p>
+            <p>{treatmentGuide?.cure}</p>
           </div>
-          {/* <SheetFooter>
-            <SheetClose asChild>
-              <Button
-                variant="solid"
-                color="primary"
-              >
-                Tạo kế hoạch mới
-              </Button>
-            </SheetClose>
-          </SheetFooter> */}
         </SheetContent>
       </Sheet>
       {/* {selectedUpdateTemplate && isOpenUpdateTemplate && (
@@ -660,7 +638,7 @@ const CreatePLan = ({
                     <Card className="mt-2" radius="sm">
                       <CardBody>
                         <div className="mb-1 flex justify-between">
-                          <p className="text-lg">Chọn heo theo {openByValue === "cage" ? "chuồng" : "đàn"}</p>
+                          <p className="text-lg">Chọn heo theo {openBy === "cage" ? "Chuồng" : openBy === "herd" ? "Đàn" : "Khu"}</p>
                           <Dropdown>
                             <DropdownTrigger>
                               <Button isIconOnly color="primary" size="sm">
@@ -670,10 +648,10 @@ const CreatePLan = ({
                             <DropdownMenu
                               disallowEmptySelection
                               selectionMode="single"
-                              selectedKeys={openBy}
+                              selectedKeys={openBy ? new Set([openBy]) : new Set()}
                               onSelectionChange={(selectedKeys: Selection) => {
                                 const selectedKeysArray = Array.from(selectedKeys);
-                                setOpenBy(selectedKeysArray[0].toString());
+                                setOpenBy(selectedKeysArray[0].toString() as "herd" | "cage" | "area");
                               }}
                             >
                               <DropdownItem color="primary" key="herd">
@@ -682,11 +660,20 @@ const CreatePLan = ({
                               <DropdownItem color="primary" key="cage">
                                 Chọn theo chuồng
                               </DropdownItem>
+                              <DropdownItem color="primary" key="area">
+                                Chọn theo khu
+                              </DropdownItem>
                             </DropdownMenu>
                           </Dropdown>
                         </div>
-                        <Divider orientation="horizontal" className="my-2 b-2" />
-                        {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCages} /> : <HerdListReadOnly setSelected={setSelectedHerds} />}
+                        <Divider orientation="horizontal" className="my-2" />
+                        {openBy === "cage" ? (
+                          <CageListReadOnly setSelected={setSelectedCages} />
+                        ) : openBy === "herd" ? (
+                          <HerdListReadOnly setSelected={setSelectedHerds} />
+                        ) : (
+                          <AreaListReadOnly setSelected={setSelectedAreas} />
+                        )}
                       </CardBody>
                     </Card>
                   </div>

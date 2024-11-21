@@ -28,7 +28,7 @@ type UpdateMedicineRequest = {
 };
 
 type StageMedicine = {
-  status: number;
+  status: string;
   medicineName: string;
   quantity: number;
   id: string;

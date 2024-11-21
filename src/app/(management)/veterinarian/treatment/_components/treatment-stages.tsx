@@ -120,9 +120,7 @@ const TreatmentStages = ({
               </div>
               <div className="flex justify-between">
                 <p className="text-md mt-3">Tình trạng</p>
-                <p className={`text-lg mt-3 font-semibold ${statusColorMap.find((status) => status.status === String(treatmentData.status))?.color}`}>
-                  {treatmentData.status}
-                </p>
+                <p className={`text-lg mt-3 font-semibold ${statusColorMap.find((status) => status.status === treatmentData.status)?.color}`}>{treatmentData.status}</p>
               </div>
             </div>
           ) : (

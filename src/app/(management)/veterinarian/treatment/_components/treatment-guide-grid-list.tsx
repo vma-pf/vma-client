@@ -102,87 +102,91 @@ const TreatmentGuideGridList = ({
           </Button>
         </CardBody>
       </Card>
-      <Accordion showDivider={false} className={`p-2 grid grid-cols-${gridColumns} gap-4 w-full`} variant="splitted">
-        {dataList.map((x: TreatmentGuide, index: number) => (
-          <AccordionItem
-            key={x.id}
-            title={
-              <div className="flex">
-                <span>{x.treatmentTitle}</span>
-              </div>
-            }
-            subtitle={
-              <strong className="text-primary">
-                <span className="text-danger">Triệu chứng: </span>
-                {x.diseaseSymptoms}
-              </strong>
-            }
-          >
-            <div className="flex justify-between">
-              <div>
-                <strong>Tên bệnh: </strong>
-                <span>{x.diseaseTitle}</span>
-              </div>
-              <div className="flex flex-row">
-                {selectedGuideId === x.id ? (
-                  <span className="text-lg text-default-400 cursor-not-allowed">
-                    <FaRegSave size={24} />
-                  </span>
-                ) : (
-                  <Tooltip content="Chọn" color="primary">
-                    <span className="text-lg text-primary cursor-pointer active:opacity-50">
-                      <FaRegSave size={24} onClick={() => setSelectedGuideId(x.id)} />
+      {dataList.length > 0 ? (
+        <Accordion showDivider={false} className={`p-2 grid grid-cols-${gridColumns} gap-4 w-full`} variant="splitted">
+          {dataList.map((x: TreatmentGuide, index: number) => (
+            <AccordionItem
+              key={x.id}
+              title={
+                <div className="flex">
+                  <span>{x.treatmentTitle}</span>
+                </div>
+              }
+              subtitle={
+                <strong className="text-primary">
+                  <span className="text-danger">Triệu chứng: </span>
+                  {x.diseaseSymptoms}
+                </strong>
+              }
+            >
+              <div className="flex justify-between">
+                <div>
+                  <strong>Tên bệnh: </strong>
+                  <span>{x.diseaseTitle}</span>
+                </div>
+                <div className="flex flex-row">
+                  {selectedGuideId === x.id ? (
+                    <span className="text-lg text-default-400 cursor-not-allowed">
+                      <FaRegSave size={24} />
+                    </span>
+                  ) : (
+                    <Tooltip content="Chọn" color="primary">
+                      <span className="text-lg text-primary cursor-pointer active:opacity-50">
+                        <FaRegSave size={24} onClick={() => setSelectedGuideId(x.id)} />
+                      </span>
+                    </Tooltip>
+                  )}
+                  <Tooltip content="Chỉnh sửa" color="primary">
+                    <span className="ml-1 text-lg text-default-400 cursor-pointer active:opacity-50">
+                      <Edit
+                        onClick={() => {
+                          onEdit(x);
+                        }}
+                      />
                     </span>
                   </Tooltip>
-                )}
-                <Tooltip content="Chỉnh sửa" color="primary">
-                  <span className="ml-1 text-lg text-default-400 cursor-pointer active:opacity-50">
-                    <Edit
-                      onClick={() => {
-                        onEdit(x);
-                      }}
-                    />
-                  </span>
-                </Tooltip>
-                <Tooltip content="Xóa" color="danger">
-                  <span className="ml-1 text-lg text-default-400 cursor-pointer active:opacity-50">
-                    <Trash
-                      color="#ff0000"
-                      onClick={() => {
-                        onDelete(x);
-                      }}
-                    />
-                  </span>
-                </Tooltip>
+                  <Tooltip content="Xóa" color="danger">
+                    <span className="ml-1 text-lg text-default-400 cursor-pointer active:opacity-50">
+                      <Trash
+                        color="#ff0000"
+                        onClick={() => {
+                          onDelete(x);
+                        }}
+                      />
+                    </span>
+                  </Tooltip>
+                </div>
               </div>
-            </div>
-            <div>
-              <strong>Mức độ: </strong>
-              <span>{x.diseaseType}</span>
-            </div>
-            <div>
-              <strong>Tạo bởi: </strong>
-              <span>{x.authorName}</span>
-            </div>
-            <div>
-              <strong>Triệu chứng: </strong>
-              <span>{x.diseaseSymptoms}</span>
-            </div>
-            <div>
-              <strong>Mô tả bệnh: </strong>
-              <span>{x.diseaseDescription}</span>
-            </div>
-            <div>
-              <strong>Mô tả cách chữa bệnh: </strong>
-              <span>{x.treatmentDescription}</span>
-            </div>
-            <div>
-              <strong>Hướng dẫn chữa bệnh: </strong>
-              <span>{x.cure}</span>
-            </div>
-          </AccordionItem>
-        ))}
-      </Accordion>
+              <div>
+                <strong>Mức độ: </strong>
+                <span>{x.diseaseType}</span>
+              </div>
+              <div>
+                <strong>Tạo bởi: </strong>
+                <span>{x.authorName}</span>
+              </div>
+              <div>
+                <strong>Triệu chứng: </strong>
+                <span>{x.diseaseSymptoms}</span>
+              </div>
+              <div>
+                <strong>Mô tả bệnh: </strong>
+                <span>{x.diseaseDescription}</span>
+              </div>
+              <div>
+                <strong>Mô tả cách chữa bệnh: </strong>
+                <span>{x.treatmentDescription}</span>
+              </div>
+              <div>
+                <strong>Hướng dẫn chữa bệnh: </strong>
+                <span>{x.cure}</span>
+              </div>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      ) : (
+        <div className="text-center">Không có dữ liệu</div>
+      )}
       {isOpenAdd && <ModalTreamentGuide isOpen={isOpenAdd} onClose={onCloseAdd} context="create" />}
       {isOpenEdit && <ModalTreamentGuide isOpen={isOpenEdit} onClose={onCloseEdit} context="edit" data={selectedData || undefined} />}
       {isOpenDelete && <ModalTreamentGuide isOpen={isOpenDelete} onClose={onCloseDelete} context="delete" data={selectedData || undefined} />}

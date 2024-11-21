@@ -99,4 +99,5 @@ export const ROLE = {
   VETERINARIAN: "veterinarian",
   FARMER: "farmer",
   FARMERASSISTANT: "farmerassistant",
+  ADMIN: "admin",
 };

@@ -28,7 +28,7 @@ import { HiChevronDown } from "react-icons/hi2";
 const columns = [
   { name: "Mã đàn", uid: "code", sortable: true },
   { name: "Giống", uid: "breed", sortable: true },
-  { name: "Mô tả", uid: "description", sortable: true },
+  // { name: "Mô tả", uid: "description", sortable: true },
   { name: "Cân nặng trung bình", uid: "averageWeight", sortable: true },
   { name: "Tổng số lượng", uid: "totalNumber", sortable: true },
   { name: "Ngày bắt đầu", uid: "startDate", sortable: true },
@@ -49,7 +49,7 @@ const statusColorMap = {
   2: "danger",
 };
 
-const INITIAL_VISIBLE_COLUMNS = ["code", "breed", "description", "averageWeight", "totalNumber", "startDate", "expectedEndDate", "status"];
+const INITIAL_VISIBLE_COLUMNS = ["code", "breed", "averageWeight", "totalNumber", "startDate", "expectedEndDate", "status"];
 
 const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.SetStateAction<HerdInfo | undefined>> }) => {
   const [herdList, setHerdList] = React.useState<HerdInfo[]>([]);

@@ -53,18 +53,18 @@ export const pigService = {
         },
       }
     ),
-    getDiseaseReportByPigId: (
-      pigId: string,
-      pageIndex: number,
-      pageSize: number
-    ) =>
-      http.get<ResponseObjectList<DiseaseReport>>(
-        endpoint + `/${pigId}/disease-reports`,
-        {
-          params: {
-            pageIndex: pageIndex?.toString() || "",
-            pageSize: pageSize?.toString() || "",
-          },
-        }
-      ),
+  getDiseaseReportByPigId: (
+    pigId: string,
+    pageIndex: number,
+    pageSize: number
+  ) =>
+    http.get<ResponseObjectList<DiseaseReport>>(
+      endpoint + `/${pigId}/disease-reports`,
+      {
+        params: {
+          pageIndex: pageIndex?.toString() || "",
+          pageSize: pageSize?.toString() || "",
+        },
+      }
+    ),
 };

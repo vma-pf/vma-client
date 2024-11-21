@@ -17,13 +17,12 @@ const VetLayout = ({
   const titleMap: { [key: string]: string } = {
     "/dashboard": projectName + " - " + "Tổng quan",
     "/herd": projectName + " - " + "Quản lý đàn heo",
-    "/medicine": projectName + " - " + "Quản lý thuốc",
+    "/medicine": projectName + " - " + "Yêu cầu xuất thuốc",
     "/vaccination": projectName + " - " + "Lịch tiêm phòng",
     "/vaccination/create-plan": projectName + " - " + "Tạo lịch tiêm phòng",
     "/treatment": projectName + " - " + "Kế hoạch điều trị",
     "/treatment/create-plan": projectName + " - " + "Tạo kế hoạch điều trị",
     "/cage": projectName + " - " + "Quản lý chuồng",
-    "/alert": projectName + " - " + "Cảnh báo",
   };
   const navbarItems: NavbarItem[] = [
     {
@@ -38,7 +37,7 @@ const VetLayout = ({
     },
     {
       path: "/medicine",
-      title: "Quản lý thuốc",
+      title: "Yêu cầu xuất thuốc",
       icon: <GiMedicines size={25} />,
     },
     {
@@ -55,11 +54,6 @@ const VetLayout = ({
       path: "/cage",
       title: "Quản lý chuồng",
       icon: <GiCage size={25} />,
-    },
-    {
-      path: "/alert",
-      title: "Cảnh báo",
-      icon: <HiBellAlert size={25} />,
     },
   ];
   return (

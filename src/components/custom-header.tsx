@@ -20,6 +20,7 @@ const roleMap: { [key: string]: string } = {
   "/farmer": "Farmer",
   "/veterinarian": "Veterinarian",
   "/farm-assist": "Farm Assistant",
+  "/admin": "Admin",
 };
 
 const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string }; prefix: string }) => {
@@ -51,10 +52,11 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
     if (role === ROLE.FARMERASSISTANT) {
       switch (message.notificationType) {
         case "Yêu cầu tiêm phòng":
-          router.push("/farm-assist/medicine");
-          break;
         case "Yêu cầu cấp phát thuốc":
           router.push("/farm-assist/medicine");
+          break;
+        case "Dấu hiệu bất thường":
+          router.push("/farm-assist/treatment");
           break;
         default:
           break;
@@ -64,14 +66,21 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
         case "Nhắc nhở tiêm phòng":
           router.push("/veterinarian/vaccination");
           break;
+        case "Dấu hiệu bất thường":
+        case "Nhắc nhở chữa trị":
+          router.push("/veterinarian/treatment");
+          break;
+        default:
+          break;
       }
     } else if (role === ROLE.FARMER) {
       switch (message.notificationType) {
         case "Yêu cầu tiêm phòng":
+        case "Yêu cầu cấp phát thuốc":
           router.push("/farmer/medicine");
           break;
-        case "Báo cáo bệnh":
-          router.push("/farmer/disease-report");
+        case "Dấu hiệu bất thường":
+          router.push("/farmer/treatment");
           break;
         default:
           break;
@@ -150,13 +159,13 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
               </Badge>
             </Button>
           </DropdownTrigger>
-          <DropdownMenu className="max-h-[300px] overflow-auto">
+          <DropdownMenu emptyContent="Không có thông báo" className="max-h-[300px] max-w-[600px] overflow-auto">
             {messages.map((msg: NotificationType, index) => (
               <DropdownItem key={index} onClick={() => navigateTo(msg)}>
                 {msg.isRead ? (
                   <div>
                     <p className="text-lg font-semibold">{msg.title}</p>
-                    <p className="text-md">Message: {msg.content}</p>
+                    <p className="text-md text-wrap">Nội dung: {msg.content}</p>
                     {/* display period from now to msg.createdAt */}
                     <p className="text-sm text-gray-400">{checkTime(msg)}</p>
                   </div>
@@ -164,7 +173,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
                   <div className="flex justify-between">
                     <div>
                       <p className="text-lg font-semibold">{msg.title}</p>
-                      <p className="text-md">Message: {msg.content}</p>
+                      <p className="text-md text-wrap">Nội dung: {msg.content}</p>
                       <p className="text-sm text-gray-400">{checkTime(msg)}</p>
                     </div>
                     <LuDot size={50} className="text-primary" />

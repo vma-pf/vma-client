@@ -37,14 +37,15 @@ import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerT
 import DevelopmentLogList from "./development-log-list";
 import DiseaseReport from "./disease-report";
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@oursrc/components/ui/sheet";
+import { TbExchange } from "react-icons/tb";
 
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  normal: "success",
-  sick: "warning",
-  dead: "danger",
-};
+const statusColorMap = [
+  { healthStatus: "Sống", color: "primary" },
+  { healthStatus: "Bệnh", color: "warning" },
+  { healthStatus: "Chết", color: "danger" },
+];
 
-const INITIAL_VISIBLE_COLUMNS = ["breed", "pigCode", "cageCode", "herdId", "cageId", "vaccinationDate", "healthStatus", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["breed", "cageCode", "pigCode", "weight", "height", "width", "vaccinationDate", "healthStatus", "actions"];
 
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -53,11 +54,13 @@ const capitalize = (str: string) => {
 export default function PigList({
   selectedHerd,
   setSelectedPig,
-  onOpen,
+  onOpenDetail,
+  onOpenChangeCage,
 }: {
   selectedHerd: HerdInfo;
   setSelectedPig: React.Dispatch<React.SetStateAction<Pig | undefined>>;
-  onOpen: () => void;
+  onOpenDetail: () => void;
+  onOpenChangeCage: () => void;
 }) {
   const [pigList, setPigList] = React.useState<Pig[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -142,62 +145,39 @@ export default function PigList({
     const cellValue = pig[columnKey as keyof Pig];
 
     switch (columnKey) {
-      case "status":
-        return (
-          <Chip className="capitalize" color={statusColorMap[pig.healthStatus as string]} size="sm" variant="flat">
-            {cellValue === "active" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
-          </Chip>
-        );
+      case "healthStatus":
+        return <p className={`text-${statusColorMap.find((status) => status.healthStatus === cellValue)?.color}`}>{cellValue}</p>;
       case "vaccinationDate":
         return new Date(cellValue as string).toLocaleDateString("vi-VN");
       case "actions":
         return (
-          <div className="flex justify-center items-center gap-4">
-            {/* <Drawer>
-              <DrawerTrigger>
-                <Tooltip content="Chi tiết" color="primary" closeDelay={200}>
-                  <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                    <EyeIcon
-                      size={20}
-                      className=" cursor-pointer"
-                      onClick={() => {
-                        setSelectedPig(pig);
-                        // onOpen();
-                      }}
-                    />
-                  </span>
-                </Tooltip>
-              </DrawerTrigger>
-              <DrawerContent className="h-5/6">
-                <div className="mt-2 overflow-auto h-full">
-                  <DrawerHeader>
-                    <DrawerTitle>
-                      <p className="text-2xl font-bold">Hồ sơ heo {pig.id}</p>
-                    </DrawerTitle>
-                  </DrawerHeader>
-                  <div className="p-4 pb-0">
-                    <DevelopmentLogList selectedPig={pig} />
-                    <DiseaseReport selectedPig={pig} />
-                  </div>
-                  <DrawerFooter>
-                    <DrawerClose>Cancel</DrawerClose>
-                  </DrawerFooter>
-                </div>
-              </DrawerContent>
-            </Drawer> */}
-            <Tooltip content="Chi tiết" color="primary" closeDelay={200}>
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EyeIcon
-                  size={20}
-                  className=" cursor-pointer"
-                  onClick={() => {
-                    setSelectedPig(pig);
-                    onOpen();
-                  }}
-                />
-              </span>
-            </Tooltip>
-          </div>
+          <Dropdown>
+            <DropdownTrigger>
+              <Button isIconOnly size="sm" variant="light">
+                <HiDotsVertical className="text-default-400" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+              <DropdownItem
+                startContent={<EyeIcon size={20} className="text-primary" />}
+                onClick={() => {
+                  setSelectedPig(pig);
+                  onOpenDetail();
+                }}
+              >
+                Xem chi tiết
+              </DropdownItem>
+              <DropdownItem
+                startContent={<TbExchange size={20} className="text-warning" />}
+                onClick={() => {
+                  setSelectedPig(pig);
+                  onOpenChangeCage();
+                }}
+              >
+                Đổi chuồng
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         );
       default:
         return cellValue?.toString();
@@ -318,15 +298,14 @@ export default function PigList({
           wrapper: "max-h-[750px]",
         }}
         // selectedKeys={selectedKeys}
-        // selectionMode="single"
+        selectionMode="single"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        // onSelectionChange={(keys) => {
-        //   setSelectedKeys(keys);
-        //   // setSelectedPigs(keys === "all" ? pigList : pigList.filter((pig) => Array.from(keys).includes(pig.id)));
-        //   setSelectedPig(pigList.find((pig) => pig.id === Array.from(keys)[0]));
-        // }}
+        onSelectionChange={(keys) => {
+          const selectedKeysArray = Array.from(keys);
+          setSelectedPig(pigList.find((pig) => selectedKeysArray.includes(pig.id)));
+        }}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>

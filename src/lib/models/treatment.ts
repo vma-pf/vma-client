@@ -9,7 +9,7 @@ export type TreatmentData = {
     expectedEndDate: string;
     actualEndDate: string;
     note: string;
-    status: number;
+    status: string;
     treatmentStages: CreateTreatmentStageProps[];
 };
 

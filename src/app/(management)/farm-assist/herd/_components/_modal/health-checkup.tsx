@@ -3,9 +3,11 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Button, Input
 import { useForm } from "react-hook-form";
 import { IoMdPricetags } from "react-icons/io";
 import { Pig } from "@oursrc/lib/models/pig";
-import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { monitorDevelopmentLogService } from "@oursrc/lib/services/monitorDevelopmentLogService";
 import { toast } from "@oursrc/hooks/use-toast";
+import { Cage } from "@oursrc/lib/models/cage";
+import { cageService } from "@oursrc/lib/services/cageService";
 
 const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () => void; pigInfo: Pig }) => {
   const {
@@ -17,6 +19,8 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
   const [height, setHeight] = React.useState<string | undefined>();
   const [width, setWidth] = React.useState<string | undefined>();
   const [weight, setWeight] = React.useState<string | undefined>();
+  const [cages, setCages] = React.useState<Cage[]>([]);
+  const [selectedCage, setSelectedCage] = React.useState<Cage | undefined>();
 
   const handleHeightChange = (event: string) => {
     let numericValue = event.replace(/[^0-9.]/g, "");
@@ -57,11 +61,21 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
     setWeight(undefined);
   };
 
+  const handleSelectCage = (cage: Cage) => {
+    if (cage.availableQuantity && cage.availableQuantity < cage.capacity) {
+      if (cage.id !== selectedCage?.id) {
+        setSelectedCage(cage);
+      } else {
+        setSelectedCage(undefined);
+      }
+    }
+  };
+
   const onSubmit = async (data: any) => {
     try {
       const res: ResponseObject<any> = await monitorDevelopmentLogService.createMonitoringLog({
         pigId: pigInfo.id,
-        cageId: pigInfo.cageId,
+        cageId: selectedCage?.id ?? pigInfo.cageId,
         weight: Number(weight || ""),
         height: Number(height || ""),
         width: Number(width || ""),
@@ -82,14 +96,32 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
     }
   };
 
+  const fetchCages = async () => {
+    try {
+      const res: ResponseObjectList<Cage> = await cageService.getCages(1, 500);
+      if (res.isSuccess) {
+        setCages(res.data.data);
+        setSelectedCage(res.data.data.find((cage) => cage.id === pigInfo.cageId) || undefined);
+      } else {
+        console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   React.useEffect(() => {
     setValue("height", height || "");
     setValue("width", width || "");
     setValue("weight", weight || "");
   }, [height, width, weight]);
+
+  React.useEffect(() => {
+    fetchCages();
+  }, []);
   return (
     <div>
-      <Modal isOpen={isOpen} onClose={onClose} size="2xl" hideCloseButton scrollBehavior="inside" isDismissable={false}>
+      <Modal isOpen={isOpen} onClose={onClose} size="4xl" hideCloseButton scrollBehavior="inside" isDismissable={false}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalContent>
             <ModalHeader>
@@ -155,6 +187,23 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
                 errorMessage="Ghi chú không được để trống"
                 {...register("note", { required: true })}
               />
+              <p className="text-xl font-semibold">Danh sách chuồng</p>
+              <div className="grid grid-cols-2">
+                {cages.map((cage) => (
+                  <div
+                    className={`m-2 border-2 rounded-lg p-2 ${
+                      cage.availableQuantity && cage.availableQuantity >= cage.capacity ? "bg-gray-200 cursor-not-allowed" : "cursor-pointer"
+                    } ${selectedCage?.id === cage.id ? "bg-emerald-200" : ""}`}
+                    key={cage.id}
+                    onClick={() => handleSelectCage(cage)}
+                  >
+                    <p className="text-lg">Chuồng: {cage.code}</p>
+                    <p className="text-lg">
+                      Sức chứa: {cage.availableQuantity}/{cage.capacity}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </ModalBody>
             <ModalFooter>
               <Button
@@ -165,10 +214,10 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
                   onClose();
                 }}
               >
-                Close
+                Hủy
               </Button>
-              <Button color="primary" type="submit" isDisabled={height && width && weight && !errors.note ? false : true}>
-                Done
+              <Button color="primary" type="submit" isDisabled={height && width && weight && !errors.note && selectedCage ? false : true}>
+                Lưu
               </Button>
             </ModalFooter>
           </ModalContent>

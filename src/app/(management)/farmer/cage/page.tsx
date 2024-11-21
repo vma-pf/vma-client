@@ -51,7 +51,7 @@ const Cage = () => {
                   </div>
                   <div className="flex justify-between">
                     <p className="text-center">Số lượng hiện tại</p>
-                    <p className="text-center text-lg font-semibold">{cage.availableQuantity}</p>
+                    <p className="text-center text-lg font-semibold">{cage.availableQuantity ?? 0}</p>
                   </div>
                 </CardBody>
                 <CardFooter className="flex justify-center gap-2">

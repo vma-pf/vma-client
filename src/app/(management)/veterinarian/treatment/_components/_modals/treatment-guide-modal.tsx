@@ -116,7 +116,7 @@ const ModalTreamentGuide = ({
           backdrop="opaque"
           isOpen={isOpen}
           size="4xl"
-          scrollBehavior="normal"
+          scrollBehavior="inside"
           onClose={() => {
             if (diseaseTitle || diseaseDescription || diseaseSymptoms || treatmentTitle || treatmentDescription || diseaseType) {
               onClose();

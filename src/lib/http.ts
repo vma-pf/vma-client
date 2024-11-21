@@ -1,5 +1,3 @@
-import { decode } from "punycode";
-import { ResponseObject } from "./models/response-object";
 import { decodeToken } from "./utils";
 
 export const SERVERURL = "https://vma-server.io.vn"; // Replace with actual API URL
@@ -75,28 +73,37 @@ const request = async <Response>(
     method,
   });
 
-  // check if token is expired before 10 minutes
-  if (token && decodeToken(token).exp - Date.now() / 1000 < 60 * 10) {
-    const res = await fetch(
-      `${SERVERURL}/api/auth/refresh-token`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        method: "POST",
-        body: JSON.stringify({ refreshToken: localStorage.getItem("refreshToken"), accessToken: token }),
-      }
-    );
-    const newToken = await res.json();
-    if (newToken.isSuccess) {
-      localStorage.setItem("accessToken", newToken.data.accessToken);
-      await fetch("/api/auth", {
-        method: "POST",
-        body: JSON.stringify({ sessionToken: newToken.data.accessToken, refreshToken: localStorage.getItem("refreshToken") }),
-      });
-    }
+  if (response.status === 401 || response.status === 403) {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    await fetch("/api/auth/logout", {
+      method: "POST",
+    });
+    window.location.href = "/login";
   }
+
+  // check if token is expired before 10 minutes
+  // if (token && decodeToken(token).exp - Date.now() / 1000 < 60 * 10) {
+  //   const res = await fetch(
+  //     `${SERVERURL}/api/auth/refresh-token`,
+  //     {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       method: "POST",
+  //       body: JSON.stringify({ refreshToken: localStorage.getItem("refreshToken"), accessToken: token }),
+  //     }
+  //   );
+  //   const newToken = await res.json();
+  //   if (newToken.isSuccess) {
+  //     localStorage.setItem("accessToken", newToken.data.accessToken);
+  //     await fetch("/api/auth", {
+  //       method: "POST",
+  //       body: JSON.stringify({ sessionToken: newToken.data.accessToken, refreshToken: localStorage.getItem("refreshToken") }),
+  //     });
+  //   }
+  // }
 
   const payload: Response = await response.json();
   // const data = {

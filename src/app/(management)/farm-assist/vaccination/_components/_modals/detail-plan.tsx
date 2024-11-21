@@ -65,7 +65,7 @@ const DetailPlan = ({
                       <Image className="my-auto col-span-2" src="/assets/vma-logo.png" alt="medicine" width={70} height={70} />
                       <div className="my-auto col-span-8">
                         <p className="text-lg font-bold">{medicine.medicineName}</p>
-                        <p className="text-md font-light">{statusMap.find((status) => status.status === medicine.status)?.value}</p>
+                        <p className="text-md font-light">{medicine.status}</p>
                       </div>
                       <p className="my-auto col-span-2 mx-2 text-md font-semibold text-right">X{medicine.quantity}</p>
                     </div>

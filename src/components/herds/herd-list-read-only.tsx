@@ -99,9 +99,9 @@ const HerdListReadOnly = ({ setSelected }: any) => {
     if (hasSearchFilter) {
       cloneFilteredItems = cloneFilteredItems.filter((item) => item.code.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-      cloneFilteredItems = cloneFilteredItems.filter((item) => Array.from(statusFilter).includes(item.code as string));
-    }
+    // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
+    //   cloneFilteredItems = cloneFilteredItems.filter((item) => Array.from(statusFilter).includes(item.code as string));
+    // }
     return cloneFilteredItems;
   }, [herdList, filterValue, statusFilter]);
 

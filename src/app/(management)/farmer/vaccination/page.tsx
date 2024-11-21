@@ -292,9 +292,9 @@ const Vaccination = () => {
                       </div>
                     ))
                 )}
-                {isOpenDetail && selectedVaccination && medicineList && (
+                {/* {isOpenDetail && selectedVaccination && medicineList && (
                   <DetailPlan isOpen={isOpenDetail} onClose={onCloseDetail} selectedVaccination={selectedVaccination} medicineList={medicineList} />
-                )}
+                )} */}
               </div>
             )}
           </div>

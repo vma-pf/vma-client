@@ -40,25 +40,27 @@ const columns = [
   { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
   { name: "SỐ ĐĂNG KÝ", uid: "registerNumber", sortable: true },
   { name: "TRỌNG LƯỢNG", uid: "netWeight", sortable: true },
-  { name: "TÌNH TRẠNG SỬ DỤNG", uid: "usage", sortable: true },
+  { name: "CÁCH SỬ DỤNG", uid: "usage", sortable: true },
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
   { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
   { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
-  { name: "ACTIONS", uid: "actions" },
+  // { name: "ACTIONS", uid: "actions" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "registerNumber", "netWeight", "usage", "actions"];
-
-const statusOptions = [{ name: "", uid: "" }];
-
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  active: "success",
-  sick: "warning",
-  dead: "danger",
-};
+const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "registerNumber", "netWeight", "usage"];
 
 export default function MedicineList() {
   const { toast } = useToast();
+
+  //Modal field
+  const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
+  // const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
+  // const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure();
+  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
+  // const [updateId, setUpdateId] = React.useState<string>("");
+  const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | null>(null);
+  const [context, setContext] = React.useState<"create" | "edit" | "detail">("create");
+  const [submitDone, setSubmitDone] = React.useState<boolean>(false);
 
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
@@ -72,8 +74,6 @@ export default function MedicineList() {
     column: "lastUpdatedAt",
     direction: "ascending",
   });
-  const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | null>(null);
-  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
 
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -91,40 +91,72 @@ export default function MedicineList() {
     if (hasSearchFilter) {
       filteredMedicines = filteredMedicines.filter((medicine) => medicine.name.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-      filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.name as string));
-    }
+    // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
+    //   filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.name as string));
+    // }
     return filteredMedicines;
   }, [medicineList, filterValue, statusFilter]);
 
   const [loading, setLoading] = React.useState(false);
 
+  //Use Effect
+  // React.useEffect(() => {
+  //   if (submitDone) {
+  //     onClose();
+  //     fetchData();
+  //     setSubmitDone(false);
+  //   }
+  // }, [submitDone]);
+
   React.useEffect(() => {
-    fetchData();
-  }, [page, rowsPerPage]);
+    if (!isOpenAdd) {
+      fetchData();
+    }
+  }, [page, rowsPerPage, isOpenAdd]);
 
   //API function
   const fetchData = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const response: ResponseObjectList<Medicine> = await medicineService.getMedicine(page, rowsPerPage);
       if (response.isSuccess) {
         setMedicineList(response.data.data);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
-        setLoading(false);
-      } else {
-        throw new AggregateError([response.errorMessage]);
       }
     } catch (e) {
-      setLoading(false);
       toast({
         variant: "destructive",
         title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
       });
+    } finally {
+      setLoading(false);
     }
   };
+
+  // const onEdit = async (data: Medicine) => {
+  //   setContext("edit");
+  //   setUpdateId(data.id);
+  //   onOpen();
+  // };
+
+  // const onDelete = async (data: Medicine) => {
+  //   try {
+  //     const response = await medicineService.deleteMedicine(data.id);
+  //     if (response.isSuccess) {
+  //       fetchData();
+  //     } else {
+  //       throw new AggregateError(response.errorMessage);
+  //     }
+  //   } catch (e) {
+  //     setLoading(false);
+  //     toast({
+  //       variant: "destructive",
+  //       title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
+  //     });
+  //   }
+  // };
 
   const items = React.useMemo(() => {
     return filteredItems;
@@ -140,11 +172,12 @@ export default function MedicineList() {
     });
   }, [sortDescriptor, items]);
 
+  //call api
   const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     setRowsPerPage(Number(e.target.value));
     setPage(1);
   }, []);
-
+  //call api
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
       setFilterValue(value);
@@ -194,6 +227,9 @@ export default function MedicineList() {
                 ))}
               </DropdownMenu>
             </Dropdown>
+            <Button color="primary" endContent={<Plus />} onPress={onOpenAdd}>
+              Tạo mới
+            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -220,7 +256,7 @@ export default function MedicineList() {
       case "unit":
       case "usage":
         return (
-          <Tooltip showArrow={true} content={cellValue} color="primary" delay={1000}>
+          <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={300}>
             <p className="truncate">{cellValue}</p>
           </Tooltip>
         );
@@ -246,10 +282,10 @@ export default function MedicineList() {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
+      <div className="py-2 px-2 flex justify-center items-center">
+        {/* <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span> */}
         <Pagination isCompact showControls showShadow color="primary" page={page} total={totalPages} onChange={setPage} />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
+        {/* <div className="hidden sm:flex w-[30%] justify-end gap-2"></div> */}
       </div>
     );
   }, [selectedKeys, items.length, page, totalPages, hasSearchFilter]);
@@ -257,9 +293,8 @@ export default function MedicineList() {
   return (
     <div>
       <Table
-        aria-label="Example table with custom cells, pagination and sorting"
+        color="primary"
         layout="fixed"
-        isHeaderSticky
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
@@ -288,7 +323,6 @@ export default function MedicineList() {
           )}
         </TableBody>
       </Table>
-      {isOpenDetail && selectedMedicine && <BatchList isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine} />}
     </div>
   );
 }

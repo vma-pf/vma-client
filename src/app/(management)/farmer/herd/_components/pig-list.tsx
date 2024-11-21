@@ -111,7 +111,6 @@ export default function PigList({ selectedHerd, setSelectedPig }: { selectedHerd
     try {
       setIsLoading(true);
       const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerd.id, page, rowsPerPage);
-      console.log("response: ", response);
       if (response.isSuccess) {
         setPigList(response.data.data || []);
         setTotalRecords(response.data?.totalRecords || 0);

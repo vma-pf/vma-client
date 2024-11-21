@@ -184,30 +184,34 @@ const Treatment = () => {
               <div className="w-1/2 ml-2 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
                 <p className="m-2 text-xl font-semibold">Dấu hiệu bất thường</p>
                 <div className="my-2 max-h-[500px] overflow-auto">
-                  {abnormalities.map((abnormality) => (
-                    <div
-                      key={abnormality.id}
-                      onClick={() => {
-                        fetchCommonDiseases(abnormality.id);
-                        setSelectedAbnormality(abnormality);
-                        onOpen();
-                      }}
-                      className="cursor-pointer"
-                    >
-                      <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
-                        <div className="flex justify-start items-center">
-                          <IoIosAlert className="mr-3 text-danger-500" size={30} />
-                          <div className="text-start">
-                            <p className="font-semibold">{abnormality.cageCode}</p>
-                            <p className="my-2">{abnormality.title}</p>
-                            <p className="text-zinc-400 text-sm">{checkTime(abnormality.createdAt).toString()}</p>
+                  {abnormalities.length > 0 ? (
+                    abnormalities.map((abnormality) => (
+                      <div
+                        key={abnormality.id}
+                        onClick={() => {
+                          fetchCommonDiseases(abnormality.id);
+                          setSelectedAbnormality(abnormality);
+                          onOpen();
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
+                          <div className="flex justify-start items-center">
+                            <IoIosAlert className="mr-3 text-danger-500" size={30} />
+                            <div className="text-start">
+                              <p className="font-semibold">{abnormality.cageCode}</p>
+                              <p className="my-2">{abnormality.title}</p>
+                              <p className="text-zinc-400 text-sm">{checkTime(abnormality.createdAt).toString()}</p>
+                            </div>
                           </div>
+                          <GoDotFill className="text-blue-500" />
                         </div>
-                        <GoDotFill className="text-blue-500" />
+                        <Divider className="my-2" orientation="horizontal" />
                       </div>
-                      <Divider className="my-2" orientation="horizontal" />
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center">Không có dấu hiệu bất thường</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -297,33 +301,40 @@ const Treatment = () => {
                               </div>
                               {disease.treatmentGuides && disease.treatmentGuides?.length > 0 ? (
                                 disease.treatmentGuides.map((guide) => (
-                                  <div key={guide.id} className="flex space-x-2">
-                                    {selectedGuideId === guide.id ? (
-                                      <FaRegSave className="text-lg text-default-400 cursor-not-allowed" size={24} />
-                                    ) : (
-                                      <Tooltip content="Chọn" color="primary" closeDelay={200}>
-                                        <span>
-                                          <FaRegSave
-                                            className="text-lg text-primary cursor-pointer active:opacity-50"
-                                            size={24}
-                                            onClick={() => setSelectedGuideId(guide.id)}
-                                          />
-                                        </span>
-                                      </Tooltip>
-                                    )}
-                                    <div className="w-fit">
-                                      <span>{showFullText[guide.id] ? guide.cure : guide.cure.slice(0, 100) + "..."}</span>
-                                      {!showFullText[guide.id] && (
-                                        <span className="text-default-400 ml-2 cursor-pointer" onClick={() => toggleShowFullText(guide.id)}>
-                                          Xem thêm
-                                        </span>
-                                      )}
-                                      {showFullText[guide.id] && (
-                                        <span className="text-default-400 ml-2 cursor-pointer" onClick={() => toggleShowFullText(guide.id)}>
-                                          Thu gọn
-                                        </span>
-                                      )}
+                                  <div key={guide.id}>
+                                    <div className="flex space-x-2">
+                                      <div className="w-fit">
+                                        <span>{showFullText[guide.id] ? guide.cure : guide.cure.slice(0, 100) + "..."}</span>
+                                        {!showFullText[guide.id] && (
+                                          <span className="text-default-400 ml-2 cursor-pointer" onClick={() => toggleShowFullText(guide.id)}>
+                                            Xem thêm
+                                          </span>
+                                        )}
+                                        {showFullText[guide.id] && (
+                                          <span className="text-default-400 ml-2 cursor-pointer" onClick={() => toggleShowFullText(guide.id)}>
+                                            Thu gọn
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
+                                    {selectedGuideId === guide.id ? (
+                                      <Button className="mt-2" size="sm" color="default" variant="solid" endContent={<FaRegSave size={20} />} isDisabled>
+                                        Đã chọn
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        className="mt-2"
+                                        size="sm"
+                                        color="primary"
+                                        variant="solid"
+                                        onPress={() => {
+                                          setSelectedGuideId(guide.id);
+                                        }}
+                                        endContent={<FaRegSave size={20} />}
+                                      >
+                                        Chọn
+                                      </Button>
+                                    )}
                                   </div>
                                 ))
                               ) : (
@@ -364,36 +375,14 @@ const Treatment = () => {
             </div>
           }
         >
-          <div className="flex flex-col justify-end">
-            {/* <Card className="mb-5 mx-20">
-              <CardBody>
-                <p className="text-lg text-center font-semibold">Hướng dẫn điều trị đã chọn</p>
-                {selectedTreatmentGuide ? (
-                  <div className="">
-                    <p className="">
-                      <strong>Tên bệnh:</strong> {selectedTreatmentGuide.diseaseTitle}
-                    </p>
-                    <p className="">
-                      <strong>Mô tả bệnh:</strong> {selectedTreatmentGuide.treatmentDescription}
-                    </p>
-                    <p className="">
-                      <strong>Triệu chứng:</strong> {selectedTreatmentGuide.diseaseSymptoms}
-                    </p>
-                  </div>
-                ) : (
-                  <p className="mt-3 text-center">Chưa chọn hướng dẫn điều trị</p>
-                )}
-              </CardBody>
-            </Card> */}
-            <Tabs size="md" color="primary" variant="solid" defaultSelectedKey="mode-1">
-              <Tab key="mode-1" title={<Layers3 size={20} />}>
-                <TreatmentGuideGridList gridColumns={1} selectedGuideId={selectedGuideId} setSelectedGuideId={setSelectedGuideId} />
-              </Tab>
-              <Tab key="mode-2" title={<Table size={20} />}>
-                <TreatmentGuideList selectedGuideId={selectedGuideId} setSelectedGuideId={setSelectedGuideId} />
-              </Tab>
-            </Tabs>
-          </div>
+          <Tabs size="md" color="primary" variant="solid" defaultSelectedKey="mode-1">
+            <Tab key="mode-1" title={<Layers3 size={20} />}>
+              <TreatmentGuideGridList gridColumns={1} selectedGuideId={selectedGuideId} setSelectedGuideId={setSelectedGuideId} />
+            </Tab>
+            <Tab key="mode-2" title={<Table size={20} />}>
+              <TreatmentGuideList selectedGuideId={selectedGuideId} setSelectedGuideId={setSelectedGuideId} />
+            </Tab>
+          </Tabs>
         </Tab>
         <Tab
           key="3"

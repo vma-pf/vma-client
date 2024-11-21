@@ -55,7 +55,6 @@ const Schedule = () => {
   const fetchEvents = async () => {
     try {
       const response: ResponseObject<any> = await scheduleService.getMySchedules();
-      console.log(response);
       if (response.isSuccess) {
         const events: ScheduleProps[] = (response.data as any[]).map((event: any) => ({
           id: event.id,
@@ -69,8 +68,6 @@ const Schedule = () => {
         }));
         setEventData(events);
         localStorage.setItem("events", JSON.stringify(events));
-        console.log(new Date().getMonth());
-        console.log(events.map((event) => new Date(event.start).getMonth()));
         setCurrentEvents(events.filter((event) => new Date(event.start).getMonth() === new Date().getMonth()) as EventApi[]);
       }
     } catch (error) {
@@ -132,8 +129,9 @@ const Schedule = () => {
 
   return (
     <div>
+      <p className="text-3xl font-bold">Lịch trình tiêm phòng của tôi</p>
       <div className="flex w-full px-10 justify-start items-start gap-8">
-        <div className="w-3/12">
+        {/* <div className="w-3/12">
           <div className="py-10 text-2xl font-extrabold px-7">Calendar Events</div>
           <ul className="space-y-4">
             {currentEvents.length <= 0 && <div className="italic text-center text-gray-400">No Events Present</div>}
@@ -154,25 +152,24 @@ const Schedule = () => {
                       month: "short",
                       year: "numeric",
                     })}{" "}
-                    {/* Format event start date */}
                   </label>
                 </li>
               ))}
           </ul>
-        </div>
+        </div> */}
 
-        <div className="w-9/12 mt-8">
+        <div className="w-full h-fit mt-8">
           <FullCalendar
             locale={"vi"}
             timeZone={"Asia/Ho_Chi_Minh"}
-            height={"85vh"}
+            // height={"85vh"}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]} // Initialize calendar with required plugins.
             headerToolbar={{
-              left: "prev,next,today",
+              left: "prev,next",
               center: "title",
-              right: "dayGridMonth,timeGridWeek,timeGridDay",
+              right: "",
             }} // Set header toolbar options.
-            eventColor={"#10b981"} // Set event color.
+            // eventColor={"#10b981"} // Set event color.
             initialView="dayGridMonth" // Initial view mode of the calendar.
             // editable={true} // Allow events to be edited.
             // selectable={true} // Allow dates to be selectable.

@@ -48,14 +48,19 @@ import { useForm } from "react-hook-form";
 import { v4 } from "uuid";
 import CreateVaccinationStages from "./create-vaccination-stages";
 import SelectedPigsList from "./selected-pigs-list";
+import { areaService } from "@oursrc/lib/services/areaService";
+import { Area } from "@oursrc/lib/models/area";
+import AreaListReadOnly from "@oursrc/components/areas/area-list-read-only";
 
 const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const router = useRouter();
   //State
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
+  const [selectedAreas, setSelectedAreas] = React.useState<Area[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
-  const [openBy, setOpenBy] = React.useState<string>("");
+  const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);
+  const [openBy, setOpenBy] = React.useState<"herd" | "cage" | "area">("herd");
   const [templateName, setTemplateName] = React.useState("");
   const [templates, setTemplates] = React.useState<PlanTemplate[]>();
   const [selectedTemplate, setSelectedTemplate] = React.useState<PlanTemplate | undefined>();
@@ -110,6 +115,14 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
     }
   }, [selectedCages]);
 
+  React.useEffect(() => {
+    if (selectedAreas.length > 0) {
+      fetchPigs("area");
+    } else {
+      setAllSelectedPigs([]);
+    }
+  }, [selectedAreas]);
+
   const fetchTemplates = async () => {
     try {
       const res: ResponseObjectList<PlanTemplate> = await planTemplateService.getVaccinationPlanTemplate(1, 500);
@@ -123,26 +136,36 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
 
   const fetchPigs = async (fetchBy: string) => {
     try {
-      let fetchedPigs: Pig[] = [];
       if (fetchBy === "herd") {
-        const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerds[0]?.id ?? "", 1, 100);
+        const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerds[0]?.id ?? "", 1, 500);
         if (response.isSuccess) {
-          fetchedPigs = [...response.data.data, ...fetchedPigs];
+          setAllSelectedPigs(response.data.data || []);
+        } else {
+          console.log(response.errorMessage);
         }
-      } else {
+      } else if (fetchBy === "cage") {
         for (let i = 0; i < selectedCages.length; i++) {
-          const response = await pigService.getPigsByCageId(selectedCages[i]?.id ?? "", 1, 100);
+          const response: ResponseObjectList<Pig> = await pigService.getPigsByCageId(selectedCages[i]?.id ?? "", 1, 500);
           if (response.isSuccess) {
-            fetchedPigs = [...response.data.data, ...fetchedPigs];
+            setAllSelectedPigs(response.data.data || []);
           } else {
-            throw new AggregateError([new Error()], response.errorMessage);
+            console.log(response.errorMessage);
+          }
+        }
+      } else if (fetchBy === "area") {
+        for (let i = 0; i < selectedAreas.length; i++) {
+          const response: ResponseObjectList<Pig> = await areaService.getPigsByAreaId(selectedAreas[i]?.id ?? "");
+          if (response.isSuccess) {
+            setAllSelectedPigs(response.data.data || []);
+          } else {
+            console.log(response.errorMessage);
           }
         }
       }
-      setAllSelectedPigs(fetchedPigs);
     } catch (e) {
       console.log(e);
-      setAllSelectedPigs([]);
+    } finally {
+      setSelectedPigs([]);
     }
   };
 
@@ -343,11 +366,6 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
       end: event.end,
     });
   };
-
-  const onOpenSelectedPigsByHerdCage = (openBy: string = "herd") => {
-    setOpenBy(openBy);
-  };
-
   return (
     <div>
       <form onSubmit={handleSubmit(handleSubmitForm)}>
@@ -488,27 +506,42 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                   <Card className="mt-2" radius="sm">
                     <CardBody>
                       <div className="mb-1 flex justify-between">
-                        <p className="text-lg">Chọn heo theo {openBy === "cage" ? "Chuồng" : "Đàn"}</p>
-                        <Popover key="select" placement="bottom">
-                          <PopoverTrigger>
+                        <p className="text-lg">Chọn heo theo {openBy === "cage" ? "Chuồng" : openBy === "herd" ? "Đàn" : "Khu"}</p>
+                        <Dropdown>
+                          <DropdownTrigger>
                             <Button isIconOnly color="primary" size="sm">
-                              <Filter size={15} color="#ffffff" />
+                              <Filter size={15} />
                             </Button>
-                          </PopoverTrigger>
-                          <PopoverContent>
-                            <div className="flex flex-col px-1 py-2">
-                              <Button className="mb-2" color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("herd")}>
-                                <p className="text-white">Chọn theo đàn</p>
-                              </Button>
-                              <Button color="primary" variant="solid" isDisabled={false} size="sm" onClick={() => onOpenSelectedPigsByHerdCage("cage")}>
-                                <p className="text-white">Chọn theo chuồng</p>
-                              </Button>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
+                          </DropdownTrigger>
+                          <DropdownMenu
+                            disallowEmptySelection
+                            selectionMode="single"
+                            selectedKeys={openBy ? new Set([openBy]) : new Set()}
+                            onSelectionChange={(selectedKeys: Selection) => {
+                              const selectedKeysArray = Array.from(selectedKeys);
+                              setOpenBy(selectedKeysArray[0].toString() as "herd" | "cage" | "area");
+                            }}
+                          >
+                            <DropdownItem color="primary" key="herd">
+                              Chọn theo đàn
+                            </DropdownItem>
+                            <DropdownItem color="primary" key="cage">
+                              Chọn theo chuồng
+                            </DropdownItem>
+                            <DropdownItem color="primary" key="area">
+                              Chọn theo khu
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </Dropdown>
                       </div>
-                      <Divider orientation="horizontal" className="my-2 b-2" />
-                      {openBy === "cage" ? <CageListReadOnly setSelected={setSelectedCages} /> : <HerdListReadOnly setSelected={setSelectedHerds} />}
+                      <Divider orientation="horizontal" className="my-2" />
+                      {openBy === "cage" ? (
+                        <CageListReadOnly setSelected={setSelectedCages} />
+                      ) : openBy === "herd" ? (
+                        <HerdListReadOnly setSelected={setSelectedHerds} />
+                      ) : (
+                        <AreaListReadOnly setSelected={setSelectedAreas} />
+                      )}
                     </CardBody>
                   </Card>
                 </div>

@@ -9,7 +9,6 @@ const columns = [
   { name: "MÔ TẢ", uid: "description", sortable: true },
   // { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
   // { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
-  { name: "HÀNH ĐỘNG", uid: "actions" },
 ];
 
 const INITIAL_VISIBLE_COLUMNS = ["code", "description", "capacity", "availableQuantity"];

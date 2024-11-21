@@ -1,22 +1,15 @@
 type Cage = {
-  id: string;
+  id?: string;
   code: string;
   capacity: number;
-  availableQuantity: number;
+  availableQuantity?: number;
   description: string;
+  cameraId?: string;
+  width?: number;
+  height?: number;
+  length?: number;
+  areaId?: string;
+  areaCode?: string;
 };
 
-type CreateCageRequest = {
-  code: string;
-  capacity: number;
-  description: string;
-};
-
-type UpdateCageRequest = {
-  code: string;
-  capacity: number;
-  availableQuantity: number;
-  description: string;
-};
-
-export type { Cage, CreateCageRequest, UpdateCageRequest }
+export type { Cage }

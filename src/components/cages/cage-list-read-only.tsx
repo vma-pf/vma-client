@@ -57,7 +57,7 @@ export default function CageListReadOnly({ setSelected }: any) {
 
   //Use Effect
   React.useEffect(() => {
-    setSelected(cageList.filter((x) => Array.from(selectedKeys).includes(x.id)));
+    setSelected(cageList.filter((x) => Array.from(selectedKeys).includes(x.id as string)));
   }, [selectedKeys]);
 
   React.useEffect(() => {
@@ -93,9 +93,9 @@ export default function CageListReadOnly({ setSelected }: any) {
     if (hasSearchFilter) {
       cloneFilteredItems = cloneFilteredItems.filter((item) => item.code.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-      cloneFilteredItems = cloneFilteredItems.filter((item) => Array.from(statusFilter).includes(item.code as string));
-    }
+    // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
+    //   cloneFilteredItems = cloneFilteredItems.filter((item) => Array.from(statusFilter).includes(item.code as string));
+    // }
     return cloneFilteredItems;
   }, [cageList, filterValue, statusFilter]);
 
@@ -236,7 +236,7 @@ export default function CageListReadOnly({ setSelected }: any) {
   return (
     <div>
       <Table
-        isStriped
+        isHeaderSticky
         color="primary"
         bottomContent={bottomContent}
         bottomContentPlacement="outside"

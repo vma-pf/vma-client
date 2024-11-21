@@ -35,6 +35,8 @@ const LoginForm = () => {
           router.push("/veterinarian/dashboard");
         } else if (role === ROLE.FARMERASSISTANT) {
           router.push("/farm-assist/dashboard");
+        } else if (role === ROLE.ADMIN) {
+          router.push("/admin/account");
         } else {
           router.push("/farmer/dashboard");
         }
