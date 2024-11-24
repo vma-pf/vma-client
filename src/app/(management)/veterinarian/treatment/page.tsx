@@ -41,7 +41,6 @@ import { GiCage } from "react-icons/gi";
 import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
 import { Abnormality } from "@oursrc/lib/models/abnormality";
 import { abnormalityService } from "@oursrc/lib/services/abnormalityService";
-import { checkTime } from "@oursrc/lib/utils/dev-utils";
 import { CommonDisease } from "@oursrc/lib/models/common-disease";
 import { FaRegSave, FaStar } from "react-icons/fa";
 import { BsArrowReturnRight } from "react-icons/bs";
@@ -112,7 +111,7 @@ const Treatment = () => {
       setLoadMore(true);
       const res: ResponseObjectList<Abnormality> = await abnormalityService.getAll(page, 4);
       if (res.isSuccess) {
-        setAbnormalities(res.data.data);
+        setAbnormalities((prev) => [...prev, ...res.data.data]);
         setPage(res.data.pageIndex);
         setTotalPages(res.data.totalPages);
       } else {
@@ -136,6 +135,26 @@ const Treatment = () => {
     } catch (error) {
       console.log("Error: ", error);
     }
+  };
+
+  const checkTime = (msg: Abnormality) => {
+    const diffTime = new Date().getTime() - new Date(msg.createdAt).getTime();
+    const minutes = Math.floor(diffTime / (1000 * 60));
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    const timeAgo =
+      minutes < 60
+        ? `${minutes} phút trước`
+        : hours < 24
+        ? `${hours} giờ trước`
+        : days < 7
+        ? `${days} ngày trước`
+        : days < 30
+        ? `${days} tuần trước`
+        : `${days} tháng trước`;
+
+    return timeAgo;
   };
 
   const abnormalityValue = React.useMemo(() => {
@@ -216,12 +235,19 @@ const Treatment = () => {
                             <div className="flex justify-start items-center">
                               <IoIosAlert className="mr-3 text-danger-500" size={30} />
                               <div className="text-start">
-                                <p className="font-semibold">{abnormality.cageCode}</p>
+                                <p className="">
+                                  Chuồng <strong>{abnormality.cageCode}</strong>
+                                </p>
                                 <p className="my-2">{abnormality.title}</p>
-                                <p className="text-zinc-400 text-sm">{checkTime(abnormality.createdAt).toString()}</p>
+                                <p className="text-zinc-400 text-sm">{checkTime(abnormality).toString()}</p>
                               </div>
                             </div>
-                            <GoDotFill className="text-blue-500" />
+                            {checkTime(abnormality).toString().includes("phút") ||
+                              (checkTime(abnormality).toString().includes("giờ") && (
+                                <Tooltip content="Cảnh báo mới">
+                                  <GoDotFill className="text-blue-500" />
+                                </Tooltip>
+                              ))}
                           </div>
                           <Divider className="my-2" orientation="horizontal" />
                         </div>
@@ -291,7 +317,7 @@ const Treatment = () => {
                         <div className="col-span-6 flex flex-col items-center">
                           <CiClock2 className="text-4xl" />
                           <p className="text-md font-light">Thời gian</p>
-                          <p className="text-lg">{checkTime(selectedAbnormality.createdAt).toString()}</p>
+                          <p className="text-lg">{checkTime(selectedAbnormality).toString()}</p>
                         </div>
                         <div className="col-span-6 flex flex-col items-center">
                           <CiStickyNote className="text-4xl" />
