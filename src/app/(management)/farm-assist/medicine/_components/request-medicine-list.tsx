@@ -172,11 +172,9 @@ const RequestMedicineList = () => {
       const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(page, rowsPerPage);
       if (response.isSuccess) {
         setMedicineList(response.data.data);
-        setPage(response.data.pageIndex);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
-        setLoading(false);
       } else {
         console.log(response.errorMessage);
       }

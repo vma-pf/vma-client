@@ -84,14 +84,15 @@ const MedicineListInStage = ({
     }
     setSelectedMedicineId("");
   };
+  console.log("stage.inventoryRequest.medicines", stage.inventoryRequest.medicines);
 
   const columns = [
     { name: "", uid: "actions" },
     { name: "TÊN THUỐC", uid: "medicineName" },
     { name: "PHÂN LOẠI", uid: "type" },
     { name: "SỐ LIỀU CHO TỪNG CON", uid: "portionEachPig" },
-    { name: "TRỌNG LƯỢNG", uid: "netWeight" },
-    { name: "ĐƠN VỊ", uid: "unit" },
+    // { name: "TRỌNG LƯỢNG", uid: "netWeight" },
+    // { name: "ĐƠN VỊ", uid: "unit" },
   ];
 
   const renderCell = React.useCallback((data: MedicineEachStage, columnKey: React.Key) => {
@@ -141,7 +142,7 @@ const MedicineListInStage = ({
         </TableHeader>
         <TableBody emptyContent={"Chưa chọn thuốc cho giai đoạn này"} items={stage.inventoryRequest.medicines}>
           {(item) => (
-            <TableRow key={item.id ?? item.medicineId} className="h-12">
+            <TableRow key={item.id || item.medicineId} className="h-12">
               {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
             </TableRow>
           )}

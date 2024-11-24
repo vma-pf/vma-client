@@ -18,46 +18,58 @@ import {
   Selection,
   ChipProps,
   SortDescriptor,
+  Spinner,
+  Tooltip,
   useDisclosure,
   Modal,
   ModalContent,
   ModalHeader,
   ModalBody,
-  ModalFooter,
-  Spinner,
 } from "@nextui-org/react";
 import { columns, statusOptions } from "../data";
 import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
-import { Plus, Search } from "lucide-react";
+import { EyeIcon, Plus, Search } from "lucide-react";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { HerdInfo } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
 
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  normal: "success",
-  sick: "warning",
-  dead: "danger",
+const statusColorMap = [
+  { healthStatus: "Sống", color: "primary" },
+  { healthStatus: "Bệnh", color: "warning" },
+  { healthStatus: "Chết", color: "danger" },
+];
+
+const INITIAL_VISIBLE_COLUMNS = ["breed", "cageCode", "pigCode", "weight", "height", "width", "vaccinationDate", "healthStatus", "actions"];
+
+const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-const INITIAL_VISIBLE_COLUMNS = ["breed", "pigCode", "cageCode", "herdId", "cageId", "vaccinationDate", "healthStatus", "actions"];
-
-export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
+export default function PigList({
+  selectedHerd,
+  setSelectedPig,
+  onOpenDetail,
+}: {
+  selectedHerd: HerdInfo;
+  setSelectedPig: React.Dispatch<React.SetStateAction<Pig | undefined>>;
+  onOpenDetail: () => void;
+}) {
   const [pigList, setPigList] = React.useState<Pig[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
-  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
+  // const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
-  const [pages, setPages] = React.useState<number>(1);
-  const [rowsPerPage, setRowsPerPage] = React.useState<number>(5);
+  const [pages, setPages] = React.useState(1);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "breed",
     direction: "ascending",
   });
 
-  const [page, setPage] = React.useState<number>(1);
+  const [page, setPage] = React.useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -107,10 +119,9 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
     try {
       setIsLoading(true);
       const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerd.id, page, rowsPerPage);
-      console.log("response: ", response);
       if (response.isSuccess) {
         setPigList(response.data.data || []);
-        setTotalRecords(response.data.totalRecords || 0);
+        setTotalRecords(response.data?.totalRecords || 0);
         setPages(response.data?.totalPages || 1);
         setRowsPerPage(response.data?.pageSize || 5);
       }
@@ -121,43 +132,58 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
     }
   };
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [selectedPig, setSelectedPig] = React.useState<Pig>();
+  // const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  // const [selectedPig, setSelectedPig] = React.useState<Pig>();
   const renderCell = React.useCallback((pig: Pig, columnKey: React.Key) => {
     const cellValue = pig[columnKey as keyof Pig];
 
     switch (columnKey) {
-      case "status":
-        return (
-          <Chip className="capitalize" color={statusColorMap[pig.healthStatus as string]} size="sm" variant="flat">
-            {cellValue === "active" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
-          </Chip>
-        );
+      case "healthStatus":
+        return <p className={`text-${statusColorMap.find((status) => status.healthStatus === cellValue)?.color}`}>{cellValue}</p>;
       case "vaccinationDate":
         return new Date(cellValue as string).toLocaleDateString("vi-VN");
       case "actions":
         return (
-          <div className="relative flex justify-center items-center gap-2">
-            <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <HiDotsVertical className="text-default-300" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  onClick={() => {
-                    setSelectedPig(pig);
-                    onOpen();
-                  }}
-                >
-                  View
-                </DropdownItem>
-                <DropdownItem>Edit</DropdownItem>
-                <DropdownItem>Delete</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </div>
+          <Tooltip content="Xem chi tiết" placement="top" color="primary" closeDelay={200}>
+            <Button
+              size="sm"
+              color="primary"
+              variant="light"
+              onClick={() => {
+                setSelectedPig(pig);
+                onOpenDetail();
+              }}
+              isIconOnly
+              endContent={<EyeIcon size={20} />}
+            ></Button>
+          </Tooltip>
+          // <Dropdown>
+          //   <DropdownTrigger>
+          //     <Button isIconOnly size="sm" variant="light">
+          //       <HiDotsVertical className="text-default-400" />
+          //     </Button>
+          //   </DropdownTrigger>
+          //   <DropdownMenu>
+          //     <DropdownItem
+          //       startContent={<EyeIcon size={20} className="text-primary" />}
+          //       onClick={() => {
+          //         setSelectedPig(pig);
+          //         onOpenDetail();
+          //       }}
+          //     >
+          //       Xem chi tiết
+          //     </DropdownItem>
+          //     <DropdownItem
+          //       startContent={<TbExchange size={20} className="text-warning" />}
+          //       onClick={() => {
+          //         setSelectedPig(pig);
+          //         onOpenChangeCage();
+          //       }}
+          //     >
+          //       Đổi chuồng
+          //     </DropdownItem>
+          //   </DropdownMenu>
+          // </Dropdown>
         );
       default:
         return cellValue?.toString();
@@ -213,7 +239,7 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
               >
                 {statusOptions.map((status: any) => (
                   <DropdownItem key={status.uid} className="capitalize">
-                    {status.name.toUpperCase()}
+                    {capitalize(status.name)}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
@@ -234,7 +260,7 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
               >
                 {columns.map((column) => (
                   <DropdownItem key={column.uid} className="capitalize">
-                    {column.name.toUpperCase()}
+                    {capitalize(column.name)}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
@@ -258,72 +284,34 @@ export default function PigList({ selectedHerd }: { selectedHerd: HerdInfo }) {
 
   const bottomContent = React.useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span>
+      <div className="py-2 px-2 flex justify-center items-center">
+        {/* <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span> */}
         <Pagination isCompact showControls showShadow color="primary" page={page} total={pages} onChange={setPage} />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2">
-          {/* <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onPreviousPage}
-          >
-            Previous
-          </Button>
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onNextPage}
-          >
-            Next
-          </Button> */}
-        </div>
+        {/* <div className="hidden sm:flex w-[30%] justify-end gap-2">
+        </div> */}
       </div>
     );
-  }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
+  }, [items.length, page, pages, hasSearchFilter]);
   return (
     <div>
-      {isOpen && (
-        <Modal backdrop="opaque" isOpen={isOpen} onOpenChange={onOpenChange}>
-          <ModalContent>
-            {() => (
-              <>
-                <ModalHeader className="flex flex-col gap-1">Pig {selectedPig?.id}</ModalHeader>
-                <ModalBody>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis. Pellentesque sit amet hendrerit risus,
-                    sed porttitor quam.
-                  </p>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis. Pellentesque sit amet hendrerit risus,
-                    sed porttitor quam.
-                  </p>
-                  <p>
-                    Magna exercitation reprehenderit magna aute tempor cupidatat consequat elit dolor adipisicing. Mollit dolor eiusmod sunt ex incididunt cillum quis.
-                    Velit duis sit officia eiusmod Lorem aliqua enim laboris do dolor eiusmod. Et mollit incididunt nisi consectetur esse laborum eiusmod pariatur
-                    proident Lorem eiusmod et. Culpa deserunt nostrud ad veniam.
-                  </p>
-                </ModalBody>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
-      )}
       <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
+        color="primary"
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
           wrapper: "max-h-[750px]",
         }}
-        selectedKeys={selectedKeys}
-        selectionMode="multiple"
+        // selectedKeys={selectedKeys}
+        selectionMode="single"
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        onSelectionChange={setSelectedKeys}
+        onSelectionChange={(keys) => {
+          const selectedKeysArray = Array.from(keys);
+          setSelectedPig(pigList.find((pig) => selectedKeysArray.includes(pig.id)));
+        }}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>

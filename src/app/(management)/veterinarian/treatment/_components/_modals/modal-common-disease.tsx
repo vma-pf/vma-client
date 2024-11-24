@@ -1,5 +1,5 @@
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
-import { Button, Divider, Input, Spinner, Textarea } from "@nextui-org/react";
+import { Button, Divider, Input, Select, SelectItem, Spinner, Textarea } from "@nextui-org/react";
 import { toast } from "@oursrc/hooks/use-toast";
 import { CommonDisease } from "@oursrc/lib/models/common-disease";
 import { commonDiseasesService } from "@oursrc/lib/services/commonDiseaseService";
@@ -25,6 +25,7 @@ const ModalCommonDisease = ({
     formState: { errors },
   } = useForm();
   const [loading, setLoading] = React.useState<boolean | undefined>(false);
+  const [touched, setTouched] = React.useState(false);
 
   const title = watch("title");
   const description = watch("description");
@@ -69,6 +70,7 @@ const ModalCommonDisease = ({
   const handleSubmitForm = async (request: any) => {
     try {
       setLoading(true);
+      request.diseaseType = Number(diseaseType || 0) ?? "";
       const response =
         context === "create"
           ? await commonDiseasesService.create(request)
@@ -99,8 +101,11 @@ const ModalCommonDisease = ({
     setValue("description", data?.description ? data?.description : "");
     setValue("symptom", data?.symptom ? data?.symptom : "");
     setValue("treatment", data?.treatment ? data?.treatment : "");
-    setValue("diseaseType", data?.diseaseType ? data?.diseaseType : "");
-  }, []);
+    setValue(
+      "diseaseType",
+      data?.diseaseType ? (data?.diseaseType === "Bệnh nhẹ" ? 0 : data?.diseaseType === "Bệnh thường" ? 1 : data?.diseaseType === "Bệnh nguy hiểm" ? 2 : 0) : 0
+    );
+  }, [data, setValue]);
 
   return (
     <div>
@@ -114,12 +119,18 @@ const ModalCommonDisease = ({
           size="4xl"
           scrollBehavior="inside"
           onClose={() => {
-            if (title || description || symptom || treatment || diseaseType) {
-              onClose();
-            }
+            onClose();
           }}
+          isDismissable={false}
         >
-          <form onSubmit={handleSubmit(handleSubmitForm)}>
+          <form
+            onSubmit={handleSubmit(handleSubmitForm)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+              }
+            }}
+          >
             {context !== "delete" ? (
               <ModalContent>
                 <ModalHeader className="flex flex-col gap-1">
@@ -138,24 +149,38 @@ const ModalCommonDisease = ({
                       labelPlacement="outside"
                       isRequired
                       value={title || ""}
-                      isInvalid={errors.title ? true : title ? false : true}
+                      isInvalid={errors.title ? true : false}
                       errorMessage="Tiêu đề không được để trống"
                       {...register("title", { required: true })}
                     />
-                    <Input
+                    <Select
                       className="mb-5"
-                      type="text"
                       radius="sm"
                       size="lg"
                       label="Mức độ"
                       placeholder="Nhập mức độ"
                       labelPlacement="outside"
                       isRequired
-                      value={diseaseType || ""}
-                      isInvalid={errors.diseaseType ? true : diseaseType ? false : true}
+                      isInvalid={diseaseType || !touched ? false : true}
                       errorMessage="Mức độ không được để trống"
-                      {...register("diseaseType", { required: true })}
-                    />
+                      selectionMode="single"
+                      selectedKeys={diseaseType !== undefined ? new Set([diseaseType.toString()]) : new Set()}
+                      onSelectionChange={(e) => {
+                        setValue("diseaseType", e.anchorKey ? Number(e.anchorKey) : 0);
+                      }}
+                      onClose={() => setTouched(true)}
+                    >
+                      <SelectItem key={0} value={0}>
+                        Bệnh nhẹ
+                      </SelectItem>
+                      <SelectItem key={1} value={1}>
+                        Bệnh thường
+                      </SelectItem>
+                      <SelectItem key={2} value={2}>
+                        Bệnh nguy hiểm
+                      </SelectItem>
+                    </Select>
+                    <p>{diseaseType}</p>
                   </div>
                   <div className="grid grid-cols-1">
                     <Textarea
@@ -168,7 +193,7 @@ const ModalCommonDisease = ({
                       labelPlacement="outside"
                       isRequired
                       value={description || ""}
-                      isInvalid={errors.description ? true : description ? false : true}
+                      isInvalid={errors.description ? true : false}
                       errorMessage="Mô tả không được để trống"
                       {...register("description", { required: true })}
                     />
@@ -184,7 +209,7 @@ const ModalCommonDisease = ({
                       labelPlacement="outside"
                       isRequired
                       value={symptom || ""}
-                      isInvalid={errors.symptom ? true : symptom ? false : true}
+                      isInvalid={errors.symptom ? true : false}
                       errorMessage="Triệu chứng không được để trống"
                       {...register("symptom", { required: true })}
                     />
@@ -200,7 +225,7 @@ const ModalCommonDisease = ({
                       labelPlacement="outside"
                       isRequired
                       value={treatment || ""}
-                      isInvalid={errors.treatment ? true : treatment ? false : true}
+                      isInvalid={errors.treatment ? true : false}
                       errorMessage="Cách chữa bệnh không được để trống"
                       {...register("treatment", { required: true })}
                     />
@@ -210,7 +235,7 @@ const ModalCommonDisease = ({
                   <Button color="danger" onPress={onClose}>
                     <p className="text-white">Hủy</p>
                   </Button>
-                  <Button variant="solid" color="primary" isLoading={loading} type="submit">
+                  <Button variant="solid" color="primary" isLoading={loading} type="submit" isDisabled={Object.keys(errors).length > 0}>
                     <p className="text-white">{getTitle()}</p>
                   </Button>
                 </ModalFooter>

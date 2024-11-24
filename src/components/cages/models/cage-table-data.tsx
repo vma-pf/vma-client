@@ -6,12 +6,13 @@ const columns = [
     sortable: true,
   },
   { name: "SỐ LƯỢNG", uid: "availableQuantity", sortable: true },
-  { name: "MÔ TẢ", uid: "description", sortable: true },
+  { name: "MÃ KHU", uid: "areaCode", sortable: true },
+  // { name: "MÔ TẢ", uid: "description", sortable: true },
   // { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
   // { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["code", "description", "capacity", "availableQuantity"];
+const INITIAL_VISIBLE_COLUMNS = ["code", "capacity", "areaCode", "availableQuantity"];
 
 const statusOptions = [{ name: "", active: "" }];
 

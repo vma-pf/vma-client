@@ -10,6 +10,7 @@ import { pigService } from "@oursrc/lib/services/pigService";
 import { cageService } from "@oursrc/lib/services/cageService";
 import { Pig } from "@oursrc/lib/models/pig";
 import { SensorData } from "./assign-tag";
+import LoadingStateContext from "@oursrc/components/context/loading-state-context";
 
 const AssignInfo = ({
   isOpen,
@@ -33,6 +34,8 @@ const AssignInfo = ({
   // const [tag, setTag] = React.useState<string>(
   //   Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
   // );
+  const { loading, setLoading } = React.useContext(LoadingStateContext);
+  const [isDoneAll, setIsDoneAll] = React.useState<boolean>(false);
   const [cages, setCages] = React.useState<Cage[]>([]);
   const [selectedCage, setSelectedCage] = React.useState<Cage>();
   const [height, setHeight] = React.useState<string | undefined>();
@@ -77,6 +80,7 @@ const AssignInfo = ({
 
   const handleAssignPig = async (data: any) => {
     try {
+      setLoading(true);
       const herdData: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "null");
       const pig = {
         herdId: herdData.id,
@@ -93,6 +97,7 @@ const AssignInfo = ({
         onClose();
         setAssignedPigs(res.data);
         resetData();
+        setIsDoneAll(true);
         toast({
           variant: "success",
           title: "Gán heo vào chuồng thành công",
@@ -109,6 +114,8 @@ const AssignInfo = ({
         title: error.message || "Có lỗi xảy ra",
       });
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -283,7 +290,7 @@ const AssignInfo = ({
               >
                 Đóng
               </Button>
-              <Button color="primary" type="submit" isDisabled={selectedCage && height && width && weight && gender ? false : true}>
+              <Button color="primary" type="submit" isDisabled={selectedCage && height && width && weight && gender && !isDoneAll ? false : true} isLoading={loading}>
                 Lưu
               </Button>
             </ModalFooter>

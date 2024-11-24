@@ -267,7 +267,6 @@ const TreatmentGuideList = ({
       case "diseaseSymptoms":
       case "treatmentTitle":
       case "treatmentDescription":
-      case "cure":
       case "diseaseType":
       case "authorName":
         return (
@@ -275,6 +274,8 @@ const TreatmentGuideList = ({
             <p className="truncate">{cellValue}</p>
           </Tooltip>
         );
+      case "cure":
+        return <p className="whitespace-pre-line">{cellValue}</p>;
       case "actions":
         return (
           <div className="flex justify-end items-center gap-2">

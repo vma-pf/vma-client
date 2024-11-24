@@ -1,9 +1,8 @@
 "use client";
-import { Accordion, AccordionItem, Divider } from "@nextui-org/react";
+import { Accordion, AccordionItem, Divider, useDisclosure } from "@nextui-org/react";
 import Image from "next/image";
 import React from "react";
-import Chart from "./_components/chart";
-import PigList from "./_components/pig-list";
+import Chart from "@oursrc/components/herds/chart";
 import { IoIosAlert } from "react-icons/io";
 import { GoDotFill } from "react-icons/go";
 import { dateConverter } from "@oursrc/lib/utils";
@@ -12,9 +11,43 @@ import HerdList from "./_components/herd-list";
 import { BiDetail } from "react-icons/bi";
 import { FaChartPie } from "react-icons/fa6";
 import { AiFillAlert } from "react-icons/ai";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { herdService } from "@oursrc/lib/services/herdService";
+import { Pig } from "@oursrc/lib/models/pig";
+import PigDetail from "@oursrc/components/herds/modals/pig-detail";
+import PigList from "./_components/pig-list";
 
 const Herd = () => {
+  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
+  const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
+  const [statisticData, setStatisticData] = React.useState<{
+    numberOfPigsAlive: number;
+    numberOfPigsDead: number;
+    numberOfPigsHealthNormal: number;
+    numberOfPigsHealthSick: number;
+  }>();
+
+  const getStatistics = async () => {
+    try {
+      const res: ResponseObject<any> = await herdService.getHerdStatistics(selectedHerd?.id ?? "");
+      if (res.isSuccess) {
+        setStatisticData(res.data);
+      } else {
+        console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  React.useEffect(() => {
+    if (!selectedHerd) {
+      setSelectedPig(undefined);
+    } else {
+      getStatistics();
+    }
+  }, [selectedHerd]);
   return (
     <div>
       <div className="grid grid-cols-2 gap-3">
@@ -68,12 +101,15 @@ const Herd = () => {
                       <p className="my-2">Cân nặng trung bình:</p>
                       <p className="my-2 font-semibold">{selectedHerd?.averageWeight}</p>
                     </div>
+                    <Divider orientation="horizontal" />
+                    <p className="my-2">Mô tả:</p>
+                    <p className="my-2">{selectedHerd?.description}</p>
                   </div>
                 </AccordionItem>
                 <AccordionItem key="2" title="Tình trạng đàn" startContent={<FaChartPie className="text-primary" size={25} />}>
                   <div className="border-2 w-full">
                     <p className="m-2 text-xl font-semibold">Tình trạng đàn</p>
-                    <Chart />
+                    {statisticData && <Chart data={statisticData} />}
                   </div>
                 </AccordionItem>
               </Accordion>
@@ -85,8 +121,13 @@ const Herd = () => {
       </div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-2xl font-bold mb-3">Danh sách heo</p>
-        <PigList selectedHerd={selectedHerd as HerdInfo} />
+        {selectedHerd ? (
+          <PigList selectedHerd={selectedHerd as HerdInfo} setSelectedPig={setSelectedPig} onOpenDetail={onOpenDetail} />
+        ) : (
+          <p className="text-center">Chọn đàn để xem danh sách heo</p>
+        )}
       </div>
+      {isOpenDetail && selectedPig && <PigDetail isOpen={isOpenDetail} onClose={onCloseDetail} pigInfo={selectedPig} />}
     </div>
   );
 };

@@ -62,6 +62,7 @@ import CommonPlanTemplate from "@oursrc/components/template/plan-template";
 import AreaListReadOnly from "@oursrc/components/areas/area-list-read-only";
 import { Area } from "@oursrc/lib/models/area";
 import { areaService } from "@oursrc/lib/services/areaService";
+import LoadingStateContext from "@oursrc/components/context/loading-state-context";
 
 export type TreatmentPlanStep = {
   id: number;
@@ -79,9 +80,11 @@ const CreatePLan = ({
 }) => {
   const treatmentGuideId = params.id;
   const { toast } = useToast();
+  const { loading, setLoading } = React.useContext(LoadingStateContext);
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenChooseStageDate, onOpen: onOpenChooseStageDate, onClose: onCloseChooseStageDate } = useDisclosure();
+  const [isDoneAll, setIsDoneAll] = React.useState<boolean>(false);
   const [openSaveTemplate, setOpenSaveTemplate] = React.useState<boolean>(false);
   const [openTreatmentGuide, setOpenTreatmentGuide] = React.useState<boolean>(false);
   const [openBy, setOpenBy] = React.useState<"herd" | "cage" | "area">("herd");
@@ -93,7 +96,7 @@ const CreatePLan = ({
   const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);
   const [templateName, setTemplateName] = React.useState<string>("");
   const [treatmentGuide, setTreatmentGuide] = React.useState<TreatmentGuide | undefined>();
-  const [templates, setTemplates] = React.useState<PlanTemplate[]>();
+  const [templates, setTemplates] = React.useState<PlanTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = React.useState<PlanTemplate | undefined>();
   const [firstStageDate, setFirstStageDate] = React.useState<DateValue>(today(getLocalTimeZone()));
 
@@ -200,6 +203,7 @@ const CreatePLan = ({
       // console.log(allSelectedPigs);
 
       // find the last date and the timeSpan of the that stage
+      setLoading(true);
       const lastStage = stages.reduce((prev, current) => (new Date(prev.applyStageTime) > new Date(current.applyStageTime) ? prev : current));
       const payload = {
         ...data,
@@ -245,6 +249,7 @@ const CreatePLan = ({
           title: "Tạo kế hoạch điều trị thành công",
           variant: "success",
         });
+        setIsDoneAll(true);
         router.push("/veterinarian/treatment");
       } else {
         toast({
@@ -259,6 +264,8 @@ const CreatePLan = ({
         title: "Có lỗi xảy ra",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -267,6 +274,7 @@ const CreatePLan = ({
       // console.log(stages);
       // console.log(new Date(date?.year ?? 0, date?.month ?? 0, date?.day ?? 0).toISOString());
       // console.log(allSelectedPigs);
+      setLoading(true);
       const firstStage = stages[0].applyStageTime;
       const payload = {
         name: templateName,
@@ -287,8 +295,9 @@ const CreatePLan = ({
       console.log(payload);
       if (stages.some((stage) => stage.inventoryRequest.medicines.some((medicine: any) => medicine.type === "new"))) {
         toast({
-          title: "Mẫu không được chứa thuốc mà chưa có trong kho",
           variant: "destructive",
+          title: "Tạo mẫu kế hoạch điều trị thất bại",
+          description: "Mẫu kế hoạch điều trị không thể chứa thuốc mới",
         });
         return;
       }
@@ -311,6 +320,8 @@ const CreatePLan = ({
         title: "Có lỗi xảy ra",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -419,10 +430,16 @@ const CreatePLan = ({
             <p className="text-2xl font-bold">Hướng dẫn điều trị</p>
           </SheetHeader>
           <div className="p-5 overflow-auto">
-            <p className="text-lg font-semibold">Bệnh:</p>
-            <p className="text-lg">{treatmentGuide?.diseaseDescription}</p>
-            <p className="text-lg mt-2">Cách điều trị:</p>
-            <p>{treatmentGuide?.cure}</p>
+            {treatmentGuide ? (
+              <div>
+                <p className="text-lg font-semibold">Bệnh:</p>
+                <p className="text-lg">{treatmentGuide?.diseaseDescription}</p>
+                <p className="text-lg mt-2">Cách điều trị:</p>
+                <p>{treatmentGuide?.cure}</p>
+              </div>
+            ) : (
+              <p>Không tìm thấy hướng dẫn điều trị</p>
+            )}
           </div>
         </SheetContent>
       </Sheet>
@@ -457,7 +474,14 @@ const CreatePLan = ({
           }
         >
           {isOpen && <CreateDiseaseReport isOpen={isOpen} onOpen={onOpen} onClose={onClose} setDiseaseReport={setDiseaseReport} />}
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+              }
+            }}
+          >
             <Card className="mt-4">
               <CardBody>
                 <div className="flex justify-end space-x-3">
@@ -513,6 +537,7 @@ const CreatePLan = ({
                       selectedKeys={selectedTemplate ? [selectedTemplate.id] : []}
                       onSelectionChange={(keys) => handleTemplateChanges(keys)}
                       items={templates}
+                      emptyContent="Không có mẫu"
                     >
                       {(item) => <DropdownItem key={item.id}>{item.name}</DropdownItem>}
                     </DropdownMenu>
@@ -546,6 +571,7 @@ const CreatePLan = ({
                             setOpenSaveTemplate(false);
                           }}
                           isDisabled={!isFormFilled() || !templateName}
+                          isLoading={loading}
                         >
                           <Check />
                         </Button>
@@ -555,7 +581,7 @@ const CreatePLan = ({
                   <Button color="primary" onClick={onOpen} isDisabled={diseaseReport ? true : false}>
                     Tạo báo cáo bệnh
                   </Button>
-                  <Button color="primary" type="submit" isDisabled={!isFormFilled()}>
+                  <Button color="primary" type="submit" isDisabled={!isFormFilled() || isDoneAll} isLoading={loading}>
                     Tạo kế hoạch
                   </Button>
                 </div>

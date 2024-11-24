@@ -7,7 +7,7 @@ import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { ClipboardCheck, ClipboardList } from "lucide-react";
 import React from "react";
 import { TbVaccine } from "react-icons/tb";
-import DevelopmentLogList from "../development-log-list";
+import DevelopmentLogList from "../../../app/(management)/farm-assist/herd/_components/development-log-list";
 import PigDiseaseReportList from "@oursrc/components/disease-reports/pig-disease-report-list";
 
 const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () => void; pigInfo: Pig }) => {

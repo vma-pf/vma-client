@@ -216,7 +216,7 @@ const MedicinesListReadOnly = ({ setSelected }: any) => {
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
-          wrapper: "max-h-[750px]",
+          wrapper: "max-h-[550px]",
         }}
         selectedKeys={selectedKeys}
         selectionMode="single"

@@ -10,7 +10,6 @@ export type MonitorDevelopment = {
 
 export type CreateMonitorDevelopment = {
     pigId: string;
-    cageId: string;
     weight: number;
     height: number;
     width: number;

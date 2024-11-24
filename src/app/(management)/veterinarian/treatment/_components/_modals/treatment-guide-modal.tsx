@@ -115,7 +115,7 @@ const ModalTreamentGuide = ({
           hideCloseButton
           backdrop="opaque"
           isOpen={isOpen}
-          size="4xl"
+          size={context === "delete" ? "lg" : "4xl"}
           scrollBehavior="inside"
           onClose={() => {
             if (diseaseTitle || diseaseDescription || diseaseSymptoms || treatmentTitle || treatmentDescription || diseaseType) {

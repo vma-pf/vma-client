@@ -7,6 +7,7 @@ import { HiBellAlert } from "react-icons/hi2";
 import { MdSpaceDashboard } from "react-icons/md";
 import CustomHeader from "@oursrc/components/custom-header";
 import CustomNavbar, { NavbarItem } from "@oursrc/components/custom-navbar";
+import { LoadingStateProvider } from "@oursrc/components/context/loading-state-context";
 
 const VetLayout = ({
   children,
@@ -66,7 +67,9 @@ const VetLayout = ({
           <div className="border-b-1 border-zinc-300 dark:border-zinc-700">
             <CustomHeader titleMap={titleMap} prefix="/veterinarian" />
           </div>
-          <div className="ml-4 mr-2 mt-2 h-fit">{children}</div>
+          <div className="ml-4 mr-2 mt-2 h-fit">
+            <LoadingStateProvider>{children}</LoadingStateProvider>
+          </div>
         </div>
       </div>
     </div>

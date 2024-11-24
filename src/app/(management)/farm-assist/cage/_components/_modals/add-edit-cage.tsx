@@ -11,6 +11,7 @@ import { Area } from "@oursrc/lib/models/area";
 import { FaLightbulb } from "react-icons/fa6";
 import { HiOutlineLightBulb } from "react-icons/hi";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
+import LoadingStateContext from "@oursrc/components/context/loading-state-context";
 
 const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; onClose: () => void; cage?: Cage; operation: "add" | "edit" | "delete" }) => {
   const {
@@ -20,8 +21,10 @@ const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
     setValue,
     formState: { errors },
   } = useForm();
+  const { loading, setLoading } = React.useContext(LoadingStateContext);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isDoneAll, setIsDoneAll] = React.useState(false);
   const [areaList, setAreaList] = React.useState<Area[]>([]);
   const [selectedArea, setSelectedArea] = React.useState<Area | null>(null);
   const code = watch("code");
@@ -92,6 +95,7 @@ const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
 
   const onSubmit = async (data: any) => {
     try {
+      setLoading(true);
       const payload = {
         ...data,
         areaId: selectedArea?.id || "",
@@ -104,6 +108,7 @@ const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
             variant: "success",
             title: "Chỉnh sửa chuồng thành công",
           });
+          setIsDoneAll(true);
           onClose();
         } else {
           toast({
@@ -118,6 +123,7 @@ const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
             variant: "success",
             title: "Thêm chuồng thành công",
           });
+          setIsDoneAll(true);
           onClose();
         } else {
           toast({
@@ -131,17 +137,21 @@ const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
         variant: "destructive",
         title: error.message || "Có lỗi xảy ra",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteCage = async () => {
     try {
+      setLoading(true);
       const res: ResponseObject<any> = await cageService.deleteCage(cage?.id || "");
       if (res && res.isSuccess) {
         toast({
           variant: "success",
           title: res.data || "Xóa chuồng thành công",
         });
+        setIsDoneAll(true);
         onClose();
       } else {
         toast({
@@ -155,7 +165,7 @@ const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
         title: error.message || "Có lỗi xảy ra",
       });
     } finally {
-      onClose();
+      setLoading(false);
     }
   };
 
@@ -311,10 +321,15 @@ const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
                   <div
                     className={`m-2 border-2 rounded-lg p-2 ${selectedArea?.id === area.id ? "bg-emerald-200" : ""}`}
                     key={area.id}
-                    onClick={() => setSelectedArea(area)}
+                    onClick={() => {
+                      if (selectedArea?.id === area.id) {
+                        setSelectedArea(null);
+                        return;
+                      }
+                      setSelectedArea(area);
+                    }}
                   >
                     <p className="text-lg">Khu vực: {area.code}</p>
-                    <p className="text-lg">{area.description}</p>
                   </div>
                 ))}
               </div>
@@ -326,8 +341,8 @@ const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; on
               <Button
                 color="primary"
                 type="submit"
-                isDisabled={Object.keys(errors).length > 0 || !height || !width || !length || !selectedArea ? true : false}
-                isLoading={isLoading}
+                isDisabled={Object.keys(errors).length > 0 || !height || !width || !length || !selectedArea || isDoneAll ? true : false}
+                isLoading={loading}
               >
                 {cage ? "Chỉnh sửa" : "Thêm"}
               </Button>

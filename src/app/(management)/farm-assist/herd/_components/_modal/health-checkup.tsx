@@ -75,7 +75,6 @@ const HealthCheckUp = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose:
     try {
       const res: ResponseObject<any> = await monitorDevelopmentLogService.createMonitoringLog({
         pigId: pigInfo.id,
-        cageId: selectedCage?.id ?? pigInfo.cageId,
         weight: Number(weight || ""),
         height: Number(height || ""),
         width: Number(width || ""),

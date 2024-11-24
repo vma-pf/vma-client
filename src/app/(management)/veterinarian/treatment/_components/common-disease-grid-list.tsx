@@ -154,7 +154,7 @@ const CommonDiseaseGridList = ({ gridColumns = 1 }: { gridColumns: number }) => 
               </div>
               <div>
                 <strong>Hướng dẫn chữa bệnh: </strong>
-                <span>{x.treatment}</span>
+                <p className="whitespace-pre-line">{x.treatment}</p>
               </div>
             </AccordionItem>
           ))}

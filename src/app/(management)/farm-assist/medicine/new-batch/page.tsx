@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { MutableRefObject, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Button,
@@ -34,26 +34,28 @@ import { Trash, Trash2Icon } from "lucide-react";
 import { invoiceService } from "@oursrc/lib/services/invoiceService";
 import { useRouter } from "next/navigation";
 import { SERVERURL } from "@oursrc/lib/http";
+import LoadingStateContext from "@oursrc/components/context/loading-state-context";
 
 const NewBatch = () => {
-  // const {
-  //   register,
-  //   handleSubmit,
-  //   setValue,
-  //   formState: { errors },
-  // } = useForm();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm();
   const { toast } = useToast();
+  const { loading, setLoading } = React.useContext(LoadingStateContext);
   const router = useRouter();
   const [suppliers, setSuppliers] = React.useState<Supplier[]>([]);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [selected, setSelected] = React.useState<string>("1");
+  const [isDoneAll, setIsDoneAll] = React.useState<boolean>(false);
+  const [touched, setTouched] = React.useState(false);
   const [selectedBatch, setSelectedBatch] = React.useState<BatchCreateProps | undefined>(undefined);
   const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | undefined>(undefined);
   const [selectedSupplier, setSelectedSupplier] = React.useState<Supplier | undefined>(undefined);
   const [date, setDate] = React.useState<DateValue>();
   const [image, setImage] = React.useState<File | string | undefined>(undefined);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [data, setData] = React.useState<{ title: string; supplierId: string }>({ title: "", supplierId: "" });
+  // const [data, setData] = React.useState<{ title: string; supplierId: string }>({ title: "", supplierId: "" });
 
   const [batchList, setBatchList] = React.useState<BatchCreateProps[]>([
     {
@@ -95,10 +97,10 @@ const NewBatch = () => {
   };
 
   const isFormFilled = (): boolean => {
-    return batchList.some((batch) => !batch.quantity || !batch.expiredAt || !batch.medicineId) || !image || !data.title || !data.supplierId;
+    return batchList.some((batch) => !batch.quantity || !batch.expiredAt || !batch.medicineId) || !image || Object.keys(errors).length > 0;
   };
 
-  const handleSubmitForm = async () => {
+  const handleSubmitForm = async (data: any) => {
     try {
       if (isFormFilled()) {
         toast({
@@ -107,8 +109,9 @@ const NewBatch = () => {
         });
         return;
       }
-      setIsLoading(true);
+      setLoading(true);
       const jsonBatches = batchList.map((item) => ({ medicineId: item.medicineId, quantity: item.quantity, expiredAt: item.expiredAt }));
+      console.log(data, jsonBatches);
 
       // const formData = new FormData();
       // formData.append("Title", data.title);
@@ -116,25 +119,26 @@ const NewBatch = () => {
       // formData.append("Images", image as Blob);
       // formData.append("JsonBatches", JSON.stringify(jsonBatches));
 
-      const response: ResponseObject<any> = await invoiceService.createInvoiceBatch(data.title, data.supplierId, image as Blob, jsonBatches);
-      console.log(response);
-      if (response.isSuccess) {
-        toast({
-          title: "Tạo lô mới thành công",
-          variant: "success",
-        });
-        router.push("/farm-assist/medicine");
-      } else {
-        console.log(response?.errorMessage);
-        toast({
-          title: "Tạo lô mới thất bại",
-          variant: "destructive",
-        });
-      }
+      // const response: ResponseObject<any> = await invoiceService.createInvoiceBatch(data.title, data.supplierId, image as Blob, jsonBatches);
+      // console.log(response);
+      // if (response.isSuccess) {
+      //   toast({
+      //     title: "Tạo lô mới thành công",
+      //     variant: "success",
+      //   });
+      //   setIsDoneAll(true);
+      //   router.push("/farm-assist/medicine");
+      // } else {
+      //   console.log(response?.errorMessage);
+      //   toast({
+      //     title: "Tạo lô mới thất bại",
+      //     variant: "destructive",
+      //   });
+      // }
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -169,143 +173,152 @@ const NewBatch = () => {
 
   return (
     <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.4 }}>
-      {/* <form onSubmit={handleSubmit(handleSubmitForm)}> */}
-      {/* <div className="grid grid-cols-2 gap-3"> */}
-      <div className="p-5 my-2 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <p className="text-xl font-semibold mb-3">Thông tin hóa đơn</p>
-        <div className="grid grid-cols-2 gap-2">
-          <Input
-            className="mb-5"
-            type="text"
-            radius="md"
-            size="lg"
-            label="Nội dung hóa đơn"
-            placeholder="Nhập nội dung hóa đơn"
-            labelPlacement="outside"
-            isRequired
-            isInvalid={data.title ? false : true}
-            errorMessage="Nội dung hóa đơn không được để trống"
-            value={data.title || ""}
-            onValueChange={(event) => setData({ ...data, title: event })}
-            // {...register("title", { required: true })}
-          />
-          <Select
-            label="Nhà cung cấp"
-            placeholder="Chọn nhà cung cấp"
-            size="lg"
-            isRequired
-            labelPlacement="outside"
-            className="mb-5"
-            radius="md"
-            isInvalid={data.supplierId ? false : true}
-            errorMessage="Chọn nhà cung cấp"
-            value={data.supplierId || ""}
-            onChange={(event) => {
-              setData({ ...data, supplierId: event.target.value });
-              setSelectedSupplier(suppliers.find((supplier) => supplier.id === event.target.value));
-            }}
-            // {...register("supplierId", { required: true })}
-          >
-            {suppliers.map((supplier) => (
-              <SelectItem key={supplier.id}>{supplier.name}</SelectItem>
-            ))}
-          </Select>
-        </div>
-        <p className="text-lg mb-3">Hình ảnh hóa đơn</p>
-        <AttachMedia fileId="1" selectedFile={image} setSelectedFile={setImage} />
-        <p className="text-xl font-semibold mb-3">Lô thuốc</p>
-        {batchList.map((batch) => (
-          <div key={batch.id} className="flex justify-between items-center">
-            <div className="p-3 my-3 mx-4 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg w-full">
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  type="text"
-                  radius="md"
-                  size="lg"
-                  label="Số luợng"
-                  placeholder="Nhập số luợng"
-                  labelPlacement="outside"
-                  isRequired
-                  value={batch.quantity ? batch.quantity.toString() : ""}
-                  onValueChange={(event) => handleQuantityChange(event, batch)}
-                  isInvalid={batch.quantity ? false : true}
-                  errorMessage="Số luợng không được để trống"
-                />
-                <DatePicker
-                  label="Ngày hết hạn"
-                  radius="md"
-                  size="lg"
-                  labelPlacement="outside"
-                  isRequired
-                  isInvalid={batch.expiredAt ? false : true}
-                  errorMessage="Ngày hết hạn không được để trống"
-                  minValue={today(getLocalTimeZone())}
-                  validationBehavior="native"
-                  value={batch.expiredAt ? parseDate(batch.expiredAt.toString()) : null}
-                  onChange={(event) => handleDateChange(event, batch)}
-                />
-              </div>
-              <Button
-                color="primary"
-                variant="solid"
-                isDisabled={data.supplierId ? false : true}
-                onPress={() => {
-                  setSelectedBatch(batch);
-                  onOpen();
-                }}
-              >
-                Chọn thuốc
-              </Button>
-              {batch.medicineId && batch.medicine && (
-                <div className="mt-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p>Tên thuốc:</p>
-                    <p className="text-lg font-semibold">{batch.medicine?.name}</p>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <p>Đơn vị:</p>
-                    <p className="text-lg font-semibold">{batch.medicine?.unit}</p>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <p>Thành phần chính:</p>
-                    <p className="text-lg font-semibold">{batch.medicine?.mainIngredient}</p>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <p>Cách sử dụng:</p>
-                    <p className="text-lg font-semibold">{batch.medicine?.usage}</p>
-                  </div>
-                </div>
+      <form
+        onSubmit={handleSubmit(handleSubmitForm)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
+      >
+        {/* <div className="grid grid-cols-2 gap-3"> */}
+        <div className="p-5 my-2 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+          <p className="text-xl font-semibold mb-3">Thông tin hóa đơn</p>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              className="mb-5"
+              type="text"
+              radius="md"
+              size="lg"
+              label="Nội dung hóa đơn"
+              placeholder="Nhập nội dung hóa đơn"
+              labelPlacement="outside"
+              isRequired
+              isInvalid={errors.title ? true : false}
+              errorMessage="Nội dung hóa đơn không được để trống"
+              // value={data.title || ""}
+              // onValueChange={(event) => setData({ ...data, title: event })}
+              {...register("title", { required: true })}
+            />
+            <Select
+              label="Nhà cung cấp"
+              placeholder="Chọn nhà cung cấp"
+              size="lg"
+              isRequired
+              labelPlacement="outside"
+              className="mb-5"
+              radius="md"
+              isInvalid={touched && !selectedSupplier}
+              errorMessage="Nhà cung cấp không được để trống"
+              selectionMode="single"
+              selectedKeys={selectedSupplier?.id ? new Set([selectedSupplier.id]) : new Set()}
+              onSelectionChange={(e) => {
+                setValue("supplierId", e.anchorKey);
+                setSelectedSupplier(suppliers.find((supplier) => supplier.id === e.anchorKey));
+              }}
+              items={suppliers}
+              onClose={() => setTouched(true)}
+            >
+              {(item) => (
+                <SelectItem color="primary" key={item.id} value={item.id}>
+                  {item.name}
+                </SelectItem>
               )}
-            </div>
-            {batchList.length > 1 && <Trash2Icon className="ml-4 text-danger-500" onClick={() => setBatchList(batchList.filter((item) => item.id !== batch.id))} />}
-            <Modal size="5xl" isOpen={isOpen} onClose={onClose} scrollBehavior="inside" isDismissable={false}>
-              <ModalContent>
-                <ModalHeader>
-                  <p className="text-xl font-semibold mb-3">Chọn thuốc</p>
-                </ModalHeader>
-                <ModalBody>
-                  <MedicineList
-                    selectedMedicine={batchList.find((item) => item.id === selectedBatch?.id)?.medicine || undefined}
-                    setSelectedMedicine={setSelectedMedicine}
-                    supplier={selectedSupplier}
-                  />
-                </ModalBody>
-              </ModalContent>
-            </Modal>
+            </Select>
           </div>
-        ))}
-        <div className="mt-3 flex justify-end">
-          <Button
-            color="primary"
-            variant="solid"
-            onPress={() => setBatchList([...batchList, { id: uuidv4(), medicineId: null, invoiceId: null, quantity: null, expiredAt: null }])}
-          >
-            Thêm lô
-          </Button>
+          <p className="text-lg mb-3">Hình ảnh hóa đơn</p>
+          <AttachMedia fileId="1" selectedFile={image} setSelectedFile={setImage} />
+          <p className="text-xl font-semibold mb-3">Lô thuốc</p>
+          {batchList.map((batch) => (
+            <div key={batch.id} className="flex justify-between items-center">
+              <div className="p-3 my-3 mx-4 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg w-full">
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="text"
+                    radius="md"
+                    size="lg"
+                    label="Số luợng"
+                    placeholder="Nhập số luợng"
+                    labelPlacement="outside"
+                    isRequired
+                    value={batch.quantity ? batch.quantity.toString() : ""}
+                    onValueChange={(event) => handleQuantityChange(event, batch)}
+                    isInvalid={batch.quantity ? false : true}
+                    errorMessage="Số luợng không được để trống"
+                  />
+                  <DatePicker
+                    label="Ngày hết hạn"
+                    radius="md"
+                    size="lg"
+                    labelPlacement="outside"
+                    isRequired
+                    isInvalid={batch.expiredAt ? false : true}
+                    errorMessage="Ngày hết hạn không được để trống"
+                    minValue={today(getLocalTimeZone())}
+                    validationBehavior="native"
+                    value={batch.expiredAt ? parseDate(batch.expiredAt.toString()) : null}
+                    onChange={(event) => handleDateChange(event, batch)}
+                  />
+                </div>
+                <Button
+                  color="primary"
+                  variant="solid"
+                  onPress={() => {
+                    setSelectedBatch(batch);
+                    onOpen();
+                  }}
+                >
+                  Chọn thuốc
+                </Button>
+                {batch.medicineId && batch.medicine && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p>Tên thuốc:</p>
+                      <p className="text-lg font-semibold">{batch.medicine?.name}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p>Đơn vị:</p>
+                      <p className="text-lg font-semibold">{batch.medicine?.unit}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p>Thành phần chính:</p>
+                      <p className="text-lg font-semibold">{batch.medicine?.mainIngredient}</p>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p>Cách sử dụng:</p>
+                      <p className="text-lg font-semibold">{batch.medicine?.usage}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {batchList.length > 1 && <Trash2Icon className="ml-4 text-danger-500" onClick={() => setBatchList(batchList.filter((item) => item.id !== batch.id))} />}
+              <Modal size="5xl" isOpen={isOpen} onClose={onClose} scrollBehavior="inside" isDismissable={false}>
+                <ModalContent>
+                  <ModalHeader>
+                    <p className="text-xl font-semibold mb-3">Chọn thuốc</p>
+                  </ModalHeader>
+                  <ModalBody>
+                    <MedicineList
+                      selectedMedicine={batchList.find((item) => item.id === selectedBatch?.id)?.medicine || undefined}
+                      setSelectedMedicine={setSelectedMedicine}
+                    />
+                  </ModalBody>
+                </ModalContent>
+              </Modal>
+            </div>
+          ))}
+          <div className="mt-3 flex justify-end">
+            <Button
+              color="primary"
+              variant="solid"
+              onPress={() => setBatchList([...batchList, { id: uuidv4(), medicineId: null, invoiceId: null, quantity: null, expiredAt: null }])}
+            >
+              Thêm lô
+            </Button>
+          </div>
         </div>
-      </div>
-      {/* </div> */}
-      {/* <div className="mb-2 mt-5 flex">
+        {/* </div> */}
+        {/* <div className="mb-2 mt-5 flex">
           <RadioGroup
             onValueChange={(value: string) => {
               setSelected(value);
@@ -441,12 +454,12 @@ const NewBatch = () => {
             </div>
           )}
         </div> */}
-      <div className="flex justify-end">
-        <Button color="primary" variant="solid" size="lg" isDisabled={isFormFilled()} onPress={handleSubmitForm}>
-          Tạo lô mới
-        </Button>
-      </div>
-      {/* </form> */}
+        <div className="flex justify-end">
+          <Button color="primary" type="submit" variant="solid" size="lg" isDisabled={isFormFilled() || isDoneAll} isLoading={loading}>
+            Tạo lô mới
+          </Button>
+        </div>
+      </form>
     </motion.div>
   );
 };

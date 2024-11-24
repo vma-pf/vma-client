@@ -56,7 +56,7 @@ const AreaList = () => {
           Thêm khu vực
         </Button>
       </div>
-      <div className="grid grid-cols-4 gap-5">
+      <div className="grid grid-cols-3 gap-5">
         {!isLoading
           ? areaList.map((area, idx) => (
               <Card key={idx} shadow="md">

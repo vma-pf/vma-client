@@ -57,6 +57,7 @@ const MedicineListInStage = ({
       } else {
         newMedicines = [selectedMedicine];
       }
+      // newMedicines.map((x) => delete x.id);
       const newMedicinesInStage = {
         ...stage.inventoryRequest,
         medicines: newMedicines.map((x: any) => ({ ...x, medicineId: x.id, medicineName: x.name })),
@@ -88,9 +89,10 @@ const MedicineListInStage = ({
   const columns = [
     { name: "", uid: "actions" },
     { name: "TÊN THUỐC", uid: "medicineName" },
+    { name: "PHÂN LOẠI", uid: "type" },
     { name: "SỐ LIỀU CHO TỪNG CON", uid: "portionEachPig" },
-    { name: "TRỌNG LƯỢNG", uid: "netWeight" },
-    { name: "ĐƠN VỊ", uid: "unit" },
+    // { name: "TRỌNG LƯỢNG", uid: "netWeight" },
+    // { name: "ĐƠN VỊ", uid: "unit" },
   ];
 
   const renderCell = React.useCallback((data: MedicineEachStage, columnKey: React.Key) => {

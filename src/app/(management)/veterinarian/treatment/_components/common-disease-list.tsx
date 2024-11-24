@@ -253,12 +253,13 @@ const CommonDiseaseList = () => {
       case "description":
       case "symptom":
       case "diseaseType":
-      case "treatment":
         return (
           <Tooltip showArrow={true} content={cellValue?.toString() ?? ""} color="primary" closeDelay={300}>
             <p className="truncate">{cellValue?.toString() ?? ""}</p>
           </Tooltip>
         );
+      case "treatment":
+        return <p className="whitespace-pre-line">{cellValue?.toString() ?? ""}</p>;
       case "actions":
         return (
           <div className="flex justify-end items-center gap-2">

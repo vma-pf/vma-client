@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Button, Skeleton, useDisclosure } from "@nextui-org/react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, Skeleton, useDisclosure } from "@nextui-org/react";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { useAppDispatch } from "@oursrc/lib/hooks";
 import { setNextHerdProgressStep } from "@oursrc/lib/features/herd-progress-step/herdProgressStepSlice";
@@ -22,6 +22,7 @@ import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signal
 import { SERVERURL } from "@oursrc/lib/http";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { v4 } from "uuid";
+import { IoIosCloseCircle } from "react-icons/io";
 
 // const pigList: Pig[] = [
 //   { id: 1, name: "Heo 001", pigCode: "HEO001" },
@@ -52,6 +53,8 @@ const AssignTag = () => {
   const { toast } = useToast();
   const [assignedPigs, setAssignedPigs] = useState<Pig[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [error, setError] = useState<boolean>(false);
+  const { isOpen: isErrorOpen, onOpen: onIsErrorOpen, onClose: onIsErrorClose } = useDisclosure();
   const [loading, setLoading] = React.useState<boolean>(false);
   const [cages, setCages] = React.useState<Cage[]>([]);
   const [pigInfo, setPigInfo] = React.useState<SensorData | undefined>(undefined);
@@ -117,7 +120,7 @@ const AssignTag = () => {
   React.useEffect(() => {
     const accessToken = localStorage.getItem("accessToken")?.toString();
     const connect = new HubConnectionBuilder()
-      .withUrl(`${SERVERURL}/hubs/sensor-hub`, {
+      .withUrl(`${SERVERURL}/hubs/create-herd-sensor-hub`, {
         // send access token here
         accessTokenFactory: () => accessToken || "",
       })
@@ -134,7 +137,6 @@ const AssignTag = () => {
       .start()
       .then(() => {
         console.log("Connected to Sensor Hub");
-        // getNotificationList();
         connect.on("ConsumeSensorData", (data: SensorData) => {
           // console.log("ConsumeSensorData", data);
           data && setPigInfo(data);
@@ -142,6 +144,12 @@ const AssignTag = () => {
           // const newMessages = [...messages];
           // newMessages.push(message);
           // setMessages(newMessages);
+        });
+        connect.on("ForceDisconnect", () => {
+          onIsErrorOpen();
+          setError(true);
+          connect.off("ConsumeSensorData");
+          connection?.stop();
         });
         // connect.invoke("RetrieveMessageHistory");
       })
@@ -177,6 +185,7 @@ const AssignTag = () => {
               className="mx-auto text-primary"
               size={150}
               onClick={() => {
+                if (error) return;
                 setPigInfo({ Uid: v4(), Weight: 0 });
                 onOpen();
               }}
@@ -324,7 +333,19 @@ const AssignTag = () => {
             </div>
           )}
         </div>
-        {pigInfo && <AssignInfo isOpen={isOpen} onClose={onClose} setAssignedPigs={setAssignedPigs} pigInfo={pigInfo} />}
+        {pigInfo && isOpen && <AssignInfo isOpen={isOpen} onClose={onClose} setAssignedPigs={setAssignedPigs} pigInfo={pigInfo} />}
+        {isErrorOpen && (
+          <Modal isOpen={isErrorOpen} onClose={onIsErrorClose} isDismissable={false}>
+            <ModalContent>
+              <ModalHeader>Thông báo</ModalHeader>
+              <ModalBody>
+                <IoIosCloseCircle size={80} className="text-red-500 mx-auto" />
+                <p className="text-lg">Hiện tại không thể gắn tag cho heo vì đang có người sử dụng chức năng này.</p>
+                <p className="text-lg">Vui lòng chờ đến lượt rồi thử lại sau.</p>
+              </ModalBody>
+            </ModalContent>
+          </Modal>
+        )}
         <div className="flex justify-end">
           <Button color="primary" variant="solid" isLoading={loading} size="lg" isDisabled={assignedPigs?.length <= 0} onPress={handleSubmit}>
             Bước tiếp theo

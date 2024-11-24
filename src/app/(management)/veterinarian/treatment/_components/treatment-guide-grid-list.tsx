@@ -179,7 +179,7 @@ const TreatmentGuideGridList = ({
               </div>
               <div>
                 <strong>Hướng dẫn chữa bệnh: </strong>
-                <span>{x.cure}</span>
+                <p className="whitespace-pre-line">{x.cure}</p>
               </div>
             </AccordionItem>
           ))}

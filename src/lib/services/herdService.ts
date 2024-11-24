@@ -16,4 +16,5 @@ export const herdService = {
         http.get<ResponseObjectList<any>>(endpoint + `/${id}`),
     createHerd: (model: CreateHerdRequest) =>
         http.post<ResponseObjectList<any>>(endpoint, model),
+    getHerdStatistics: (id: string) => http.get(endpoint + `/${id}/statistic`),
 };

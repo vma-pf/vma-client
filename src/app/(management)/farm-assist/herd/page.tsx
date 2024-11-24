@@ -2,7 +2,7 @@
 import { Accordion, AccordionItem, Button, Divider, useDisclosure } from "@nextui-org/react";
 import Image from "next/image";
 import React from "react";
-import Chart from "./_components/chart";
+import Chart from "@oursrc/components/herds/chart";
 import PigList from "./_components/pig-list";
 import { IoIosAlert } from "react-icons/io";
 import { GoDotFill } from "react-icons/go";
@@ -15,10 +15,12 @@ import { FaChartPie } from "react-icons/fa6";
 import { AiFillAlert } from "react-icons/ai";
 import { Pig } from "@oursrc/lib/models/pig";
 import HealthCheckUp from "./_components/_modal/health-checkup";
-import PigDetail from "./_components/_modal/pig-detail";
+import PigDetail from "@oursrc/components/herds/modals/pig-detail";
 import ChangeCage from "./_components/_modal/change-cage";
 import MonitorDevelopment from "./_components/monitor-development";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@oursrc/components/ui/sheet";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { herdService } from "@oursrc/lib/services/herdService";
 
 const Herd = () => {
   // const { isOpen, onOpen, onClose } = useDisclosure();
@@ -27,9 +29,32 @@ const Herd = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
   const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
+  const [statisticData, setStatisticData] = React.useState<{
+    numberOfPigsAlive: number;
+    numberOfPigsDead: number;
+    numberOfPigsHealthNormal: number;
+    numberOfPigsHealthSick: number;
+  }>();
+
+  const getStatistics = async () => {
+    try {
+      const res: ResponseObject<any> = await herdService.getHerdStatistics(selectedHerd?.id ?? "");
+      if (res.isSuccess) {
+        setStatisticData(res.data);
+      } else {
+        console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   React.useEffect(() => {
-    !selectedHerd && setSelectedPig(undefined);
+    if (!selectedHerd) {
+      setSelectedPig(undefined);
+    } else {
+      getStatistics();
+    }
   }, [selectedHerd]);
   return (
     <div>
@@ -99,7 +124,7 @@ const Herd = () => {
                     <AccordionItem key="2" title="Tình trạng đàn" startContent={<FaChartPie className="text-primary" size={25} />}>
                       <div className="border-2 w-full">
                         <p className="m-2 text-xl font-semibold">Tình trạng đàn</p>
-                        <Chart />
+                        {statisticData && <Chart data={statisticData} />}
                       </div>
                     </AccordionItem>
                   </Accordion>

@@ -84,6 +84,7 @@ const CheckUpPlan = () => {
   const [selectedDate, setSelectedDate] = React.useState<DateValue | null>(null);
   const [repeat, setRepeat] = React.useState<number | null>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [isDoneAll, setIsDoneAll] = React.useState<boolean>(false);
 
   const handleSubmit = async () => {
     try {
@@ -248,7 +249,7 @@ const CheckUpPlan = () => {
         </div>
       </div>
       <div className="flex justify-end mt-3">
-        <Button color="primary" variant="solid" isLoading={isLoading} size="lg" isDisabled={!selected || !selectedDate || !repeat} onPress={handleSubmit}>
+        <Button color="primary" variant="solid" isLoading={isLoading} size="lg" isDisabled={!selected || !selectedDate || !repeat || isDoneAll} onPress={handleSubmit}>
           Hoàn tất
         </Button>
       </div>

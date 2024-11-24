@@ -65,9 +65,16 @@ const AddMedicineToStageModal = ({
     }
   };
 
+  React.useEffect(() => {
+    if (isOpen) {
+      setPortionEachPig(1);
+      setNewMedicineName("");
+    }
+  }, [isOpen]);
+
   return (
     <div>
-      <Modal isOpen={isOpen} size="4xl" onClose={onClose} isDismissable={false}>
+      <Modal isOpen={isOpen} size="4xl" onClose={onClose} isDismissable={false} scrollBehavior="inside">
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">Chọn thuốc cho giai đoạn</ModalHeader>
           <ModalBody>

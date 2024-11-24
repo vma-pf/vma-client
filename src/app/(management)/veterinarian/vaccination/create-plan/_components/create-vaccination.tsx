@@ -51,10 +51,13 @@ import SelectedPigsList from "./selected-pigs-list";
 import { areaService } from "@oursrc/lib/services/areaService";
 import { Area } from "@oursrc/lib/models/area";
 import AreaListReadOnly from "@oursrc/components/areas/area-list-read-only";
+import LoadingStateContext from "@oursrc/components/context/loading-state-context";
 
 const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const router = useRouter();
   //State
+  const { loading, setLoading } = React.useContext(LoadingStateContext);
+  const [isDoneAll, setIsDoneAll] = React.useState(false);
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
   const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
   const [selectedAreas, setSelectedAreas] = React.useState<Area[]>([]);
@@ -273,25 +276,35 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   };
 
   const handleCreateTemplate = async () => {
-    const templateRequest = stages.map((x: VaccinationStageProps, index: number) => ({
-      title: x.title,
-      timeSpan: x.timeSpan,
-      numberOfDays: index === 0 ? 0 : Math.round((new Date(x.applyStageTime).valueOf() - new Date(stages[0].applyStageTime).valueOf()) / (1000 * 3600 * 24)) + 1,
-      medicineTemplates: x.inventoryRequest.medicines.map((medicine: any) => ({
-        medicineId: medicine.type === "existed" ? medicine.medicineId : null,
-        portionEachPig: medicine.portionEachPig,
-      })),
-      toDoTemplates: x.vaccinationToDos,
-    }));
-    if (!checkStages()) {
-      return;
-    }
-    const request = {
-      treatmentGuideId: null,
-      name: templateName,
-      stageTemplates: templateRequest,
-    };
     try {
+      setLoading(true);
+      const isNewMedicine = stages.some((x) => x.inventoryRequest.medicines.some((y: any) => y.type === "new"));
+      if (isNewMedicine) {
+        toast({
+          variant: "destructive",
+          title: "Tạo mẫu lịch tiêm phòng thất bại",
+          description: "Mẫu lịch tiêm phòng không thể chứa thuốc mới",
+        });
+        return;
+      }
+      const templateRequest = stages.map((x: VaccinationStageProps, index: number) => ({
+        title: x.title,
+        timeSpan: x.timeSpan,
+        numberOfDays: index === 0 ? 0 : Math.round((new Date(x.applyStageTime).valueOf() - new Date(stages[0].applyStageTime).valueOf()) / (1000 * 3600 * 24)) + 1,
+        medicineTemplates: x.inventoryRequest.medicines.map((medicine: any) => ({
+          medicineId: medicine.type === "existed" ? medicine.medicineId : null,
+          portionEachPig: medicine.portionEachPig,
+        })),
+        toDoTemplates: x.vaccinationToDos,
+      }));
+      if (!checkStages()) {
+        return;
+      }
+      const request = {
+        treatmentGuideId: null,
+        name: templateName,
+        stageTemplates: templateRequest,
+      };
       const response = await planTemplateService.createPlanTemplate(request);
       if (response && response.isSuccess) {
         toast({
@@ -309,11 +322,13 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         description: error.message,
       });
     } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmitForm = async (data: any) => {
     try {
+      setLoading(true);
       data.startDate = new Date(date.start.toString()).toISOString();
       data.expectedEndDate = new Date(date.end.toString()).toISOString();
 
@@ -328,7 +343,24 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
           timeSpan: x.timeSpan,
           applyStageTime: x.applyStageTime,
           vaccinationToDosDto: x.vaccinationToDos,
-          inventoryRequestDto: x.inventoryRequest,
+          inventoryRequestDto: {
+            ...x.inventoryRequest,
+            medicines: x.inventoryRequest.medicines.map((y: any) => {
+              if (y.type === "new") {
+                return {
+                  medicineId: null,
+                  newMedicineName: y.medicineName,
+                  portionEachPig: y.portionEachPig,
+                };
+              } else {
+                return {
+                  medicineId: y.medicineId,
+                  newMedicineName: null,
+                  portionEachPig: y.portionEachPig,
+                };
+              }
+            }),
+          },
         };
       });
 
@@ -338,9 +370,11 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         isApplyToAll: false,
         pigIds: pluck("id", allSelectedPigs),
       };
+      console.log(request);
 
       const response = await vaccinationService.createVaccinationPlan(request);
       if (response && response.isSuccess) {
+        setIsDoneAll(true);
         toast({
           variant: "success",
           title: "Tạo thành công lịch tiêm phòng",
@@ -357,6 +391,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         description: error.message,
       });
     } finally {
+      setLoading(false);
     }
   };
 
@@ -368,7 +403,14 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   };
   return (
     <div>
-      <form onSubmit={handleSubmit(handleSubmitForm)}>
+      <form
+        onSubmit={handleSubmit(handleSubmitForm)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
+      >
         <Card className="w-full">
           <CardBody>
             <div className="flex justify-end">
@@ -416,14 +458,14 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                         value={templateName}
                         onChange={(e) => setTemplateName(e.target.value)}
                       />
-                      <Button color="primary" isIconOnly onClick={handleCreateTemplate}>
+                      <Button color="primary" isIconOnly onClick={handleCreateTemplate} isLoading={loading}>
                         <Check />
                       </Button>
                     </div>
                   </PopoverContent>
                 </Popover>
               </div>
-              <Button color="primary" variant="solid" isDisabled={errors && Object.keys(errors).length > 0} type="submit">
+              <Button color="primary" variant="solid" isDisabled={Object.keys(errors).length > 0 && !isDoneAll} type="submit" isLoading={loading}>
                 Xác nhận lịch tiêm phòng
               </Button>
             </div>

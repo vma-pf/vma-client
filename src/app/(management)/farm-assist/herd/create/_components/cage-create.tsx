@@ -11,28 +11,84 @@ import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { cageService } from "@oursrc/lib/services/cageService";
 import { Cage } from "@oursrc/lib/models/cage";
 import PrepareCageList from "./prepare-cage-list";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
+import { HiOutlineLightBulb } from "react-icons/hi";
+import { Area } from "@oursrc/lib/models/area";
+import { areaService } from "@oursrc/lib/services/areaService";
 
 const CageCreate = () => {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = React.useState<boolean | undefined>(false);
-  const [capacity, setCapacity] = React.useState<string>();
   const [newCages, setNewCages] = React.useState<Cage[]>([]);
+  const [isCageEmpty, setIsCageEmpty] = React.useState<boolean>(false);
+  const [areaList, setAreaList] = React.useState<Area[]>([]);
+  const [selectedArea, setSelectedArea] = React.useState<Area | null>(null);
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
-  } = useForm({
-    defaultValues: {
-      code: "",
-      capacity: "",
-      description: "",
-    },
-  });
+  } = useForm();
+  const capacity = watch("capacity");
+  const width = watch("width");
+  const height = watch("height");
+  const length = watch("length");
 
-  useEffect(() => {
-    setValue("capacity", capacity || "0");
-  }, []);
+  const fetchAreas = async () => {
+    try {
+      const res: ResponseObjectList<Area> = await areaService.getAll(1, 1000);
+      if (res.isSuccess) {
+        setAreaList(res.data.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleCapacityChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9]/g, "");
+    if (numericValue[0] === "-" || numericValue[0] === "0") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseInt(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    // setValue("capacity", numericValue || "0");
+  };
+
+  const handleWidthChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9.]/g, "");
+    if (numericValue[0] === "-" || numericValue[0] === "0") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseFloat(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setValue("width", numericValue || "0");
+  };
+
+  const handleHeightChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9.]/g, "");
+    if (numericValue[0] === "-" || numericValue[0] === "0") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseFloat(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setValue("height", numericValue || "0");
+  };
+
+  const handleLengthChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9.]/g, "");
+    if (numericValue[0] === "-" || numericValue[0] === "0") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseFloat(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setValue("length", numericValue || "0");
+  };
 
   const handleSubmitForm = async (data: any) => {
     try {
@@ -70,27 +126,41 @@ const CageCreate = () => {
     }
   };
 
-  const handleNumberChange = (event: string) => {
-    let numericValue = event.replace(/[^0-9]/g, "");
-    if (numericValue[0] === "-" || numericValue[0] === "0") {
-      numericValue = numericValue.slice(1);
+  useEffect(() => {
+    setValue("capacity", capacity);
+    setValue("width", width);
+    setValue("height", height);
+    setValue("length", length);
+  }, [setValue]);
+
+  useEffect(() => {
+    if (width && length) {
+      const area = ((width as number) * length) as number;
+      const capacity = Math.ceil(area / 1.2).toString();
+      setValue("capacity", capacity);
     }
-    if (parseInt(numericValue) > 10000) {
-      numericValue = "10000";
-    }
-    setCapacity(numericValue);
-  };
+  }, [width, length]);
+
+  useEffect(() => {
+    fetchAreas();
+  }, []);
   return (
     <div>
       <div className="container mx-auto">
         <div className="mt-12">
           <div className="mb-8 flex items-center justify-between">
             <p className="text-3xl">Chuồng có sẵn</p>
-            <Button variant="ghost" color="primary" endContent={<HiChevronDoubleRight size={20} />} onPress={() => dispatch(setNextHerdProgressStep())}>
+            <Button
+              variant="ghost"
+              color="primary"
+              endContent={<HiChevronDoubleRight size={20} />}
+              isDisabled={isCageEmpty}
+              onPress={() => dispatch(setNextHerdProgressStep())}
+            >
               Bỏ qua bước này
             </Button>
           </div>
-          <PrepareCageList hasNewCages={newCages.length > 0} />
+          <PrepareCageList hasNewCages={newCages.length > 0} setIsCageEmpty={setIsCageEmpty} />
         </div>
         <div>
           <p className="text-3xl">
@@ -104,57 +174,126 @@ const CageCreate = () => {
             <h1 className="text-xl">Thông tin chuồng</h1>
           </div>
           <form onSubmit={handleSubmit(handleSubmitForm)}>
-            <div className="grid grid-flow-row grid-cols-2 gap-4 mt-10">
-              <div className="flex w-full flex-wrap md:flex-nowrap">
-                <Input
-                  className="mb-5"
-                  type="text"
-                  radius="sm"
-                  size="lg"
-                  label="Mã chuồng"
-                  placeholder="Nhập mã chuồng"
-                  labelPlacement="outside"
-                  isRequired
-                  isInvalid={errors.code ? true : false}
-                  errorMessage="Mã chuồng không được để trống"
-                  {...register("code", { required: true })}
-                />
-              </div>
-              <div className="flex w-full flex-wrap md:flex-nowrap">
-                <Input
-                  className="mb-5"
-                  type="text"
-                  radius="sm"
-                  size="lg"
-                  label="Sức chứa"
-                  placeholder="Nhập sức chứa"
-                  labelPlacement="outside"
-                  isRequired
-                  isInvalid={errors.capacity ? true : false}
-                  errorMessage="Sức chứa không được để trống"
-                  value={capacity || ""}
-                  onValueChange={(event) => handleNumberChange(event)}
-                  {...register("capacity", {
-                    required: true,
-                    valueAsNumber: true,
-                  })}
-                />
-              </div>
+            <Input
+              type="text"
+              radius="md"
+              size="lg"
+              label="Mã chuồng"
+              placeholder="Nhập mã chuồng"
+              labelPlacement="outside"
+              isRequired
+              // value={cage?.code ? cage?.code : ""}
+              isInvalid={errors.code ? true : false}
+              errorMessage="Mã chuồng không được để trống"
+              {...register("code", { required: true })}
+            />
+            <Textarea
+              minRows={3}
+              type="text"
+              radius="md"
+              size="lg"
+              label="Mô tả"
+              placeholder="Nhập mô tả"
+              labelPlacement="outside"
+              isRequired
+              isInvalid={errors.description ? true : false}
+              errorMessage="Mô tả không được để trống"
+              {...register("description", { required: true })}
+            />
+            <div className="flex gap-3 items-end">
+              <p className="text-xl font-semibold">Kích thước chuồng</p>
+              <HoverCard>
+                <HoverCardTrigger>
+                  <HiOutlineLightBulb size={30} className="text-yellow-500" />
+                </HoverCardTrigger>
+                <HoverCardContent align="start" className="w-96">
+                  <div className="">
+                    <p className="font-semibold">Kích thước tham khảo</p>
+                    <p className="">
+                      Khi nuôi heo trong chuồng, cần đảm bảo diện tích cho mỗi con tối thiểu từ <strong>1 - 1.2 m2</strong>.
+                      <br /> Ví dụ: Muốn nuôi 10 con heo, cần chuồng có diện tích tối thiểu từ <strong>10 - 12 m2</strong>.
+                    </p>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
             </div>
-            <div className="grid grid-cols-1 mb-5">
-              <Textarea
-                minRows={20}
+            <Input
+              type="text"
+              radius="md"
+              size="lg"
+              label="Chiều cao"
+              placeholder="Nhập chiều cao"
+              labelPlacement="outside"
+              isRequired
+              endContent="m"
+              isInvalid={errors.height ? true : false}
+              errorMessage="Chiều cao không được để trống"
+              value={height || ""}
+              onValueChange={(event) => handleHeightChange(event)}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <Input
                 type="text"
-                radius="sm"
+                radius="md"
                 size="lg"
-                label="Mô tả"
-                placeholder="Nhập mô tả"
+                label="Chiều dài"
+                placeholder="Nhập chiều dài"
                 labelPlacement="outside"
                 isRequired
-                isInvalid={errors.description ? true : false}
-                errorMessage="Mô tả không được để trống"
-                {...register("description", { required: true })}
+                endContent="m"
+                isInvalid={errors.length ? true : false}
+                errorMessage="Chiều dài không được để trống"
+                value={length || ""}
+                onValueChange={(event) => handleLengthChange(event)}
               />
+              <Input
+                type="text"
+                radius="md"
+                size="lg"
+                label="Chiều rộng"
+                placeholder="Nhập chiều rộng"
+                labelPlacement="outside"
+                isRequired
+                endContent="m"
+                isInvalid={errors.width ? true : false}
+                errorMessage="Chiều rộng không được để trống"
+                value={width || ""}
+                onValueChange={(event) => handleWidthChange(event)}
+              />
+            </div>
+            <Input
+              className="mb-2"
+              type="text"
+              radius="md"
+              size="lg"
+              label={`Sức chứa tối đa cho diện tích ${Math.ceil((width as number) * (length as number))} m2 (đề xuất)`}
+              placeholder="Nhập sức chứa"
+              endContent="con"
+              labelPlacement="outside"
+              isRequired
+              isInvalid={errors.capacity ? true : false}
+              errorMessage="Sức chứa không được để trống"
+              // value={cage?.capacity ? cage?.capacity.toString() : capacity}
+              value={capacity || ""}
+              onValueChange={(event) => handleCapacityChange(event)}
+            />
+            <p className="text-xl font-semibold">Danh sách Khu vực trong trang trại</p>
+            <div className="grid grid-cols-2">
+              {areaList.map((area) => (
+                <div
+                  className={`m-2 border-2 rounded-lg p-2 ${selectedArea?.id === area.id ? "bg-emerald-200" : ""}`}
+                  key={area.id}
+                  onClick={() => {
+                    if (selectedArea?.id === area.id) {
+                      setSelectedArea(null);
+                      return;
+                    }
+                    setSelectedArea(area);
+                  }}
+                >
+                  <p className="text-lg">Khu vực: {area.code}</p>
+                </div>
+              ))}
             </div>
             <div className="flex justify-end">
               <Button variant="solid" color="primary" isDisabled={errors && Object.keys(errors).length > 0} isLoading={loading} size="lg" type="submit">

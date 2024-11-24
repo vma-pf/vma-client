@@ -10,6 +10,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { IoMdPricetags } from "react-icons/io";
 import { motion } from "framer-motion";
+import LoadingStateContext from "@oursrc/components/context/loading-state-context";
 
 const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<React.SetStateAction<boolean>>; pigInfo: Pig }) => {
   const {
@@ -20,12 +21,14 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
     reset,
     formState: { errors },
   } = useForm();
+  const { loading, setLoading } = React.useContext(LoadingStateContext);
   const { toast } = useToast();
   const width = watch("width");
   const height = watch("height");
   const weight = watch("weight");
   const [cages, setCages] = React.useState<Cage[]>([]);
   const [selectedCage, setSelectedCage] = React.useState<Cage | undefined>();
+  const [isDoneAll, setIsDoneAll] = React.useState(false);
 
   const handleHeightChange = (event: string) => {
     let numericValue = event.replace(/[^0-9.]/g, "");
@@ -58,7 +61,7 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
     setValue("weight", numericValue || "0");
   };
   const handleSelectCage = (cage: Cage) => {
-    if (cage.availableQuantity && cage.availableQuantity < cage.capacity) {
+    if (cage.availableQuantity !== undefined && cage.availableQuantity < cage.capacity) {
       if (cage.id !== selectedCage?.id) {
         setSelectedCage(cage);
       } else {
@@ -68,9 +71,9 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
   };
   const onSubmit = async (data: any) => {
     try {
+      setLoading(true);
       const res: ResponseObject<any> = await monitorDevelopmentLogService.createMonitoringLog({
         pigId: pigInfo?.id ?? "",
-        cageId: selectedCage?.id ?? pigInfo?.cageId ?? "",
         weight: Number(weight || ""),
         height: Number(height || ""),
         width: Number(width || ""),
@@ -78,6 +81,7 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
         status: 0,
       });
       if (res.isSuccess) {
+        setIsDoneAll(true);
         reset();
         setIsOpen(false);
       } else {
@@ -86,8 +90,19 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
           variant: "destructive",
         });
       }
+      if (pigInfo?.cageId !== selectedCage?.id) {
+        const response: ResponseObject<any> = await cageService.assignPigToCage(selectedCage?.id ?? "", pigInfo?.id ?? "");
+        if (response.isSuccess) {
+          setIsDoneAll(true);
+          console.log("Chuyển chuồng thành công");
+        } else {
+          console.log(response.errorMessage);
+        }
+      }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
   const fetchCages = async () => {
@@ -132,7 +147,7 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
           labelPlacement="outside"
           isRequired
           endContent="kg"
-          isInvalid={weight ? false : true}
+          isInvalid={errors.weight ? true : false}
           errorMessage="Cân nặng không được để trống"
           value={weight || ""}
           onValueChange={(e) => handleWeightChange(e)}
@@ -147,7 +162,7 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
           labelPlacement="outside"
           isRequired
           endContent="cm"
-          isInvalid={height ? false : true}
+          isInvalid={errors.height ? true : false}
           errorMessage="Chiều cao không được để trống"
           value={height || ""}
           onValueChange={(e) => handleHeightChange(e)}
@@ -162,7 +177,7 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
           labelPlacement="outside"
           isRequired
           endContent="cm"
-          isInvalid={width ? false : true}
+          isInvalid={errors.width ? true : false}
           errorMessage="Chiều rộng không được để trống"
           value={width || ""}
           onValueChange={(e) => handleWidthChange(e)}
@@ -196,7 +211,7 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
             </div>
           ))}
         </div>
-        <Button color="primary" type="submit" isDisabled={height && width && weight && !errors.note && selectedCage ? false : true}>
+        <Button color="primary" type="submit" isDisabled={height && width && weight && !errors.note && selectedCage && !isDoneAll ? false : true} isLoading={loading}>
           Lưu
         </Button>
       </form>

@@ -21,12 +21,15 @@ import {
 import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "@oursrc/components/cages/models/cage-table-data";
 import { capitalize } from "@oursrc/components/utils";
 import { useToast } from "@oursrc/hooks/use-toast";
+import { Area } from "@oursrc/lib/models/area";
 import { Cage } from "@oursrc/lib/models/cage";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { areaService } from "@oursrc/lib/services/areaService";
 import { cageService } from "@oursrc/lib/services/cageService";
 import { Search } from "lucide-react";
 import React from "react";
 import { HiChevronDown } from "react-icons/hi";
-const PrepareCageList = ({ hasNewCages }: any) => {
+const PrepareCageList = ({ hasNewCages, setIsCageEmpty }: { hasNewCages: boolean; setIsCageEmpty: React.Dispatch<React.SetStateAction<boolean>> }) => {
   const { toast } = useToast();
 
   //Table field
@@ -74,10 +77,13 @@ const PrepareCageList = ({ hasNewCages }: any) => {
 
   //API function
   const fetchData = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
       const response = await cageService.getCages(page, rowsPerPage);
       if (response.isSuccess) {
+        if (response.data.data.length === 0) {
+          setIsCageEmpty(true);
+        }
         setCageList(response.data.data);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
@@ -241,7 +247,7 @@ const PrepareCageList = ({ hasNewCages }: any) => {
   return (
     <div>
       <Table
-        isStriped
+        isHeaderSticky
         color="primary"
         bottomContent={bottomContent}
         bottomContentPlacement="outside"

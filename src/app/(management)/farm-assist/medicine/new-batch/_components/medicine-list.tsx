@@ -47,11 +47,9 @@ const statusColorMap: Record<string, ChipProps["color"]> = {
 export default function MedicineList({
   selectedMedicine,
   setSelectedMedicine,
-  supplier,
 }: {
   selectedMedicine?: Medicine;
   setSelectedMedicine: React.Dispatch<React.SetStateAction<Medicine | undefined>>;
-  supplier: Supplier | undefined;
 }) {
   const { toast } = useToast();
   const {
@@ -135,11 +133,7 @@ export default function MedicineList({
 
   const createNewMedicine = async (data: any) => {
     try {
-      const payload = {
-        ...data,
-        name: supplier ? supplier.name + " - " + data.name : data.name,
-      };
-      const res: ResponseObject<Medicine> = await medicineService.createMedicine(payload);
+      const res: ResponseObject<Medicine> = await medicineService.createMedicine(data);
       if (res.isSuccess) {
         toast({
           variant: "success",
@@ -340,9 +334,6 @@ export default function MedicineList({
         >
           <form onSubmit={handleSubmit(createNewMedicine)}>
             <p className="text-xl font-semibold mb-3">Nhập thông tin thuốc mới</p>
-            <p className="text-lg mb-3">
-              Format tên thuốc: {supplier ? supplier.name + " - " : ""} {name ? name : storedMedicine.newMedicineName}
-            </p>
             <div className="grid grid-cols-2 gap-2">
               <Input
                 className="mb-5"

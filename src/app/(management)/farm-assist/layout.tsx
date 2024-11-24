@@ -7,6 +7,7 @@ import { MdSpaceDashboard } from "react-icons/md";
 import Footer from "@oursrc/app/(management)/footer";
 import CustomNavbar, { NavbarItem } from "@oursrc/components/custom-navbar";
 import CustomHeader from "@oursrc/components/custom-header";
+import { LoadingStateProvider } from "@oursrc/components/context/loading-state-context";
 
 const FarmerAssistantLayout = ({
   children,
@@ -66,7 +67,9 @@ const FarmerAssistantLayout = ({
           <div className="border-b-2 border-zinc-300 dark:border-zinc-700">
             <CustomHeader titleMap={titleMap} prefix="/farm-assist" />
           </div>
-          <div className="ml-4 mr-2 mt-2 h-fit">{children}</div>
+          <div className="ml-4 mr-2 mt-2 h-fit">
+            <LoadingStateProvider>{children}</LoadingStateProvider>
+          </div>
         </div>
       </div>
     </div>
