@@ -44,8 +44,6 @@ import { abnormalityService } from "@oursrc/lib/services/abnormalityService";
 import { CommonDisease } from "@oursrc/lib/models/common-disease";
 import { FaRegSave, FaStar } from "react-icons/fa";
 import { BsArrowReturnRight } from "react-icons/bs";
-import { useInfiniteScroll } from "@nextui-org/use-infinite-scroll";
-import { useAsyncList } from "@react-stately/data";
 
 const Treatment = () => {
   const router = useRouter();
