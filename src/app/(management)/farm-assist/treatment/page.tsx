@@ -25,6 +25,7 @@ import {
   ModalHeader,
   Progress,
   Skeleton,
+  Spinner,
   Tab,
   Tabs,
   useDisclosure,
@@ -49,7 +50,6 @@ import { treatmentStageService } from "@oursrc/lib/services/treatmentStageServic
 import { Abnormality } from "@oursrc/lib/models/abnormality";
 import { CommonDisease } from "@oursrc/lib/models/common-disease";
 import { abnormalityService } from "@oursrc/lib/services/abnormalityService";
-import { checkTime } from "@oursrc/lib/utils/dev-utils";
 import { GiCage } from "react-icons/gi";
 import { BsArrowReturnRight } from "react-icons/bs";
 import { Tooltip } from "recharts";
@@ -71,6 +71,9 @@ const Treatment = () => {
   const { toast } = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = React.useState(false);
+  const [loadMore, setLoadMore] = React.useState(true);
+  const [page, setPage] = React.useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
   const [selectedTreatmentId, setSelectedTreatmentId] = React.useState(new Set<string>());
   const [treatmentData, setTreatmentData] = React.useState<TreatmentData | undefined>();
   const [pigs, setPigs] = React.useState<Pig[]>([]);
@@ -128,6 +131,26 @@ const Treatment = () => {
     }
   };
 
+  const checkTime = (msg: Abnormality) => {
+    const diffTime = new Date().getTime() - new Date(msg.createdAt).getTime();
+    const minutes = Math.floor(diffTime / (1000 * 60));
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    const timeAgo =
+      minutes < 60
+        ? `${minutes} phút trước`
+        : hours < 24
+        ? `${hours} giờ trước`
+        : days < 7
+        ? `${days} ngày trước`
+        : days < 30
+        ? `${days} tuần trước`
+        : `${days} tháng trước`;
+
+    return timeAgo;
+  };
+
   const calculateProgress = (startDate: string, endDate: string) => {
     const start = new Date(startDate).getTime();
     const end = new Date(endDate).getTime();
@@ -170,14 +193,19 @@ const Treatment = () => {
 
   const fetchAbnormalities = async () => {
     try {
-      const res: ResponseObjectList<Abnormality> = await abnormalityService.getAll(1, 500);
+      setLoadMore(true);
+      const res: ResponseObjectList<Abnormality> = await abnormalityService.getAll(page, 4);
       if (res.isSuccess) {
-        setAbnormalities(res.data.data);
+        setAbnormalities((prev) => [...prev, ...res.data.data]);
+        setPage(res.data.pageIndex);
+        setTotalPages(res.data.totalPages);
       } else {
         console.log(res.errorMessage);
       }
     } catch (error) {
       console.log("Error: ", error);
+    } finally {
+      setLoadMore(false);
     }
   };
 
@@ -194,6 +222,11 @@ const Treatment = () => {
     }
   };
 
+  const abnormalityValue = React.useMemo(() => {
+    const items: Abnormality[] = [...abnormalities];
+    return items;
+  }, [abnormalities]);
+
   React.useEffect(() => {
     if (selectedTreatmentId.size > 0) {
       findTreatmentPlan(selectedTreatmentId.values().next().value);
@@ -208,7 +241,7 @@ const Treatment = () => {
 
   React.useEffect(() => {
     fetchAbnormalities();
-  }, []);
+  }, [page]);
 
   return (
     <div>
@@ -235,37 +268,64 @@ const Treatment = () => {
               </div>
               <div className="w-1/2 ml-2 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
                 <p className="m-2 text-xl font-semibold">Dấu hiệu bất thường</p>
-                <div className="my-2 max-h-[500px] overflow-auto">
-                  {abnormalities.length > 0 ? (
-                    abnormalities.map((abnormality) => (
-                      <div
-                        key={abnormality.id}
-                        onClick={() => {
-                          fetchCommonDiseases(abnormality.id);
-                          setSelectedAbnormality(abnormality);
-                          onOpen();
-                        }}
-                        className="cursor-pointer"
-                      >
-                        <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
-                          <div className="flex justify-start items-center">
-                            <IoIosAlert className="mr-3 text-danger-500" size={30} />
-                            <div className="text-start">
-                              <p className="font-semibold">{abnormality.cageCode}</p>
-                              <p className="my-2">{abnormality.title}</p>
-                              <p className="text-zinc-400 text-sm">{checkTime(abnormality.createdAt).toString()}</p>
+                {!loading ? (
+                  <div className="my-2 max-h-[500px] overflow-auto">
+                    {abnormalityValue.length > 0 ? (
+                      abnormalityValue.map((abnormality) => (
+                        <div
+                          key={abnormality.id}
+                          onClick={() => {
+                            fetchCommonDiseases(abnormality.id);
+                            setSelectedAbnormality(abnormality);
+                            onOpen();
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <div className="mx-2 my-3 flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-600 p-2 rounded-lg">
+                            <div className="flex justify-start items-center">
+                              <IoIosAlert className="mr-3 text-danger-500" size={30} />
+                              <div className="text-start">
+                                <p className="">
+                                  Chuồng <strong>{abnormality.cageCode}</strong>
+                                </p>
+                                <p className="my-2">{abnormality.title}</p>
+                                <p className="text-zinc-400 text-sm">{checkTime(abnormality).toString()}</p>
+                              </div>
                               <small className="font-bold">{abnormality.description}</small>
                             </div>
+                            {checkTime(abnormality).toString().includes("phút") ||
+                              (checkTime(abnormality).toString().includes("giờ") && <GoDotFill className="text-blue-500" />)}
                           </div>
-                          <GoDotFill className="text-blue-500" />
+                          <Divider className="my-2" orientation="horizontal" />
                         </div>
-                        <Divider className="my-2" orientation="horizontal" />
+                      ))
+                    ) : (
+                      <p className="text-center">Không có dấu hiệu bất thường</p>
+                    )}
+                    {page < totalPages &&
+                      (loadMore ? (
+                        <div className="flex w-full justify-center">
+                          <Spinner color="primary" />
+                        </div>
+                      ) : (
+                        <div className="flex w-full justify-center">
+                          <Button variant="light" size="sm" color="default" onPress={() => setPage(page + 1)}>
+                            Xem thêm
+                          </Button>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="my-2 max-h-[500px] overflow-auto">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div key={index} className="mx-2 my-3 flex justify-between items-center p-2 rounded-lg">
+                        <Skeleton className="rounded-lg">
+                          <div className="h-20 rounded-lg bg-default-300"></div>
+                        </Skeleton>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-center">Không có dấu hiệu bất thường</p>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             {loading ? (
@@ -461,7 +521,7 @@ const Treatment = () => {
                         <div className="col-span-6 flex flex-col items-center">
                           <CiClock2 className="text-4xl" />
                           <p className="text-md font-light">Thời gian</p>
-                          <p className="text-lg">{checkTime(selectedAbnormality.createdAt).toString()}</p>
+                          <p className="text-lg">{checkTime(selectedAbnormality).toString()}</p>
                         </div>
                         <div className="col-span-6 flex flex-col items-center">
                           <CiStickyNote className="text-4xl" />

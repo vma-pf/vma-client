@@ -242,11 +242,7 @@ const Treatment = () => {
                               </div>
                             </div>
                             {checkTime(abnormality).toString().includes("phút") ||
-                              (checkTime(abnormality).toString().includes("giờ") && (
-                                <Tooltip content="Cảnh báo mới">
-                                  <GoDotFill className="text-blue-500" />
-                                </Tooltip>
-                              ))}
+                              (checkTime(abnormality).toString().includes("giờ") && <GoDotFill className="text-blue-500" />)}
                           </div>
                           <Divider className="my-2" orientation="horizontal" />
                         </div>
