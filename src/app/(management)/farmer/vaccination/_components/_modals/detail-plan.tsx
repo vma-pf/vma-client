@@ -43,7 +43,7 @@ const DetailPlan = ({
               <div className="col-span-6 flex flex-col items-center">
                 <CiClock2 className="text-5xl" />
                 <p className="text-md font-light">Thời gian</p>
-                <p className="text-lg">{selectedVaccination?.timeSpan}</p>
+                <p className="text-lg">{selectedVaccination?.timeSpan}  ngày</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
                 <CiCalendar className="text-5xl" />

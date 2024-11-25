@@ -38,7 +38,7 @@ export type HerdInfo = {
     startDate: string;
     description: string;
     averageWeight: number;
-    status: number;
+    status: string;
 };
 
 export type Herd = {
@@ -51,5 +51,5 @@ export type Herd = {
   startDate: string;
   description: string;
   averageWeight: number;
-  status: number;
+  status: string;
 };

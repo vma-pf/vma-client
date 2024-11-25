@@ -165,13 +165,13 @@ const CageCreate = () => {
         <div>
           <p className="text-3xl">
             Tạo chuồng mới
-            <span className="ml-3 text-base text-gray-400">(Optional)</span>
+            <span className="ml-3 text-base text-gray-400">(Tùy chọn)</span>
           </p>
           {/* <div className="w-100">
               <AttachMedia />
             </div> */}
-          <div className="mt-12">
-            <h1 className="text-xl">Thông tin chuồng</h1>
+          <div className="mt-6">
+            <h1 className="text-xl font-semibold">Thông tin chuồng</h1>
           </div>
           <form onSubmit={handleSubmit(handleSubmitForm)}>
             <Input
@@ -200,7 +200,7 @@ const CageCreate = () => {
               errorMessage="Mô tả không được để trống"
               {...register("description", { required: true })}
             />
-            <div className="flex gap-3 items-end">
+            <div className="flex gap-3 items-end mt-4">
               <p className="text-xl font-semibold">Kích thước chuồng</p>
               <HoverCard>
                 <HoverCardTrigger>
@@ -266,7 +266,7 @@ const CageCreate = () => {
               type="text"
               radius="md"
               size="lg"
-              label={`Sức chứa tối đa cho diện tích ${Math.ceil((width as number) * (length as number))} m2 (đề xuất)`}
+              label={`Sức chứa tối đa cho diện tích ${isNaN(Math.ceil((width as number) * (length as number))) ? 0 : Math.ceil((width as number) * (length as number))} m2 (đề xuất)`}
               placeholder="Nhập sức chứa"
               endContent="con"
               labelPlacement="outside"
