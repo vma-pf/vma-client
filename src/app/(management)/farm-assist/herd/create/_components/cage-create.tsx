@@ -93,7 +93,11 @@ const CageCreate = () => {
   const handleSubmitForm = async (data: any) => {
     try {
       setLoading(true);
-      const res: ResponseObjectList<any> = await cageService.createCage(data);
+      const payload = {
+        ...data,
+        areaId: selectedArea?.id,
+      };
+      const res: ResponseObjectList<any> = await cageService.createCage(payload);
       if (res && res.isSuccess) {
         toast({
           variant: "success",

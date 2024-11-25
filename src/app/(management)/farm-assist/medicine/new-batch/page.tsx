@@ -113,28 +113,28 @@ const NewBatch = () => {
       const jsonBatches = batchList.map((item) => ({ medicineId: item.medicineId, quantity: item.quantity, expiredAt: item.expiredAt }));
       console.log(data, jsonBatches);
 
-      // const formData = new FormData();
-      // formData.append("Title", data.title);
-      // formData.append("SupplierId", data.supplierId);
-      // formData.append("Images", image as Blob);
-      // formData.append("JsonBatches", JSON.stringify(jsonBatches));
+      const formData = new FormData();
+      formData.append("Title", data.title);
+      formData.append("SupplierId", data.supplierId);
+      formData.append("Images", image as Blob);
+      formData.append("JsonBatches", JSON.stringify(jsonBatches));
 
-      // const response: ResponseObject<any> = await invoiceService.createInvoiceBatch(data.title, data.supplierId, image as Blob, jsonBatches);
-      // console.log(response);
-      // if (response.isSuccess) {
-      //   toast({
-      //     title: "Tạo lô mới thành công",
-      //     variant: "success",
-      //   });
-      //   setIsDoneAll(true);
-      //   router.push("/farm-assist/medicine");
-      // } else {
-      //   console.log(response?.errorMessage);
-      //   toast({
-      //     title: "Tạo lô mới thất bại",
-      //     variant: "destructive",
-      //   });
-      // }
+      const response: ResponseObject<any> = await invoiceService.createInvoiceBatch(data.title, data.supplierId, image as Blob, jsonBatches);
+      console.log(response);
+      if (response.isSuccess) {
+        toast({
+          title: "Tạo lô mới thành công",
+          variant: "success",
+        });
+        setIsDoneAll(true);
+        router.push("/farm-assist/medicine");
+      } else {
+        console.log(response?.errorMessage);
+        toast({
+          title: "Tạo lô mới thất bại",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.log(error);
     } finally {

@@ -218,13 +218,15 @@ const RequestMedicineList = () => {
     try {
       setSelectedMedicine(medicineRequest);
       const medicineCheck = (await checkMedicineQuantity(medicineRequest.medicineId || "")) ?? 0;
+      console.log(medicineCheck);
+      console.log(medicineRequest);
       switch (requestType) {
         case "accept":
         case "reject":
           if (medicineRequest.medicineId && medicineCheck < medicineRequest.quantity) {
             await calculateTotalQuantity(medicineRequest.medicineId);
             onOpenAlert();
-          } else if (medicineRequest.newMedicineName) {
+          } else if (medicineRequest.newMedicineName && !medicineRequest.medicineName) {
             onOpenAlert();
           } else {
             setAnswer(requestType);
