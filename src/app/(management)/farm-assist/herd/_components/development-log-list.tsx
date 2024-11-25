@@ -51,12 +51,11 @@ const columns = [
   { name: "Chiều cao", uid: "height", sortable: true },
   { name: "Chiều rộng", uid: "width", sortable: true },
   { name: "Ngày kiểm tra", uid: "checkUpAt", sortable: true },
-  { name: "Chuồng", uid: "cageCode", sortable: true },
   { name: "Tình trạng", uid: "healthStatus", sortable: true },
   // { name: "Hành động", uid: "actions" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["title", "weight", "height", "width", "healthStatus", "checkUpAt", "cageCode"];
+const INITIAL_VISIBLE_COLUMNS = ["title", "weight", "height", "width", "healthStatus", "checkUpAt"];
 
 const DevelopmentLogList = ({ selectedPig }: { selectedPig: Pig }) => {
   const [developmentLogList, setDevelopmentLogList] = React.useState<MonitorDevelopment[]>([]);
