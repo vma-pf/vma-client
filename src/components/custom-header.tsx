@@ -90,6 +90,30 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
     // router.push(path);
   };
 
+  function toCamelCase(str: string) {
+    return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, (match, index) => (index === 0 ? match.toLowerCase() : match.toUpperCase())).replace(/\s+/g, "");
+  }
+
+  function convertKeysToCamelCase(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map((item) => convertKeysToCamelCase(item)); // For arrays
+    } else if (obj !== null && obj && typeof obj === "object") {
+      const newObj: { [key: string]: any } = {}; // Add index signature
+      Object.keys(obj).forEach((key) => {
+        const isCamelCase = /^[a-z]+([A-Z][a-z]*)*$/.test(key); // Check if key is camelCase
+        const newKey = isCamelCase ? key : toCamelCase(key); // Convert if not camelCase
+        const value = obj[key];
+        if (value instanceof Date) {
+          newObj[newKey] = value.toISOString(); // Convert Date to ISO string
+        } else {
+          newObj[newKey] = convertKeysToCamelCase(value); // Recurse for nested objects
+        }
+      });
+      return newObj;
+    }
+    return obj; // Return the value as is if not an object/array
+  }
+
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken")?.toString();
     const connect = new HubConnectionBuilder()
@@ -113,6 +137,10 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
         getNotificationList();
         connect.on("ReceiveNotifications", (notification: NotificationType[]) => {
           console.log("ReceiveNotifications", notification);
+          const newMessage = convertKeysToCamelCase(notification);
+          console.log(newMessage);
+          setMessages(newMessage);
+          // setMessages(notification.sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1)));
           // const newMessages = [...messages];
           // newMessages.push(message);
           // setMessages(newMessages);

@@ -293,8 +293,9 @@ const Treatment = () => {
                                 <p className="text-zinc-400 text-sm">{checkTime(abnormality).toString()}</p>
                               </div>
                             </div>
-                            {checkTime(abnormality).toString().includes("phút") ||
-                              (checkTime(abnormality).toString().includes("giờ") && <GoDotFill className="text-blue-500" />)}
+                            {(checkTime(abnormality).toString().includes("phút") || checkTime(abnormality).toString().includes("giờ")) && (
+                              <GoDotFill className="text-blue-500" />
+                            )}
                           </div>
                           <Divider className="my-2" orientation="horizontal" />
                         </div>
