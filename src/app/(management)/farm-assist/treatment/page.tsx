@@ -288,10 +288,10 @@ const Treatment = () => {
                                 <p className="">
                                   Chuồng <strong>{abnormality.cageCode}</strong>
                                 </p>
-                                <p className="my-2">{abnormality.title}</p>
+                                <p className="mt-2">{abnormality.title}</p>
+                                <small className="font-bold">{abnormality.description}</small>
                                 <p className="text-zinc-400 text-sm">{checkTime(abnormality).toString()}</p>
                               </div>
-                              <small className="font-bold">{abnormality.description}</small>
                             </div>
                             {checkTime(abnormality).toString().includes("phút") ||
                               (checkTime(abnormality).toString().includes("giờ") && <GoDotFill className="text-blue-500" />)}
