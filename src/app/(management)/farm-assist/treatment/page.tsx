@@ -291,6 +291,7 @@ const Treatment = () => {
                                 <p className="my-2">{abnormality.title}</p>
                                 <p className="text-zinc-400 text-sm">{checkTime(abnormality).toString()}</p>
                               </div>
+                              <small className="font-bold">{abnormality.description}</small>
                             </div>
                             {checkTime(abnormality).toString().includes("phút") ||
                               (checkTime(abnormality).toString().includes("giờ") && <GoDotFill className="text-blue-500" />)}
@@ -535,7 +536,7 @@ const Treatment = () => {
                         <div className="col-span-12 flex flex-col items-center">
                           <CiStickyNote className="text-4xl" />
                           <p className="text-md font-light">Mô tả</p>
-                          <p className="text-lg">{selectedAbnormality.description}</p>
+                          <p className="text-lg font-bold">{selectedAbnormality.description}</p>
                         </div>
                         <div className="col-span-12 flex flex-col items-center">
                           <Image width={300} src={selectedAbnormality.imageUrl} alt="abnormality" sizes="4xl" />

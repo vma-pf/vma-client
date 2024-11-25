@@ -127,6 +127,19 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Chưa bắt đầu":
+        return "default";
+      case "Đang diễn ra":
+        return "warning";
+      case "Đã kết thúc":
+        return "success";
+      default:
+          return "default";
+      }
+  };
+
   const renderCell = React.useCallback((pig: HerdInfo, columnKey: React.Key) => {
     const cellValue = pig[columnKey as keyof HerdInfo];
 
@@ -135,11 +148,11 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
         return (
           <Chip
             className="capitalize"
-            color={statusColorMap[pig.status as keyof typeof statusColorMap] as "success" | "danger" | "warning" | "default" | "primary" | "secondary" | undefined}
+            color={getStatusColor(cellValue as string)} 
             size="sm"
             variant="flat"
           >
-            {cellValue === 0 ? "Chưa bắt đầu" : cellValue === 1 ? "Đang diến ra" : "Đã kết thúc"}
+            {cellValue}
           </Chip>
         );
       case "startDate":
