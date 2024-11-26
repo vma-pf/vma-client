@@ -43,7 +43,7 @@ const Home = () => {
   const onSubmit = async() => {
     const request = {
       cageId: selectedCage?.id,
-      content: selectedAbnormalities.join(", "),
+      content: selectedAbnormalities.join("; "),
       image: selectedFile as Blob
     }
     const res = await notificationService.sendWariningAI(request);
