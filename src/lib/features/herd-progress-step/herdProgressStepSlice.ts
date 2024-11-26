@@ -10,7 +10,7 @@ export const initialState: any = {
   herdProgressSteps: [
     {
       id: 1,
-      title: "Tạo chuồng heo",
+      title: "Chuẩn bị chuồng trại",
       status: "not_yet",
       isCurrentTab: true,
     },
