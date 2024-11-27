@@ -32,20 +32,25 @@ const DetailPlan = ({
   const { toast } = useToast();
   const changeStatusRequest = async () => {
     try {
+      let isSuccess = true;
       medicineList?.forEach(async (medicine) => {
-        const res: ResponseObject<any> = await medicineRequestService.changeStatusRequest(medicine.id);
+        const res: ResponseObject<any> = await medicineRequestService.changeStatusRequestEach(medicine.id);
         if (res.isSuccess) {
-          toast({
-            title: "Đã yêu cầu xuất thuốc",
-            variant: "success",
-          });
-          onClose();
         } else {
+          isSuccess = false;
           console.log(res.errorMessage);
           toast({
             title: res.errorMessage || "Yêu cầu xuất thuốc thất bại",
             variant: "destructive",
           });
+          return;
+        }
+        if (isSuccess) {
+          toast({
+            title: "Yêu cầu xuất thuốc thành công",
+            variant: "success",
+          });
+          onClose();
         }
       });
     } catch (error) {
@@ -73,7 +78,7 @@ const DetailPlan = ({
               <div className="col-span-6 flex flex-col items-center">
                 <CiClock2 className="text-5xl" />
                 <p className="text-md font-light">Thời gian</p>
-                <p className="text-lg">{selectedTreatment?.timeSpan}  ngày</p>
+                <p className="text-lg">{selectedTreatment?.timeSpan} ngày</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
                 <CiCalendar className="text-5xl" />

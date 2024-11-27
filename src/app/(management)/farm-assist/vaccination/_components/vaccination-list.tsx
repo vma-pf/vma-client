@@ -8,7 +8,7 @@ import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
-  { status: "Đang diễn ra", color: "text-sky-500" },
+  { status: "Đang thực hiện", color: "text-sky-500" },
   { status: "Chưa bắt đầu", color: "text-warning" },
   { status: "Đã hủy", color: "text-danger" },
 ];
@@ -111,7 +111,7 @@ const VaccinationList = ({ setSelectedVaccination }: { setSelectedVaccination: a
         {vaccinationList.map((data: VaccinationData) => (
           <TableRow key={data.id}>
             <TableCell>{data.title}</TableCell>
-            <TableCell>{data.herdId}</TableCell>
+            <TableCell>{data.herdCode}</TableCell>
             <TableCell>{dateTimeConverter(data.startDate)}</TableCell>
             <TableCell>{dateTimeConverter(data.expectedEndDate)}</TableCell>
             <TableCell>

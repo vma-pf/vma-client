@@ -235,7 +235,7 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
     <Modal isOpen={isOpen} onClose={onClose} size="4xl">
       <ModalContent>
         <ModalHeader>
-          <p className="text-2xl font-bold">Danh sách các lô của thuốc {medicine?.name || ""}</p>
+          <p className="text-2xl font-bold">Danh sách các đợt nhập của thuốc {medicine?.name || ""}</p>
         </ModalHeader>
         <ModalBody>
           <Table

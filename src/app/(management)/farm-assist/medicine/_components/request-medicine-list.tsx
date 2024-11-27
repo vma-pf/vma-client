@@ -417,9 +417,9 @@ const RequestMedicineList = () => {
 
   return (
     <div>
-      <div className="mb-3 flex justify-between items-center gap-x-10">
+      <div className="mb-3 flex justify-between gap-x-10">
         <div className="w-1/2">
-          <div className="p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+          <div className="h-full p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
             <p className="text-xl mb-2 font-semibold">Thuốc mới</p>
             {filterNewMedicine().length <= 0 ? (
               <p>Không có thuốc mới</p>
@@ -522,7 +522,7 @@ const RequestMedicineList = () => {
                 {selectedMedicine?.newMedicineName && !selectedMedicine?.medicineName && (
                   <p className="text-lg">
                     Thuốc này vẫn chưa có trong kho. <br />
-                    Hãy tạo lô thuốc mới rồi tiếp tục.
+                    Hãy tạo đợt nhập thuốc mới rồi tiếp tục.
                   </p>
                 )}
                 {/* {selectedMedicine?.medicineName && (

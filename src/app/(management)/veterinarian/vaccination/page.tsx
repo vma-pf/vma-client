@@ -20,10 +20,12 @@ import { FaCheckCircle } from "react-icons/fa";
 import { IoMdCloseCircle } from "react-icons/io";
 import { GrStatusGoodSmall } from "react-icons/gr";
 import ChangeVaccinationPlan from "./_components/_modals/change-vaccination-plan";
+import { Filter } from "lucide-react";
+import { setHours } from "date-fns";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
-  { status: "Đang diễn ra", color: "text-sky-500" },
+  { status: "Đang thực hiện", color: "text-sky-500" },
   { status: "Chưa bắt đầu", color: "text-warning" },
   { status: "Đã hủy", color: "text-danger" },
 ];
@@ -63,12 +65,12 @@ const Vaccination = () => {
   const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(new Set<string>());
   const [vaccinationData, setVaccinationData] = React.useState<VaccinationData | undefined>();
   const [herds, setHerds] = React.useState<HerdInfo[]>([]);
-  const [filterStatus, setFilterStatus] = React.useState("not-done");
+  const [filterStatus, setFilterStatus] = React.useState("all");
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
   const { isOpen: isOpenChangeVaccinationPlanModal, onOpen: onOpenChangeVaccinationPlanModal, onClose: onCloseChangeVaccinationPlanModal } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
-  const [selectedVaccination, setSelectedVaccination] = React.useState<VaccinationStageProps>();
+  const [selectedVaccination, setSelectedVaccination] = React.useState<VaccinationStageProps | undefined>();
 
   const filterValue = React.useMemo(() => {
     if (filterStatus === "all") {
@@ -194,10 +196,6 @@ const Vaccination = () => {
                     </div>
                     <p className="text-lg mt-3">{vaccinationData.description}</p>
                     <div className="flex justify-between">
-                      <p className="text-md mt-3">Đàn:</p>
-                      <p className="text-lg mt-3 font-semibold">{vaccinationData.herdId}</p>
-                    </div>
-                    <div className="flex justify-between">
                       <p className="text-md mt-3">Ngày bắt đầu</p>
                       <p className="text-md mt-3">Ngày kết thúc (dự kiến)</p>
                     </div>
@@ -283,7 +281,7 @@ const Vaccination = () => {
                     </Button>
                     <Dropdown>
                       <DropdownTrigger>
-                        <Button variant="bordered" className="capitalize">
+                        <Button variant="bordered" color="primary" className="capitalize" startContent={<Filter size={20} />}>
                           {filterValue}
                         </Button>
                       </DropdownTrigger>
@@ -354,7 +352,9 @@ const Vaccination = () => {
                                 color="primary"
                                 endContent={<CiEdit size={20} />}
                                 isDisabled={
-                                  stage.isDone || stage.applyStageTime > new Date().toISOString() || medicineList.some((medicine) => medicine.status !== "Đã yêu cầu")
+                                  stage.isDone ||
+                                  stage.applyStageTime > new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toISOString() ||
+                                  medicineList.some((medicine) => medicine.status !== "Đã yêu cầu")
                                 }
                                 onPress={() => {
                                   setSelectedVaccination(stage);
@@ -377,7 +377,7 @@ const Vaccination = () => {
                     isOpen={isOpenUpdate}
                     onClose={onCloseUpdate}
                     selectedVaccination={selectedVaccination}
-                    setSelectedVaccination={setSelectedVaccination}
+                    setSelectedVaccinationId={setSelectedVaccinationId}
                   />
                 )}
                 {isOpenChangeVaccinationPlanModal && <ChangeVaccinationPlan isOpen={isOpenChangeVaccinationPlanModal} onClose={onCloseChangeVaccinationPlanModal} />}

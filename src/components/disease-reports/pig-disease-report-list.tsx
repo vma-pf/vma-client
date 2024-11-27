@@ -185,11 +185,7 @@ const PigDiseaseReportList = ({ pigId }: { pigId: string }) => {
 
     switch (columnKey) {
       case "createdAt":
-        return (
-          <div>
-            {dateTimeConverter(cellValue.toString())}
-          </div>
-        )
+        return <div>{dateTimeConverter(cellValue.toString())}</div>;
       default:
         return cellValue?.toString();
     }
@@ -208,10 +204,9 @@ const PigDiseaseReportList = ({ pigId }: { pigId: string }) => {
     <Table
       color="primary"
       classNames={{
-        wrapper: "max-h-[400px] overflow-auto",
+        wrapper: "max-h-[500px] overflow-auto",
       }}
       selectionMode="single"
-      isHeaderSticky
       topContent={topContent}
       bottomContent={bottomContent}
       sortDescriptor={sortDescriptor}

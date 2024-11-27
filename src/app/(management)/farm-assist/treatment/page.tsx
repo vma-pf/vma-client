@@ -53,7 +53,7 @@ import { abnormalityService } from "@oursrc/lib/services/abnormalityService";
 import { GiCage } from "react-icons/gi";
 import { BsArrowReturnRight } from "react-icons/bs";
 import { Tooltip } from "recharts";
-import { Layers3, Table } from "lucide-react";
+import { Filter, Layers3, Table } from "lucide-react";
 import TreatmentGuideGridList from "../../veterinarian/treatment/_components/treatment-guide-grid-list";
 import TreatmentGuideList from "../../veterinarian/treatment/_components/treatment-guide-list";
 import CommonDiseaseGridList from "../../veterinarian/treatment/_components/common-disease-grid-list";
@@ -81,7 +81,7 @@ const Treatment = () => {
   const [abnormalities, setAbnormalities] = React.useState<Abnormality[]>([]);
   const [selectedAbnormality, setSelectedAbnormality] = React.useState<Abnormality>();
   const [commonDiseases, setCommonDiseases] = React.useState<CommonDisease[]>([]);
-  const [filterStatus, setFilterStatus] = React.useState("not-done");
+  const [filterStatus, setFilterStatus] = React.useState("all");
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
@@ -444,7 +444,7 @@ const Treatment = () => {
                       <p className="text-xl font-semibold">Các giai đoạn điều trị</p>
                       <Dropdown>
                         <DropdownTrigger>
-                          <Button variant="bordered" className="capitalize">
+                          <Button variant="bordered" color="primary" className="capitalize" startContent={<Filter size={20} />}>
                             {filterValue}
                           </Button>
                         </DropdownTrigger>

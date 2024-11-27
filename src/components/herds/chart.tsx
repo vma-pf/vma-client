@@ -10,25 +10,20 @@ const Chart = ({ data }: { data: { numberOfPigsAlive: number; numberOfPigsDead: 
   //   { status: "dead", pigs: 5, fill: "#059669" },
   // ];
   const chartData = [
-    { status: "healthy", pigs: data.numberOfPigsHealthNormal, fill: "#6ee7b7" },
-    { status: "sick", pigs: data.numberOfPigsHealthSick, fill: "#10b981" },
-    { status: "dead", pigs: data.numberOfPigsDead, fill: "#059669" },
+    { status: "alive", pigs: data.numberOfPigsAlive, fill: "#6ee7b7" },
+    { status: "dead", pigs: data.numberOfPigsDead, fill: "#ef4444" },
   ];
   const chartConfig = {
     pigs: {
       label: "Số heo",
     },
-    healthy: {
-      label: "Khỏe mạnh",
+    alive: {
+      label: "Còn sống",
       color: "#6ee7b7",
-    },
-    sick: {
-      label: "Bệnh",
-      color: "#10b981",
     },
     dead: {
       label: "Chết",
-      color: "#059669",
+      color: "#ef4444",
     },
   } satisfies ChartConfig;
   return (

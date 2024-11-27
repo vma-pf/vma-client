@@ -104,7 +104,7 @@ const NewBatch = () => {
     try {
       if (isFormFilled()) {
         toast({
-          title: "Vui lòng điền đầy đủ thông tin cho lô thuốc",
+          title: "Vui lòng điền đầy đủ thông tin cho đợt nhập thuốc",
           variant: "destructive",
         });
         return;
@@ -123,7 +123,7 @@ const NewBatch = () => {
       console.log(response);
       if (response.isSuccess) {
         toast({
-          title: "Tạo lô mới thành công",
+          title: "Tạo đợt nhập mới thành công",
           variant: "success",
         });
         setIsDoneAll(true);
@@ -131,7 +131,7 @@ const NewBatch = () => {
       } else {
         console.log(response?.errorMessage);
         toast({
-          title: "Tạo lô mới thất bại",
+          title: "Tạo đợt nhập mới thất bại",
           variant: "destructive",
         });
       }
@@ -228,7 +228,7 @@ const NewBatch = () => {
           </div>
           <p className="text-lg mb-3">Hình ảnh hóa đơn</p>
           <AttachMedia fileId="1" selectedFile={image} setSelectedFile={setImage} />
-          <p className="text-xl font-semibold mb-3">Lô thuốc</p>
+          <p className="text-xl font-semibold mb-3">Danh sách các danh mục thuốc cần nhập</p>
           {batchList.map((batch) => (
             <div key={batch.id} className="flex justify-between items-center">
               <div className="p-3 my-3 mx-4 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg w-full">
@@ -313,7 +313,7 @@ const NewBatch = () => {
               variant="solid"
               onPress={() => setBatchList([...batchList, { id: uuidv4(), medicineId: null, invoiceId: null, quantity: null, expiredAt: null }])}
             >
-              Thêm lô
+              Thêm danh mục thuốc
             </Button>
           </div>
         </div>
@@ -456,7 +456,7 @@ const NewBatch = () => {
         </div> */}
         <div className="flex justify-end">
           <Button color="primary" type="submit" variant="solid" size="lg" isDisabled={isFormFilled() || isDoneAll} isLoading={loading}>
-            Tạo lô mới
+            Tạo đợt nhập thuốc mới
           </Button>
         </div>
       </form>

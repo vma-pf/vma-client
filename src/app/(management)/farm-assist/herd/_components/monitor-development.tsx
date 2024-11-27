@@ -1,5 +1,5 @@
 "use client";
-import { Button, Input } from "@nextui-org/react";
+import { Button, Input, Skeleton } from "@nextui-org/react";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { Cage } from "@oursrc/lib/models/cage";
 import { Pig } from "@oursrc/lib/models/pig";
@@ -28,6 +28,7 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
   const weight = watch("weight");
   const [cages, setCages] = React.useState<Cage[]>([]);
   const [selectedCage, setSelectedCage] = React.useState<Cage | undefined>();
+  const [isLoading, setIsLoading] = React.useState(false);
   const [isDoneAll, setIsDoneAll] = React.useState(false);
 
   const handleHeightChange = (event: string) => {
@@ -107,6 +108,7 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
   };
   const fetchCages = async () => {
     try {
+      setIsLoading(true);
       const res: ResponseObjectList<Cage> = await cageService.getCages(1, 500);
       if (res.isSuccess) {
         setCages(res.data.data);
@@ -116,6 +118,8 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
   React.useEffect(() => {
@@ -196,20 +200,28 @@ const MonitorDevelopment = ({ setIsOpen, pigInfo }: { setIsOpen: React.Dispatch<
         />
         <p className="text-xl mt-2 font-semibold">Danh sách chuồng</p>
         <div className="my-2 grid grid-cols-3">
-          {cages.map((cage) => (
-            <div
-              className={`m-2 border-2 rounded-lg p-2 ${
-                cage.availableQuantity && cage.availableQuantity >= cage.capacity ? "bg-gray-200 cursor-not-allowed" : "cursor-pointer"
-              } ${selectedCage?.id === cage.id ? "bg-emerald-200" : ""}`}
-              key={cage.id}
-              onClick={() => handleSelectCage(cage)}
-            >
-              <p className="text-lg">Chuồng: {cage.code}</p>
-              <p className="text-lg">
-                Sức chứa: {cage.availableQuantity}/{cage.capacity}
-              </p>
-            </div>
-          ))}
+          {isLoading
+            ? [...Array(3)].map((_, idx) => (
+                <div key={idx} className="m-2 border-2 rounded-lg">
+                  <Skeleton className="rounded-lg">
+                    <div className="h-20"></div>
+                  </Skeleton>
+                </div>
+              ))
+            : cages.map((cage) => (
+                <div
+                  className={`m-2 border-2 rounded-lg p-2 ${
+                    cage.availableQuantity && cage.availableQuantity >= cage.capacity ? "bg-gray-200 cursor-not-allowed" : "cursor-pointer"
+                  } ${selectedCage?.id === cage.id ? "bg-emerald-200" : ""}`}
+                  key={cage.id}
+                  onClick={() => handleSelectCage(cage)}
+                >
+                  <p className="text-lg">Chuồng: {cage.code}</p>
+                  <p className="text-lg">
+                    Sức chứa: {cage.availableQuantity}/{cage.capacity}
+                  </p>
+                </div>
+              ))}
         </div>
         <Button color="primary" type="submit" isDisabled={height && width && weight && !errors.note && selectedCage && !isDoneAll ? false : true} isLoading={loading}>
           Lưu

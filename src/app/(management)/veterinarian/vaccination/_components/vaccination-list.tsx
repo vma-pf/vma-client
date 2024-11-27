@@ -8,7 +8,7 @@ import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
-  { status: "Đang diễn ra", color: "text-sky-500" },
+  { status: "Đang thực hiện", color: "text-sky-500" },
   { status: "Chưa bắt đầu", color: "text-warning" },
   { status: "Đã hủy", color: "text-danger" },
 ];
@@ -88,16 +88,13 @@ const VaccinationList = ({ selectedVaccination, setSelectedVaccination }: { sele
       sortDescriptor={sortDescriptor}
       onSortChange={setSortDescriptor}
       //   align="center"
-      // selectedKeys={selectedKeys}
+      selectedKeys={selectedVaccination}
       onSelectionChange={setSelectedVaccination}
       aria-label="Example static collection table"
     >
       <TableHeader>
         <TableColumn allowsSorting className="text-lg">
           Tên lịch
-        </TableColumn>
-        <TableColumn allowsSorting className="text-lg">
-          Đàn
         </TableColumn>
         <TableColumn allowsSorting className="text-lg">
           Ngày bắt đầu
@@ -113,7 +110,6 @@ const VaccinationList = ({ selectedVaccination, setSelectedVaccination }: { sele
         {vaccinationList.map((data: VaccinationData) => (
           <TableRow key={data.id}>
             <TableCell>{data.title}</TableCell>
-            <TableCell>{data.herdId}</TableCell>
             <TableCell>{dateTimeConverter(data.startDate)}</TableCell>
             <TableCell>{dateTimeConverter(data.expectedEndDate)}</TableCell>
             <TableCell>

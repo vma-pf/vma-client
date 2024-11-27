@@ -20,7 +20,7 @@ const Medicine = () => {
             router.push("/farm-assist/medicine/new-batch");
           }}
         >
-          Tạo lô mới
+          Tạo đợt nhập mới
         </Button>
       </div>
       <Tabs size="lg" color="primary" variant="solid" defaultSelectedKey="1">

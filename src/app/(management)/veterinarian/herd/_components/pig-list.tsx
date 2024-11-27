@@ -40,7 +40,7 @@ const statusColorMap = [
   { healthStatus: "Chết", color: "danger" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["breed", "cageCode", "pigCode", "weight", "height", "width", "vaccinationDate", "healthStatus", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["breed", "cageCode", "pigCode", "weight", "height", "width", "healthStatus", "actions"];
 
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);

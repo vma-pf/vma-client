@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Selection, SortDescriptor, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
 import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { dateTimeConverter } from "@oursrc/lib/utils";
@@ -9,11 +9,7 @@ const statusMapColor = [
   { name: "red", value: 0 },
   { name: "green", value: 1 },
 ];
-const statusMap = [
-  { name: "Chưa bắt đầu", value: 0 },
-  { name: "Đã hoàn thành", value: 1 },
-];
-const   PigVaccinationStageList = ({stages}: {stages: VaccinationStageProps[] | []}) => {
+const PigVaccinationStageList = ({ stages }: { stages: VaccinationStageProps[] | [] }) => {
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "title",
     direction: "ascending",
@@ -27,8 +23,8 @@ const   PigVaccinationStageList = ({stages}: {stages: VaccinationStageProps[] | 
   const hasSearchFilter = filterValue.length > 0;
 
   React.useEffect(() => {
-    setVaccinationStageList(stages)
-  }, [stages])
+    setVaccinationStageList(stages);
+  }, [stages]);
 
   const filteredItems = React.useMemo(() => {
     let filteredVaccination: VaccinationStageProps[] = [...vaccinationStageList];
@@ -36,9 +32,9 @@ const   PigVaccinationStageList = ({stages}: {stages: VaccinationStageProps[] | 
     if (hasSearchFilter) {
       filteredVaccination = filteredVaccination.filter((vaccination) => vaccination.title.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusMap.length) {
-      filteredVaccination = filteredVaccination//.filter((vaccination) => Array.from(statusFilter).includes(vaccination.applyStageTime as number));
-    }
+    // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusMap.length) {
+    //   filteredVaccination = filteredVaccination//.filter((vaccination) => Array.from(statusFilter).includes(vaccination.applyStageTime as number));
+    // }
 
     return filteredVaccination;
   }, [vaccinationStageList, filterValue, statusFilter]);
@@ -64,9 +60,8 @@ const   PigVaccinationStageList = ({stages}: {stages: VaccinationStageProps[] | 
       <Table
         color="primary"
         classNames={{
-          wrapper: "max-h-[250px] overflow-auto",
+          wrapper: "max-h-[600px] overflow-auto",
         }}
-        isHeaderSticky
       >
         <TableHeader>
           <TableColumn allowsSorting className="text-md">
@@ -82,16 +77,13 @@ const   PigVaccinationStageList = ({stages}: {stages: VaccinationStageProps[] | 
             Các bước cần thực hiện
           </TableColumn>
         </TableHeader>
-        <TableBody
-          emptyContent={"Không có kết quả"}
-          items={sortedItems}
-        >
+        <TableBody emptyContent={"Không có kết quả"} items={sortedItems}>
           {vaccinationStageList.map((data: VaccinationStageProps) => (
             <TableRow key={data.id}>
               <TableCell>{data.title}</TableCell>
               <TableCell>{dateTimeConverter(data.applyStageTime)}</TableCell>
               <TableCell>{data.timeSpan}</TableCell>
-              <TableCell>{pluck('description', data.vaccinationToDos).join('</br>')}</TableCell>
+              <TableCell>{pluck("description", data.vaccinationToDos).join("</br>")}</TableCell>
               {/* <TableCell>
                 <p
                   className={`text-${

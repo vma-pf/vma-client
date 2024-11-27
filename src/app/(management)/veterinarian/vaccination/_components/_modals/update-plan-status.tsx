@@ -26,12 +26,12 @@ const UpdatePlanStatus = ({
   isOpen,
   onClose,
   selectedVaccination,
-  setSelectedVaccination,
+  setSelectedVaccinationId,
 }: {
   isOpen: boolean;
   onClose: () => void;
   selectedVaccination: VaccinationStageProps;
-  setSelectedVaccination: React.Dispatch<React.SetStateAction<VaccinationStageProps | undefined>>;
+  setSelectedVaccinationId: any;
 }) => {
   const { toast } = useToast();
   const [selectedPigs, setSelectedPigs] = React.useState<VaccinationPig[]>([]);
@@ -49,7 +49,7 @@ const UpdatePlanStatus = ({
           variant: "success",
         });
         onClose();
-        setSelectedVaccination(undefined);
+        setSelectedVaccinationId("");
       } else {
         toast({
           title: res.errorMessage || "Câp nhật trạng thái lịch trình tiêm phòng thất bại",

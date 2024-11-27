@@ -49,7 +49,7 @@ const statusMap = [
   { name: "Đã hủy", value: 3 },
 ];
 
-const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, setSelectedTreatment: any }) => {
+const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string; setSelectedTreatment: any }) => {
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "title",
     direction: "ascending",
@@ -204,10 +204,9 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string, 
     <Table
       color="primary"
       classNames={{
-        wrapper: "max-h-[400px] overflow-auto",
+        wrapper: "max-h-[600px] overflow-auto",
       }}
       selectionMode="single"
-      isHeaderSticky
       topContent={topContent}
       bottomContent={bottomContent}
       sortDescriptor={sortDescriptor}

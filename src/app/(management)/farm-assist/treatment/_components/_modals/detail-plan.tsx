@@ -32,22 +32,20 @@ const DetailPlan = ({
   const { toast } = useToast();
   const changeStatusRequest = async () => {
     try {
-      medicineList?.forEach(async (medicine) => {
-        const res: ResponseObject<any> = await medicineRequestService.changeStatusRequest(medicine.id);
-        if (res.isSuccess) {
-          toast({
-            title: "Đã yêu cầu xuất thuốc",
-            variant: "success",
-          });
-          onClose();
-        } else {
-          console.log(res.errorMessage);
-          toast({
-            title: res.errorMessage || "Yêu cầu xuất thuốc thất bại",
-            variant: "destructive",
-          });
-        }
-      });
+      const res: ResponseObject<any> = await medicineRequestService.changeStatusRequest(medicineList?.map((medicine) => medicine.id));
+      if (res.isSuccess) {
+        toast({
+          title: "Đã yêu cầu xuất thuốc",
+          variant: "success",
+        });
+        onClose();
+      } else {
+        console.log(res.errorMessage);
+        toast({
+          title: res.errorMessage || "Yêu cầu xuất thuốc thất bại",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.log(error);
       toast({
@@ -110,11 +108,11 @@ const DetailPlan = ({
             </div>
           </div>
         </ModalBody>
-        <ModalFooter>
+        {/* <ModalFooter>
           <Button variant="solid" color="primary" isDisabled={medicineList?.every((medicine) => medicine.status !== "Chờ xử lý")} onClick={() => changeStatusRequest()}>
             Xuất thuốc
           </Button>
-        </ModalFooter>
+        </ModalFooter> */}
       </ModalContent>
     </Modal>
   );

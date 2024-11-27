@@ -7,7 +7,6 @@ const columns = [
   { name: "Chiều rộng", uid: "width", sortable: true },
   { name: "Tình trạng", uid: "healthStatus", sortable: true },
   { name: "Cập nhật lần cuối", uid: "lastUpdatedAt", sortable: true },
-  { name: "Ngày tiêm vaccin", uid: "vaccinationDate", sortable: true },
   { name: "Mã heo", uid: "pigCode", sortable: true },
   { name: "Mã chuồng", uid: "cageCode", sortable: true },
   { name: "Hành động", uid: "actions" },

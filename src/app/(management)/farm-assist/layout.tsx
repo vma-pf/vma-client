@@ -20,7 +20,7 @@ const FarmerAssistantLayout = ({
     "/herd": projectName + " - " + "Quản lý đàn heo",
     "/herd/create": projectName + " - " + "Tạo đàn mới",
     "/medicine": projectName + " - " + "Quản lý thuốc",
-    "/medicine/new-batch": projectName + " - " + "Tạo lô mới",
+    "/medicine/new-batch": projectName + " - " + "Tạo đợt nhập thuốc",
     "/vaccination": projectName + " - " + "Lịch tiêm phòng",
     "/treatment": projectName + " - " + "Kế hoạch điều trị",
     "/cage": projectName + " - " + "Quản lý chuồng",

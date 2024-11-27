@@ -1,4 +1,4 @@
-import { Modal, ModalBody, ModalContent, ModalHeader, Tab, Tabs } from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Tab, Tabs } from "@nextui-org/react";
 import PigTreatmentPlanList from "@oursrc/components/treatment/pig-treatment-plan-list";
 import PigVaccinationList from "@oursrc/components/vaccination/pig-vaccination-list";
 import PigVaccinationStageList from "@oursrc/components/vaccination/pig-vaccination-stage-list";
@@ -92,6 +92,7 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
             </Tab>
           </Tabs>
         </ModalBody>
+        <ModalFooter></ModalFooter>
       </ModalContent>
     </Modal>
   );

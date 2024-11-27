@@ -65,7 +65,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);
   const [openBy, setOpenBy] = React.useState<"herd" | "cage" | "area">("herd");
   const [templateName, setTemplateName] = React.useState("");
-  const [templates, setTemplates] = React.useState<PlanTemplate[]>();
+  const [templates, setTemplates] = React.useState<PlanTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = React.useState<PlanTemplate | undefined>();
 
   const [stages, setStages] = React.useState<VaccinationStageProps[]>([
@@ -417,21 +417,18 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
               <div className="w-2/5 mr-2 flex justify-end">
                 <Dropdown>
                   <DropdownTrigger>
-                    <Button variant="ghost" color="primary" endContent={<ChevronDown size={20} />}>
-                      Chọn mẫu tiêm phòng
+                    <Button color="primary" variant="ghost" endContent={<ChevronDown size={20} />}>
+                      {selectedTemplate ? selectedTemplate.name : "Chọn mẫu"}
                     </Button>
                   </DropdownTrigger>
                   <DropdownMenu
                     selectionMode="single"
+                    selectedKeys={selectedTemplate ? [selectedTemplate.id] : []}
+                    onSelectionChange={(keys) => handleTemplateChanges(keys)}
                     items={templates}
-                    selectedKeys={selectedTemplate && selectedTemplate.id ? new Set([selectedTemplate?.id]) : new Set<string>()}
-                    onSelectionChange={(keys: Selection) => handleTemplateChanges(keys)}
+                    emptyContent="Không có mẫu"
                   >
-                    {(item) => (
-                      <DropdownItem key={item.id} description={item.name}>
-                        <p className="font-semibold">{item.name}</p>
-                      </DropdownItem>
-                    )}
+                    {(item) => <DropdownItem key={item.id}>{item.name}</DropdownItem>}
                   </DropdownMenu>
                 </Dropdown>
               </div>

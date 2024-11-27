@@ -112,12 +112,12 @@ const AssignTag = () => {
     }
   }, [isOpen]);
 
+  // React.useEffect(() => {
+  // }, []);
+
   React.useEffect(() => {
     getAllPigs();
     getCages();
-  }, []);
-
-  React.useEffect(() => {
     const accessToken = localStorage.getItem("accessToken")?.toString();
     const connect = new HubConnectionBuilder()
       .withUrl(`${SERVERURL}/hubs/create-herd-sensor-hub`, {
@@ -138,28 +138,30 @@ const AssignTag = () => {
       .then(() => {
         console.log("Connected to Sensor Hub");
         connect.on("ConsumeSensorData", (data: SensorData) => {
-          // console.log("ConsumeSensorData", data);
           data && setPigInfo(data);
           onOpen();
-          // const newMessages = [...messages];
-          // newMessages.push(message);
-          // setMessages(newMessages);
         });
         connect.on("ForceDisconnect", () => {
           onIsErrorOpen();
           setError(true);
-          connect.off("ConsumeSensorData");
-          connection?.stop();
         });
-        // connect.invoke("RetrieveMessageHistory");
       })
 
       .catch((err) => console.error("Error while connecting to SignalR Hub:", err));
 
     return () => {
-      if (connection) {
-        connection.off("ReceiveMessage");
-      }
+      connect.stop().then(() => {
+        console.log("Disconnected from Sensor Hub");
+      });
+      // const cleanup = async () => {
+      //   if (connect.state !== "Disconnected") {
+      //     console.log("Disconnecting from Sensor Hub");
+      //     await connect.stop().then(() => {
+      //       console.log("Disconnected from Sensor Hub");
+      //     });
+      //   }
+      // };
+      // cleanup();
     };
   }, []);
   return (

@@ -16,6 +16,7 @@ import { HiOutlineDocumentReport } from "react-icons/hi";
 import { TbMedicineSyrup } from "react-icons/tb";
 import DetailPlan from "./_modals/detail-plan";
 import UpdatePlanStatus from "./_modals/update-plan-status";
+import { Filter } from "lucide-react";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
@@ -40,7 +41,7 @@ const TreatmentStages = ({
   const { toast } = useToast();
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
-  const [filterStatus, setFilterStatus] = React.useState("not-done");
+  const [filterStatus, setFilterStatus] = React.useState("all");
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
 
   const filterValue = React.useMemo(() => {
@@ -186,7 +187,7 @@ const TreatmentStages = ({
             <p className="text-xl font-semibold">Các giai đoạn điều trị</p>
             <Dropdown>
               <DropdownTrigger>
-                <Button variant="bordered" className="capitalize">
+                <Button variant="bordered" color="primary" className="capitalize" startContent={<Filter size={20} />}>
                   {filterValue}
                 </Button>
               </DropdownTrigger>
@@ -251,19 +252,22 @@ const TreatmentStages = ({
                         >
                           Xem thuốc
                         </Button>
-                        {!stage.isDone && stage.applyStageTime < new Date().toISOString() && (
-                          <Button
-                            variant="solid"
-                            color="primary"
-                            endContent={<CiEdit size={20} />}
-                            onPress={() => {
-                              setSelectedTreatment(stage);
-                              onOpenUpdate();
-                            }}
-                          >
-                            Cập nhật kết quả
-                          </Button>
-                        )}
+                        <Button
+                          variant="solid"
+                          color="primary"
+                          endContent={<CiEdit size={20} />}
+                          onPress={() => {
+                            setSelectedTreatment(stage);
+                            onOpenUpdate();
+                          }}
+                          isDisabled={
+                            stage.isDone ||
+                            stage.applyStageTime > new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toISOString() ||
+                            medicineList.some((medicine) => medicine.status !== "Đã yêu cầu")
+                          }
+                        >
+                          Cập nhật kết quả
+                        </Button>
                       </div>
                     </div>
                   </div>

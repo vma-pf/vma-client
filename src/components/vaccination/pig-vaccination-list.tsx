@@ -6,20 +6,14 @@ import { pigService } from "@oursrc/lib/services/pigService";
 import { dateTimeConverter } from "@oursrc/lib/utils";
 import React, { useMemo } from "react";
 
-const statusMapColor = [
-  { name: "red", value: 0 },
-  { name: "blue", value: 1 },
-  { name: "green", value: 2 },
-  { name: "red", value: 3 },
-];
-const statusMap = [
-  { name: "Chưa bắt đầu", value: 0 },
-  { name: "Đang thực hiện", value: 1 },
-  { name: "Đã hoàn thành", value: 2 },
-  { name: "Đã hủy", value: 3 },
+const statusColorMap = [
+  { status: "Đã hoàn thành", color: "text-primary" },
+  { status: "Đang thực hiện", color: "text-sky-500" },
+  { status: "Chưa bắt đầu", color: "text-warning" },
+  { status: "Đã hủy", color: "text-danger" },
 ];
 
-const PigVaccinationList = ({ pigId, setCurrentStages }: { pigId: string, setCurrentStages: any }) => {
+const PigVaccinationList = ({ pigId, setCurrentStages }: { pigId: string; setCurrentStages: any }) => {
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "title",
@@ -39,9 +33,9 @@ const PigVaccinationList = ({ pigId, setCurrentStages }: { pigId: string, setCur
     if (hasSearchFilter) {
       filteredVaccination = filteredVaccination.filter((vaccination) => vaccination.title.toLowerCase().includes(filterValue.toLowerCase()));
     }
-    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusMap.length) {
-      filteredVaccination = filteredVaccination.filter((vaccination) => Array.from(statusFilter).includes(vaccination.status as number));
-    }
+    // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusMap.length) {
+    //   filteredVaccination = filteredVaccination.filter((vaccination) => Array.from(statusFilter).includes(vaccination.status as number));
+    // }
 
     return filteredVaccination;
   }, [vaccinationList, filterValue, statusFilter]);
@@ -84,18 +78,17 @@ const PigVaccinationList = ({ pigId, setCurrentStages }: { pigId: string, setCur
   }, [pigId]);
 
   React.useEffect(() => {
-    const selectedVaccinationId = Array.from(selectedKeys)[0]
-    const currentVaccinationPlan = vaccinationList.find((x: VaccinationData) => x.id === selectedVaccinationId)
-    setCurrentStages(currentVaccinationPlan?.vaccinationStages ?? [])
-  }, [selectedKeys])
+    const selectedVaccinationId = Array.from(selectedKeys)[0];
+    const currentVaccinationPlan = vaccinationList.find((x: VaccinationData) => x.id === selectedVaccinationId);
+    setCurrentStages(currentVaccinationPlan?.vaccinationStages ?? []);
+  }, [selectedKeys]);
   return (
     <Table
       color="primary"
       classNames={{
-        wrapper: "max-h-[250px] overflow-auto",
+        wrapper: "max-h-[500px] overflow-auto",
       }}
       selectionMode="single"
-      isHeaderSticky
       sortDescriptor={sortDescriptor}
       onSortChange={setSortDescriptor}
       //   align="center"
@@ -124,9 +117,7 @@ const PigVaccinationList = ({ pigId, setCurrentStages }: { pigId: string, setCur
             <TableCell>{dateTimeConverter(data.startDate)}</TableCell>
             <TableCell>{dateTimeConverter(data.expectedEndDate)}</TableCell>
             <TableCell>
-              <p className={`text-${statusMapColor.find((status) => status.value === data.status)?.name}-500 text-center`}>
-                {statusMap.find((status) => status.value === data.status)?.name}
-              </p>
+              <p className={`text-center ${statusColorMap.find((status) => status.status === String(data.status))?.color}`}>{data.status}</p>
             </TableCell>
           </TableRow>
         ))}

@@ -18,10 +18,11 @@ import DetailPlan from "./_components/_modals/detail-plan";
 import UpdatePlanStatus from "./_components/_modals/update-plan-status";
 import { FaCheckCircle } from "react-icons/fa";
 import { GrStatusGoodSmall } from "react-icons/gr";
+import { Filter } from "lucide-react";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
-  { status: "Đang diễn ra", color: "text-sky-500" },
+  { status: "Đang thực hiện", color: "text-sky-500" },
   { status: "Chưa bắt đầu", color: "text-warning" },
   { status: "Đã hủy", color: "text-danger" },
 ];
@@ -33,7 +34,7 @@ const Vaccination = () => {
   const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(new Set<string>());
   const [vaccinationData, setVaccinationData] = React.useState<VaccinationData | undefined>();
   const [herds, setHerds] = React.useState<HerdInfo[]>([]);
-  const [filterStatus, setFilterStatus] = React.useState("not-done");
+  const [filterStatus, setFilterStatus] = React.useState("all");
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
@@ -143,10 +144,6 @@ const Vaccination = () => {
                     </div>
                     <p className="text-lg mt-3">{vaccinationData.description}</p>
                     <div className="flex justify-between">
-                      <p className="text-md mt-3">Đàn:</p>
-                      <p className="text-lg mt-3 font-semibold">{vaccinationData.herdId}</p>
-                    </div>
-                    <div className="flex justify-between">
                       <p className="text-md mt-3">Ngày bắt đầu</p>
                       <p className="text-md mt-3">Ngày kết thúc (dự kiến)</p>
                     </div>
@@ -228,7 +225,7 @@ const Vaccination = () => {
                   <p className="text-xl font-semibold">Các giai đoạn tiêm phòng</p>
                   <Dropdown>
                     <DropdownTrigger>
-                      <Button variant="bordered" className="capitalize">
+                      <Button variant="bordered" color="primary" className="capitalize" startContent={<Filter size={20} />}>
                         {filterValue}
                       </Button>
                     </DropdownTrigger>
