@@ -16,6 +16,7 @@ import {
   DropdownMenu,
   DropdownItem,
   Pagination,
+  Chip,
 } from "@nextui-org/react";
 import React, { useMemo } from "react";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
@@ -184,6 +185,12 @@ const PigDiseaseReportList = ({ pigId }: { pigId: string }) => {
     const cellValue = data[columnKey as keyof DiseaseReport];
 
     switch (columnKey) {
+      case "isDone":
+        return (
+          <div>
+            <Chip color={cellValue ? "success" : "warning"}>{!cellValue ? "Đang thực hiện" : "Đã thực hiện xong"}</Chip>
+          </div>
+        );
       case "createdAt":
         return (
           <div>
