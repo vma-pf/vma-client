@@ -17,7 +17,7 @@ const CreatePlan = () => {
           title={
             <div className="flex items-center">
               <TbVaccine size={20} />
-              <span className="ml-2">Tạo lịch tiêm phòng</span>
+              <span className="ml-2 mb-2">Tạo lịch tiêm phòng</span>
             </div>
           }
         >
