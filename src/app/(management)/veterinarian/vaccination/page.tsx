@@ -152,7 +152,7 @@ const Vaccination = () => {
   return (
     <div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-        <div className="flex justify-between">
+        <div className="flex justify-between mb-2">
           <p className="text-xl mb-3">Trước tiên, hãy chọn lịch tiêm phòng</p>
           <Button
             variant="solid"
