@@ -17,11 +17,6 @@ export const LoadingStateProvider = ({
   children: React.ReactNode;
 }>) => {
   const [loading, setLoading] = React.useState(false);
-
-  React.useEffect(() => {
-    console.log("loading", loading);
-  }, [loading]);
-
   return <LoadingStateContext.Provider value={{ loading, setLoading }}>{children}</LoadingStateContext.Provider>;
 };
 

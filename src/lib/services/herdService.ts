@@ -17,4 +17,11 @@ export const herdService = {
     createHerd: (model: CreateHerdRequest) =>
         http.post<ResponseObjectList<any>>(endpoint, model),
     getHerdStatistics: (id: string) => http.get(endpoint + `/${id}/statistic`),
+    getVaccinationByHerdId: (id: string) => http.get(endpoint + `/${id}/vaccination-plans`),
+    getTreatmentPlanByHerdId: (id: string, pageIndex: number, pageSize: number) => http.get(endpoint + `/${id}/treatment-plans`, {
+        params: {
+            pageIndex: pageIndex?.toString() || "",
+            pageSize: pageSize?.toString() || "",
+        },
+    }),
 };

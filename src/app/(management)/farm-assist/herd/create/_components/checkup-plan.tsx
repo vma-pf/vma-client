@@ -1,7 +1,7 @@
 "use client";
 import { Button, Calendar, DateValue, Input, Radio, RadioGroup, cn } from "@nextui-org/react";
 import { dateArrayConverter, parseToWeekday } from "@oursrc/lib/utils";
-import { today, getLocalTimeZone, CalendarDate } from "@internationalized/date";
+import { today, getLocalTimeZone, CalendarDate, parseDate } from "@internationalized/date";
 import React from "react";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
@@ -30,13 +30,11 @@ export const CustomRadio = (props: any) => {
 };
 
 const PlanDetail: React.FC<{
-  unit: string;
   selectedDate: DateValue | null;
   setSelectedDate: React.Dispatch<React.SetStateAction<DateValue | null>>;
-  repeat: number | null;
-  setRepeat: React.Dispatch<React.SetStateAction<number | null>>;
   isDateUnavailable?: (date: DateValue) => boolean;
-}> = ({ unit, selectedDate, setSelectedDate, repeat, setRepeat, isDateUnavailable }) => {
+}> = ({ selectedDate, setSelectedDate, isDateUnavailable }) => {
+  const herdData: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "{}") || {};
   return (
     <div>
       <div className="flex gap-10 mt-4">
@@ -46,7 +44,8 @@ const PlanDetail: React.FC<{
               //   base: cn("w-[400px]"),
               gridWrapper: cn("w-[400px]"),
             }}
-            minValue={today(getLocalTimeZone())}
+            minValue={herdData.startDate ? parseDate(herdData.startDate.split("T")[0]).add({ days: 1 }) : today(getLocalTimeZone()).add({ days: 1 })}
+            maxValue={herdData.expectedEndDate ? parseDate(herdData.expectedEndDate.split("T")[0]) : today(getLocalTimeZone()).add({ years: 1 })}
             value={selectedDate}
             onChange={setSelectedDate}
             isDateUnavailable={isDateUnavailable || undefined}
@@ -58,19 +57,6 @@ const PlanDetail: React.FC<{
             </div>
           )}
         </div>
-        <Input
-          type="number"
-          label="Số lần lặp lại"
-          labelPlacement="outside"
-          min={1}
-          max={50}
-          placeholder={"Nhập số lần lặp lại"}
-          className="w-[300px]"
-          endContent={unit}
-          onKeyDown={(e) => e.preventDefault()}
-          value={repeat !== null ? repeat.toString() : ""}
-          onValueChange={(value) => setRepeat(value !== null ? parseInt(value) : null)}
-        />
       </div>
     </div>
   );
@@ -82,19 +68,19 @@ const CheckUpPlan = () => {
   const dispatch = useAppDispatch();
   const [selected, setSelected] = React.useState<string>("");
   const [selectedDate, setSelectedDate] = React.useState<DateValue | null>(null);
-  const [repeat, setRepeat] = React.useState<number | null>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isDoneAll, setIsDoneAll] = React.useState<boolean>(false);
 
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
+      const herd: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "{}") || {};
       let data: string[] = [];
       switch (selected) {
         case "1":
           const dates: DateValue[] = [];
           let date = selectedDate;
-          for (let i = 0; i < repeat!; i++) {
+          for (let i = parseDate(herd.startDate.split("T")[0]); i.compare(parseDate(herd.expectedEndDate.split("T")[0])) < 0; i = i.add({ days: 7 })) {
             dates.push(date as DateValue);
             date = date?.add({ days: 7 }) ?? null;
           }
@@ -103,7 +89,7 @@ const CheckUpPlan = () => {
         case "2":
           const dates2: DateValue[] = [];
           let date2 = selectedDate;
-          for (let i = 0; i < repeat! * 2; i++) {
+          for (let i = parseDate(herd.startDate.split("T")[0]); i.compare(parseDate(herd.expectedEndDate.split("T")[0])) < 0; i = i.add({ days: 14 })) {
             dates2.push(date2 as DateValue);
             date2 = date2?.add({ weeks: 2 }) ?? null;
           }
@@ -112,7 +98,7 @@ const CheckUpPlan = () => {
         case "3":
           const dates3: DateValue[] = [];
           let date3 = selectedDate;
-          for (let i = 0; i < repeat!; i++) {
+          for (let i = parseDate(herd.startDate.split("T")[0]); i.compare(parseDate(herd.expectedEndDate.split("T")[0])) < 0; i = i.add({ months: 1 })) {
             dates3.push(date3 as DateValue);
             date3 = date3?.add({ months: 1 }) ?? null;
           }
@@ -121,7 +107,7 @@ const CheckUpPlan = () => {
         case "4":
           const dates4: DateValue[] = [];
           let date4 = selectedDate;
-          for (let i = 0; i < repeat!; i++) {
+          for (let i = parseDate(herd.startDate.split("T")[0]); i.compare(parseDate(herd.expectedEndDate.split("T")[0])) < 0; i = i.add({ months: 3 })) {
             dates4.push(date4 as DateValue);
             date4 = date4?.add({ months: 3 }) ?? null;
           }
@@ -130,10 +116,9 @@ const CheckUpPlan = () => {
         default:
           break;
       }
-      const herd: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "{}") || {};
       const res: ResponseObject<any> = await checkupPlanService.createCheckUpPlan(herd.id, data);
-      console.log(res);
       if (res.isSuccess) {
+        setIsDoneAll(true);
         clearData();
         router.push("/farm-assist/herd");
         dispatch(setHerdProgressSteps(initialState.herdProgressSteps));
@@ -161,7 +146,6 @@ const CheckUpPlan = () => {
   const clearData = () => {
     setSelected("");
     setSelectedDate(null);
-    setRepeat(null);
     localStorage.removeItem("herdData");
     localStorage.removeItem("assignedPigs");
     localStorage.removeItem("herdProgressSteps");
@@ -176,7 +160,7 @@ const CheckUpPlan = () => {
       case "1":
         return (
           <div>
-            <PlanDetail unit="tuần" selectedDate={selectedDate} setSelectedDate={setSelectedDate} repeat={repeat} setRepeat={setRepeat} />
+            <PlanDetail selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
           </div>
         );
       case "2":
@@ -187,26 +171,19 @@ const CheckUpPlan = () => {
         }
         return (
           <div>
-            <PlanDetail
-              unit="tháng"
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              repeat={repeat}
-              setRepeat={setRepeat}
-              isDateUnavailable={isDateUnavailable}
-            />
+            <PlanDetail selectedDate={selectedDate} setSelectedDate={setSelectedDate} isDateUnavailable={isDateUnavailable} />
           </div>
         );
       case "3":
         return (
           <div>
-            <PlanDetail unit="tháng" selectedDate={selectedDate} setSelectedDate={setSelectedDate} repeat={repeat} setRepeat={setRepeat} />
+            <PlanDetail selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
           </div>
         );
       case "4":
         return (
           <div>
-            <PlanDetail unit="tháng" selectedDate={selectedDate} setSelectedDate={setSelectedDate} repeat={repeat} setRepeat={setRepeat} />
+            <PlanDetail selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
           </div>
         );
       default:
@@ -216,14 +193,13 @@ const CheckUpPlan = () => {
 
   React.useEffect(() => {
     setSelectedDate(null);
-    setRepeat(null);
   }, [selected]);
 
   return (
     <div className="container mx-auto">
       <div className="mt-3 p-4 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-3xl mb-4">Tạo kế hoạch kiểm tra sức khỏe của đàn</p>
-        <div className="flex">
+        <div className="flex justify-center gap-20">
           <RadioGroup
             onValueChange={(value: string) => {
               setSelected(value);
@@ -249,7 +225,7 @@ const CheckUpPlan = () => {
         </div>
       </div>
       <div className="flex justify-end mt-3">
-        <Button color="primary" variant="solid" isLoading={isLoading} size="lg" isDisabled={!selected || !selectedDate || !repeat || isDoneAll} onPress={handleSubmit}>
+        <Button color="primary" variant="solid" isLoading={isLoading} size="lg" isDisabled={!selected || !selectedDate || isDoneAll} onPress={handleSubmit}>
           Hoàn tất
         </Button>
       </div>

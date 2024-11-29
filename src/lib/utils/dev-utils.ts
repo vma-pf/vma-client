@@ -22,6 +22,13 @@ export const checkTime = (msg: any) => {
   return timeAgo;
 };
 
+export const calculateProgress = (startDate: string, endDate: string) => {
+  const start = new Date(startDate).getTime();
+  const end = new Date(endDate).getTime();
+  const now = new Date().getTime();
+  return ((now - start) / (end - start)) * 100;
+};
+
 export const debounce = (func: any, delay: number) => {
   let timeout: any = null;
   return (...args: any) => {

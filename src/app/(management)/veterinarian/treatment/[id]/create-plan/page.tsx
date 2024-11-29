@@ -41,7 +41,6 @@ import { useToast } from "@oursrc/hooks/use-toast";
 import CageListReadOnly from "@oursrc/components/cages/cage-list-read-only";
 import HerdListReadOnly from "@oursrc/components/herds/herd-list-read-only";
 import { Cage } from "@oursrc/lib/models/cage";
-import { Herd } from "@oursrc/lib/models/herd";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { Pig } from "@oursrc/lib/models/pig";
 import { pigService } from "@oursrc/lib/services/pigService";
@@ -63,6 +62,7 @@ import AreaListReadOnly from "@oursrc/components/areas/area-list-read-only";
 import { Area } from "@oursrc/lib/models/area";
 import { areaService } from "@oursrc/lib/services/areaService";
 import LoadingStateContext from "@oursrc/components/context/loading-state-context";
+import { HerdInfo } from "@oursrc/lib/models/herd";
 
 export type TreatmentPlanStep = {
   id: number;
@@ -90,7 +90,7 @@ const CreatePLan = ({
   const [openBy, setOpenBy] = React.useState<"herd" | "cage" | "area">("herd");
   const [diseaseReport, setDiseaseReport] = React.useState<DiseaseReport | undefined>();
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
-  const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
+  const [selectedHerds, setSelectedHerds] = React.useState<HerdInfo[]>([]);
   const [selectedAreas, setSelectedAreas] = React.useState<Area[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
   const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);

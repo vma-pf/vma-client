@@ -14,6 +14,7 @@ const LoginForm = () => {
   const { toast } = useToast();
   const [isVisible, setIsVisible] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isDoneAll, setIsDoneAll] = React.useState(false);
   const {
     register,
     handleSubmit,
@@ -27,6 +28,7 @@ const LoginForm = () => {
       setIsLoading(true);
       const res: ResponseObject<any> = await authService.login(data.username, data.password);
       if (res.isSuccess === true) {
+        setIsDoneAll(true);
         await authService.setTokenToCookie(res.data?.accessToken, res.data?.refreshToken);
         localStorage.setItem("accessToken", res.data?.accessToken);
         localStorage.setItem("refreshToken", res.data?.refreshToken);
@@ -81,7 +83,14 @@ const LoginForm = () => {
         errorMessage="Mật khẩu không được để trống"
         {...register("password", { required: true })}
       />
-      <Button className="bg-gradient-to-r from-indigo-500 to-emerald-500 w-full mt-6" variant="solid" isLoading={isLoading} size="lg" type="submit">
+      <Button
+        className="bg-gradient-to-r from-indigo-500 to-emerald-500 w-full mt-6"
+        variant="solid"
+        isLoading={isLoading}
+        size="lg"
+        type="submit"
+        isDisabled={isDoneAll}
+      >
         <p className="text-white">Đăng nhập</p>
       </Button>
     </form>

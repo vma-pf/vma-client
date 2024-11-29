@@ -128,11 +128,11 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Chưa bắt đầu":
+      case "Chưa Kết Thúc":
         return "default";
-      case "Đang diễn ra":
+      case "Đang Diễn Ra":
         return "warning";
-      case "Đã kết thúc":
+      case "Đã Kết Thúc":
         return "success";
       default:
         return "default";

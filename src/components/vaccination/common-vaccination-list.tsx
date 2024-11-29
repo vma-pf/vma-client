@@ -2,6 +2,7 @@
 import { Selection, SortDescriptor, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
 import { ResponseObject, ResponseObjectList, ResponseObjectNoPaging } from "@oursrc/lib/models/response-object";
 import { VaccinationData } from "@oursrc/lib/models/vaccination";
+import { herdService } from "@oursrc/lib/services/herdService";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { dateTimeConverter } from "@oursrc/lib/utils";
 import React, { useMemo } from "react";
@@ -13,7 +14,7 @@ const statusColorMap = [
   { status: "Đã hủy", color: "text-danger" },
 ];
 
-const PigVaccinationList = ({ pigId, setCurrentStages }: { pigId: string; setCurrentStages: any }) => {
+const CommonVaccinationList = ({ pigId, herdId, setCurrentStages }: { pigId?: string | undefined; herdId?: string | undefined; setCurrentStages: any }) => {
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "title",
@@ -60,11 +61,20 @@ const PigVaccinationList = ({ pigId, setCurrentStages }: { pigId: string; setCur
   const getAllVaccinationPlanById = async () => {
     try {
       setIsLoading(true);
-      const res: ResponseObjectNoPaging<VaccinationData> = await pigService.getVaccinationPlanByPigId(pigId);
-      if (res && res.isSuccess) {
-        setVaccinationList(res.data || []);
-      } else {
-        console.log("Error: ", res.errorMessage);
+      if (pigId) {
+        const res: ResponseObjectNoPaging<VaccinationData> = await pigService.getVaccinationPlanByPigId(pigId ?? "");
+        if (res && res.isSuccess) {
+          setVaccinationList(res.data || []);
+        } else {
+          console.log("Error: ", res.errorMessage);
+        }
+      } else if (herdId) {
+        const res: ResponseObjectNoPaging<VaccinationData> = await herdService.getVaccinationByHerdId(herdId ?? "");
+        if (res && res.isSuccess) {
+          setVaccinationList(res.data || []);
+        } else {
+          console.log("Error: ", res.errorMessage);
+        }
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -75,7 +85,7 @@ const PigVaccinationList = ({ pigId, setCurrentStages }: { pigId: string; setCur
 
   React.useEffect(() => {
     getAllVaccinationPlanById();
-  }, [pigId]);
+  }, [pigId, herdId]);
 
   React.useEffect(() => {
     const selectedVaccinationId = Array.from(selectedKeys)[0];
@@ -126,4 +136,4 @@ const PigVaccinationList = ({ pigId, setCurrentStages }: { pigId: string; setCur
   );
 };
 
-export default PigVaccinationList;
+export default CommonVaccinationList;

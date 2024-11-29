@@ -22,6 +22,7 @@ import { GrStatusGoodSmall } from "react-icons/gr";
 import ChangeVaccinationPlan from "./_components/_modals/change-vaccination-plan";
 import { Filter } from "lucide-react";
 import { setHours } from "date-fns";
+import { calculateProgress } from "@oursrc/lib/utils/dev-utils";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
@@ -105,13 +106,6 @@ const Vaccination = () => {
         title: error.message || "Có lỗi xảy ra",
       });
     }
-  };
-
-  const calculateProgress = (startDate: string, endDate: string) => {
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
-    const now = new Date().getTime();
-    return ((now - start) / (end - start)) * 100;
   };
 
   const findVaccination = async (id: string) => {

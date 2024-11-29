@@ -70,7 +70,7 @@ const ModalCommonDisease = ({
   const handleSubmitForm = async (request: any) => {
     try {
       setLoading(true);
-      request.diseaseType = Number(diseaseType || 0) ?? "";
+      request.diseaseType = Number(diseaseType || 0) - 1 ?? "";
       const response =
         context === "create"
           ? await commonDiseasesService.create(request)
@@ -103,7 +103,7 @@ const ModalCommonDisease = ({
     setValue("treatment", data?.treatment ? data?.treatment : "");
     setValue(
       "diseaseType",
-      data?.diseaseType ? (data?.diseaseType === "Bệnh nhẹ" ? 0 : data?.diseaseType === "Bệnh thường" ? 1 : data?.diseaseType === "Bệnh nguy hiểm" ? 2 : 0) : 0
+      data?.diseaseType ? (data?.diseaseType === "Bệnh nhẹ" ? 1 : data?.diseaseType === "Bệnh thường" ? 2 : data?.diseaseType === "Bệnh nguy hiểm" ? 3 : 0) : 0
     );
   }, [data, setValue]);
 
@@ -170,17 +170,16 @@ const ModalCommonDisease = ({
                       }}
                       onClose={() => setTouched(true)}
                     >
-                      <SelectItem key={0} value={0}>
+                      <SelectItem key={1} value={1}>
                         Bệnh nhẹ
                       </SelectItem>
-                      <SelectItem key={1} value={1}>
+                      <SelectItem key={2} value={2}>
                         Bệnh thường
                       </SelectItem>
-                      <SelectItem key={2} value={2}>
+                      <SelectItem key={3} value={3}>
                         Bệnh nguy hiểm
                       </SelectItem>
                     </Select>
-                    <p>{diseaseType}</p>
                   </div>
                   <div className="grid grid-cols-1">
                     <Textarea
