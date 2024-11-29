@@ -39,17 +39,5 @@ export type HerdInfo = {
     description: string;
     averageWeight: number;
     status: string;
-};
-
-export type Herd = {
-  id: string;
-  code: string;
-  breed: string;
-  totalNumber: number;
-  expectedEndDate: string;
-  actualEndDate: string;
-  startDate: string;
-  description: string;
-  averageWeight: number;
-  status: string;
+    isCheckUpToday: boolean;
 };

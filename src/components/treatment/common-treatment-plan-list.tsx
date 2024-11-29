@@ -27,6 +27,7 @@ import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService"
 import { Search } from "lucide-react";
 import { HiChevronDown } from "react-icons/hi2";
 import { pigService } from "@oursrc/lib/services/pigService";
+import { herdService } from "@oursrc/lib/services/herdService";
 
 const columns = [
   { name: "tên", uid: "title", sortable: true },
@@ -49,7 +50,7 @@ const statusMap = [
   { name: "Đã hủy", value: 3 },
 ];
 
-const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string; setSelectedTreatment: any }) => {
+const CommonTreatmentPlanList = ({ pigId, herdId, setSelectedTreatment }: { pigId?: string | undefined; herdId?: string | undefined; setSelectedTreatment: any }) => {
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "title",
     direction: "ascending",
@@ -99,15 +100,28 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string; 
   const getAllVaccinationPlan = async () => {
     try {
       setIsLoading(true);
-      const res: ResponseObjectList<TreatmentData> = await pigService.getTreatmentPlanByPigId(pigId, page, rowsPerPage);
-      if (res && res.isSuccess) {
-        setTreatmentList(res.data.data || []);
-        setPage(res.data.pageIndex);
-        setRowsPerPage(res.data.pageSize);
-        setTotalPages(res.data.totalPages);
-        setTotalRecords(res.data.totalRecords);
-      } else {
-        console.log("Error: ", res.errorMessage);
+      if (pigId) {
+        const res: ResponseObjectList<TreatmentData> = await pigService.getTreatmentPlanByPigId(pigId ?? "", page, rowsPerPage);
+        if (res && res.isSuccess) {
+          setTreatmentList(res.data.data || []);
+          setPage(res.data.pageIndex);
+          setRowsPerPage(res.data.pageSize);
+          setTotalPages(res.data.totalPages);
+          setTotalRecords(res.data.totalRecords);
+        } else {
+          console.log("Error: ", res.errorMessage);
+        }
+      } else if (herdId) {
+        const res: ResponseObjectList<TreatmentData> = await herdService.getTreatmentPlanByHerdId(herdId ?? "", page, rowsPerPage);
+        if (res && res.isSuccess) {
+          setTreatmentList(res.data.data || []);
+          setPage(res.data.pageIndex);
+          setRowsPerPage(res.data.pageSize);
+          setTotalPages(res.data.totalPages);
+          setTotalRecords(res.data.totalRecords);
+        } else {
+          console.log("Error: ", res.errorMessage);
+        }
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -234,4 +248,4 @@ const PigTreatmentPlanList = ({ pigId, setSelectedTreatment }: { pigId: string; 
   );
 };
 
-export default PigTreatmentPlanList;
+export default CommonTreatmentPlanList;

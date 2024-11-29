@@ -2,16 +2,14 @@ import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Tab, Tabs } f
 import CommonTreatmentPlanList from "@oursrc/components/treatment/common-treatment-plan-list";
 import CommonVaccinationList from "@oursrc/components/vaccination/common-vaccination-list";
 import CommonVaccinationStageList from "@oursrc/components/vaccination/common-vaccination-stage-list";
-import { Pig } from "@oursrc/lib/models/pig";
+import { HerdInfo } from "@oursrc/lib/models/herd";
+import { TreatmentData } from "@oursrc/lib/models/treatment";
 import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { ClipboardCheck, ClipboardList } from "lucide-react";
 import React from "react";
 import { TbVaccine } from "react-icons/tb";
-import DevelopmentLogList from "../../../app/(management)/farm-assist/herd/_components/development-log-list";
-import PigDiseaseReportList from "@oursrc/components/disease-reports/pig-disease-report-list";
-import { TreatmentData } from "@oursrc/lib/models/treatment";
 
-const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () => void; pigInfo: Pig }) => {
+const HerdDetail = ({ isOpen, onClose, herdInfo }: { isOpen: boolean; onClose: () => void; herdInfo: HerdInfo }) => {
   const [currentStages, setCurrentStages] = React.useState<VaccinationStageProps[]>([]);
   const [treatment, setSelectedTreatment] = React.useState<TreatmentData>();
   return (
@@ -46,22 +44,21 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
     >
       <ModalContent>
         <ModalHeader>
-          <p className="text-2xl font-bold">Chi tiết heo [{pigInfo?.pigCode}]</p>
+          <p className="text-2xl font-bold">Chi tiết đàn [{herdInfo?.code}]</p>
         </ModalHeader>
         <ModalBody>
-          <DevelopmentLogList selectedPig={pigInfo as Pig} />
           <Tabs size="lg" color="primary" variant="solid" defaultSelectedKey="1">
             <Tab
               key="1"
               title={
                 <div className="flex items-center">
                   <TbVaccine size={20} />
-                  <span className="ml-2">Thông tin tiêm phòng</span>
+                  <span className="ml-2">Thông tin lịch tiêm phòng</span>
                 </div>
               }
             >
               <div>
-                <CommonVaccinationList pigId={pigInfo.id} setCurrentStages={setCurrentStages} />
+                <CommonVaccinationList herdId={herdInfo.id} setCurrentStages={setCurrentStages} />
                 <CommonVaccinationStageList stages={currentStages} />
               </div>
             </Tab>
@@ -70,12 +67,12 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
               title={
                 <div className="flex items-center">
                   <ClipboardCheck size={20} />
-                  <span className="ml-2">Thông tin chữa bệnh</span>
+                  <span className="ml-2">Thông tin kế hoạch điều trị</span>
                 </div>
               }
             >
               <div>
-                <CommonTreatmentPlanList pigId={pigInfo.id} setSelectedTreatment={setSelectedTreatment} />
+                <CommonTreatmentPlanList herdId={herdInfo.id} setSelectedTreatment={setSelectedTreatment} />
               </div>
             </Tab>
             <Tab
@@ -87,9 +84,7 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
                 </div>
               }
             >
-              <div>
-                <PigDiseaseReportList pigId={pigInfo.id} />
-              </div>
+              <div>{/* <PigDiseaseReportList pigId={pigInfo.id} /> */}</div>
             </Tab>
           </Tabs>
         </ModalBody>
@@ -99,4 +94,4 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
   );
 };
 
-export default PigDetail;
+export default HerdDetail;

@@ -32,7 +32,6 @@ import CageListReadOnly from "@oursrc/components/cages/cage-list-read-only";
 import HerdListReadOnly from "@oursrc/components/herds/herd-list-read-only";
 import { toast } from "@oursrc/hooks/use-toast";
 import { Cage } from "@oursrc/lib/models/cage";
-import { Herd } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
 import { PlanTemplate } from "@oursrc/lib/models/plan-template";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
@@ -52,6 +51,7 @@ import { areaService } from "@oursrc/lib/services/areaService";
 import { Area } from "@oursrc/lib/models/area";
 import AreaListReadOnly from "@oursrc/components/areas/area-list-read-only";
 import LoadingStateContext from "@oursrc/components/context/loading-state-context";
+import { HerdInfo } from "@oursrc/lib/models/herd";
 
 const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const router = useRouter();
@@ -59,7 +59,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const { loading, setLoading } = React.useContext(LoadingStateContext);
   const [isDoneAll, setIsDoneAll] = React.useState(false);
   const [selectedCages, setSelectedCages] = React.useState<Cage[]>([]);
-  const [selectedHerds, setSelectedHerds] = React.useState<Herd[]>([]);
+  const [selectedHerds, setSelectedHerds] = React.useState<HerdInfo[]>([]);
   const [selectedAreas, setSelectedAreas] = React.useState<Area[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
   const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);
@@ -108,6 +108,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
     } else {
       setAllSelectedPigs([]);
     }
+    console.log(selectedHerds);
   }, [selectedHerds]);
 
   React.useEffect(() => {
@@ -493,7 +494,8 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                 isRequired
                 isInvalid={date.end <= date.start ? true : false}
                 errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
-                minValue={today(getLocalTimeZone())}
+                minValue={selectedHerds.length > 0 ? parseDate(selectedHerds[0]?.startDate.split("T")[0]) : today(getLocalTimeZone())}
+                maxValue={selectedHerds.length > 0 ? parseDate(selectedHerds[0]?.expectedEndDate.split("T")[0]) : undefined}
                 validationBehavior="native"
                 value={date || ""}
                 onChange={(event) => {
@@ -533,7 +535,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         </Card>
         <Card className="my-4">
           <CardBody>
-            <CreateVaccinationStages stages={stages} setStages={setStages} />
+            <CreateVaccinationStages stages={stages} setStages={setStages} date={date} />
           </CardBody>
         </Card>
         {pigIds.length === 0 && (

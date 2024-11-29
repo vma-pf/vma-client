@@ -1,4 +1,4 @@
-import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
+import { CalendarDate, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import {
   Accordion,
   AccordionItem,
@@ -13,6 +13,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  RangeValue,
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react";
@@ -25,9 +26,11 @@ import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 const CreateVaccinationStages = ({
   stages,
   setStages,
+  date,
 }: {
   stages: VaccinationStageProps[];
   setStages: React.Dispatch<React.SetStateAction<VaccinationStageProps[]>>;
+  date: RangeValue<CalendarDate>;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedStage, setSelectedStage] = React.useState<VaccinationStageProps | null>(null);
@@ -210,8 +213,8 @@ const CreateVaccinationStages = ({
                         label="Ngày tiêm"
                         value={stage.applyStageTime ? parseDate(stage.applyStageTime) : undefined}
                         isDateUnavailable={(date: DateValue) => stages.some((x: VaccinationStageProps) => x.applyStageTime === date.toString() && x.id !== stage.id)}
-                        minValue={today(getLocalTimeZone())}
-                        // maxValue={date.end}
+                        minValue={date.start}
+                        maxValue={date.end}
                         labelPlacement="outside"
                         isRequired
                         isInvalid={stage.applyStageTime ? false : true}

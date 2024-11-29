@@ -20,13 +20,13 @@ import {
 } from "@nextui-org/react";
 import { capitalize } from "@oursrc/components/utils";
 import { useToast } from "@oursrc/hooks/use-toast";
-import { Herd } from "@oursrc/lib/models/herd";
 import { herdService } from "@oursrc/lib/services/herdService";
 import { Search } from "lucide-react";
 import React from "react";
 import { HiChevronDown } from "react-icons/hi";
 import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "./models/herd-table-data";
-import { formatDate } from "@oursrc/lib/utils/datetime-utils";
+import { HerdInfo } from "@oursrc/lib/models/herd";
+import { dateConverter } from "@oursrc/lib/utils";
 
 const HerdListReadOnly = ({ setSelected }: any) => {
   const { toast } = useToast();
@@ -52,7 +52,7 @@ const HerdListReadOnly = ({ setSelected }: any) => {
 
     return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
-  const [herdList, setHerdList] = React.useState<Herd[]>([]);
+  const [herdList, setHerdList] = React.useState<HerdInfo[]>([]);
 
   const [loading, setLoading] = React.useState(false);
 
@@ -71,12 +71,7 @@ const HerdListReadOnly = ({ setSelected }: any) => {
     try {
       const response = await herdService.getHerd(page, rowsPerPage);
       if (response.isSuccess) {
-        const formatResponse = response.data.data.map((x: any) => ({
-          ...x,
-          startDate: formatDate(x.startDate),
-          expectedEndDate: formatDate(x.expectedEndDate),
-        }));
-        setHerdList(formatResponse);
+        setHerdList(response.data.data);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
@@ -94,7 +89,7 @@ const HerdListReadOnly = ({ setSelected }: any) => {
   };
 
   const filteredItems = React.useMemo(() => {
-    let cloneFilteredItems: Herd[] = [...herdList];
+    let cloneFilteredItems: HerdInfo[] = [...herdList];
 
     if (hasSearchFilter) {
       cloneFilteredItems = cloneFilteredItems.filter((item) => item.code.toLowerCase().includes(filterValue.toLowerCase()));
@@ -110,9 +105,9 @@ const HerdListReadOnly = ({ setSelected }: any) => {
   }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: Herd, b: Herd) => {
-      const first = a[sortDescriptor.column as keyof Herd] as number;
-      const second = b[sortDescriptor.column as keyof Herd] as number;
+    return [...items].sort((a: HerdInfo, b: HerdInfo) => {
+      const first = a[sortDescriptor.column as keyof HerdInfo] as number;
+      const second = b[sortDescriptor.column as keyof HerdInfo] as number;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -194,8 +189,8 @@ const HerdListReadOnly = ({ setSelected }: any) => {
     );
   }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, herdList.length, hasSearchFilter]);
 
-  const renderCell = React.useCallback((data: Herd, columnKey: React.Key) => {
-    const cellValue = data[columnKey as keyof Herd];
+  const renderCell = React.useCallback((data: HerdInfo, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof HerdInfo];
 
     switch (columnKey) {
       case "description":
@@ -204,6 +199,9 @@ const HerdListReadOnly = ({ setSelected }: any) => {
             <p className="truncate">{cellValue}</p>
           </Tooltip>
         );
+      case "startDate":
+      case "expectedEndDate":
+        return dateConverter(cellValue.toString());
       // case "actions":
       //   return (
       //     <div className="flex justify-end items-center gap-2">

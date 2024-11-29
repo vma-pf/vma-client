@@ -1,5 +1,5 @@
 "use client";
-import { Accordion, AccordionItem, Divider, useDisclosure } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button, Divider, Progress, useDisclosure } from "@nextui-org/react";
 import Image from "next/image";
 import React from "react";
 import Chart from "@oursrc/components/herds/chart";
@@ -16,8 +16,18 @@ import { herdService } from "@oursrc/lib/services/herdService";
 import { Pig } from "@oursrc/lib/models/pig";
 import PigDetail from "@oursrc/components/herds/modals/pig-detail";
 import PigList from "./_components/pig-list";
+import { EyeIcon } from "lucide-react";
+import HerdDetail from "@oursrc/components/herds/modals/herd-detail";
+import { calculateProgress } from "@oursrc/lib/utils/dev-utils";
+
+const statusColorMap = [
+  { status: "Chưa Kết Thúc", color: "bg-default" },
+  { status: "Đang diễn ra", color: "bg-sky-500" },
+  { status: "Đã Kết Thúc", color: "bg-primary" },
+];
 
 const Herd = () => {
+  const { isOpen: isOpenHerdDetail, onOpen: onOpenHerdDetail, onClose: onCloseHerdDetail } = useDisclosure();
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
   const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
@@ -80,23 +90,26 @@ const Herd = () => {
                       <p className="my-2 font-semibold">{selectedHerd?.breed}</p>
                     </div>
                     <Divider orientation="horizontal" />
-                    <div className="flex justify-between items-center">
-                      <p className="my-2">Ngày bắt đầu đàn:</p>
-                      <p className="my-2 font-semibold">{dateConverter(selectedHerd?.startDate ?? "")}</p>
+                    <div className="flex justify-between">
+                      <p className="text-md mt-3">Ngày bắt đầu đàn</p>
+                      <p className="text-md mt-3">Ngày kết thúc nuôi (dự kiến)</p>
+                    </div>
+                    <Progress value={calculateProgress(selectedHerd?.startDate ?? "", selectedHerd?.expectedEndDate ?? "")} />
+                    <div className="flex justify-between">
+                      <p className="text-lg mt-3 font-semibold">{dateConverter(selectedHerd?.startDate)}</p>
+                      <p className="text-lg mt-3 font-semibold">{dateConverter(selectedHerd?.expectedEndDate)}</p>
                     </div>
                     <Divider orientation="horizontal" />
                     <div className="flex justify-between items-center">
-                      <p className="my-2">Ngày kết thúc nuôi (dự kiến):</p>
-                      <p className="my-2 font-semibold">{dateConverter(selectedHerd?.expectedEndDate ?? "")}</p>
+                      <p className="my-2">Trạng thái:</p>
+                      <p
+                        className={`my-2 p-1 font-semibold rounded-md ${statusColorMap.find((item) => item.status === selectedHerd?.status)?.color}
+                          `}
+                      >
+                        {selectedHerd?.status}
+                      </p>
                     </div>
                     <Divider orientation="horizontal" />
-                    {/* <div className="flex justify-between items-center">
-                    <p className="my-2">Trạng thái:</p>
-                    <p className={`my-2 p-1 font-semibold rounded-md ${selectedHerd?.status === 1 ? "text-success-500" : "text-danger-500"}`}>
-                      {selectedHerd?.status === 1 ? "Đang nuôi" : "Đã kết thúc"}
-                    </p>
-                  </div>
-                  <Divider orientation="horizontal" /> */}
                     <div className="flex justify-between items-center">
                       <p className="my-2">Cân nặng trung bình:</p>
                       <p className="my-2 font-semibold">{selectedHerd?.averageWeight}</p>
@@ -104,6 +117,9 @@ const Herd = () => {
                     <Divider orientation="horizontal" />
                     <p className="my-2">Mô tả:</p>
                     <p className="my-2">{selectedHerd?.description}</p>
+                    <Button color="primary" onClick={onOpenHerdDetail} endContent={<EyeIcon size={20} />}>
+                      Xem chi tiết
+                    </Button>
                   </div>
                 </AccordionItem>
                 <AccordionItem key="2" title="Tình trạng đàn" startContent={<FaChartPie className="text-primary" size={25} />}>
@@ -127,6 +143,7 @@ const Herd = () => {
           <p className="text-center">Chọn đàn để xem danh sách heo</p>
         )}
       </div>
+      {isOpenHerdDetail && selectedHerd && <HerdDetail isOpen={isOpenHerdDetail} onClose={onCloseHerdDetail} herdInfo={selectedHerd} />}
       {isOpenDetail && selectedPig && <PigDetail isOpen={isOpenDetail} onClose={onCloseDetail} pigInfo={selectedPig} />}
     </div>
   );

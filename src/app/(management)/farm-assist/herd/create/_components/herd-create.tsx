@@ -1,6 +1,6 @@
 "use client";
 import { CalendarDate, getLocalTimeZone, parseDate, today } from "@internationalized/date";
-import { Button, DateRangePicker, Input, RangeValue, Textarea } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem, Button, DateRangePicker, Input, RangeValue, Textarea } from "@nextui-org/react";
 import AttachMedia from "@oursrc/components/ui/attach-media/attach-media";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -30,6 +30,24 @@ const HerdCreate = () => {
   const code = watch("code");
   const breed = watch("breed");
   const description = watch("description");
+
+  const breedOptions = [
+    { label: "Lợn Móng Cái", value: "Lợn Móng Cái" },
+    { label: "Lợn Ỉ", value: "Lợn Ỉ" },
+    { label: "Lợn Mán", value: "Lợn Mán" },
+    { label: "Lợn Sóc", value: "Lợn Sóc" },
+    { label: "Lợn Cỏ", value: "Lợn Cỏ" },
+    { label: "Lợn Khùa", value: "Lợn Khùa" },
+    { label: "Lợn Mẹo", value: "Lợn Mẹo" },
+    { label: "Lợn Vân Pa", value: "Lợn Vân Pa" },
+    { label: "Lợn Táp Ná", value: "Lợn Táp Ná" },
+    { label: "Lợn đen Lũng Pù", value: "Lợn đen Lũng Pù" },
+    { label: "Lợn Berkshire", value: "Lợn Berkshire" },
+    { label: "Lợn Hampshire", value: "Lợn Hampshire" },
+    { label: "Lợn Yorkshire", value: "Lợn Yorkshire" },
+    { label: "Lợn Duroc", value: "Lợn Duroc" },
+    { label: "Lợn Landrace", value: "Lợn Landrace" },
+  ];
 
   // useEffect(() => {
   //   setValue("startDate", dateRange.start.toString() || "");
@@ -133,23 +151,30 @@ const HerdCreate = () => {
               />
             </div>
             <div className="flex w-full flex-wrap md:flex-nowrap">
-              <Input
+              <Autocomplete
                 className="mb-5"
-                type="text"
                 radius="sm"
                 size="lg"
                 label="Giống heo"
                 placeholder="Nhập giống heo"
                 labelPlacement="outside"
-                description="ví dụ: giống A, giống B,..."
-                isRequired
-                value={breed || ""}
                 isInvalid={errors.breed ? true : false}
+                defaultItems={breedOptions}
+                selectedKey={breed || ""}
+                onSelectionChange={(item) => {
+                  setValue("breed", item?.toString() || "");
+                }}
                 errorMessage="Giống heo không được để trống"
-                {...register("breed", {
-                  required: true,
-                })}
-              />
+                // {...register("breed", {
+                //   required: true,
+                // })}
+              >
+                {(item) => (
+                  <AutocompleteItem color="primary" key={item.value}>
+                    {item.label}
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
             </div>
           </div>
           <DateRangePicker
