@@ -114,6 +114,25 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   }, []);
 
   React.useEffect(() => {
+    if (stages.length > 0) {
+      const sortedStages = [...stages].sort((a, b) => 
+        new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime()
+      );
+      
+      if (sortedStages[0].applyStageTime) {
+        const lastStage = sortedStages[sortedStages.length - 1];
+        const lastDate = new Date(lastStage.applyStageTime);
+        lastDate.setDate(lastDate.getDate() + parseInt(lastStage.timeSpan));
+        
+        setDate({
+          start: parseDate(new Date(sortedStages[0].applyStageTime).toJSON().slice(0, 10)),
+          end: parseDate(lastDate.toJSON().slice(0, 10))
+        });
+      }
+    }
+  }, [stages]);
+
+  React.useEffect(() => {
     if (selectedHerds.length > 0) {
       fetchPigs("herd");
     } else {
@@ -504,6 +523,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                         isIconOnly
                         onClick={handleCreateTemplate}
                         isLoading={loading}
+                        isDisabled={allSelectedPigs.length === 0}
                       >
                         <Check />
                       </Button>
@@ -623,7 +643,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                 radius="sm"
                 size="lg"
                 labelPlacement="outside"
-                isRequired
+                isDisabled
                 isInvalid={date.end <= date.start ? true : false}
                 errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
                 minValue={selectedHerds.length > 0 ? parseDate(selectedHerds[0]?.startDate.split("T")[0]) : today(getLocalTimeZone())}

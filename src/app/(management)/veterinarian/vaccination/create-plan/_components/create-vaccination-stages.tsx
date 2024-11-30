@@ -213,8 +213,7 @@ const CreateVaccinationStages = ({
                         label="Ngày tiêm"
                         value={stage.applyStageTime ? parseDate(stage.applyStageTime) : undefined}
                         isDateUnavailable={(date: DateValue) => stages.some((x: VaccinationStageProps) => x.applyStageTime === date.toString() && x.id !== stage.id)}
-                        minValue={date.start}
-                        maxValue={date.end}
+                        minValue={today(getLocalTimeZone())}
                         labelPlacement="outside"
                         isRequired
                         isInvalid={stage.applyStageTime ? false : true}
