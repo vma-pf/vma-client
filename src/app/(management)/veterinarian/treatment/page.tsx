@@ -203,7 +203,7 @@ const Treatment = () => {
                     <Button
                       variant="solid"
                       color="primary"
-                      isDisabled={!selectedGuideId}
+                      // isDisabled={!selectedGuideId}
                       onPress={() => {
                         router.push(`/veterinarian/treatment/${selectedGuideId}/create-plan`);
                       }}
