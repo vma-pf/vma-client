@@ -128,7 +128,7 @@ const CreateTreatmentStage = ({
     <div>
       <CardBody>
         <div className="mb-4 flex flex-row justify-between items-center">
-          <p className="text-2xl font-semibold">Giai đoạn tiêm phòng</p>
+          <p className="text-2xl font-semibold">Giai đoạn điều trị</p>
           <Button color="primary" endContent={<Plus />} onClick={onAddStage}>
             Thêm giai đoạn
           </Button>
