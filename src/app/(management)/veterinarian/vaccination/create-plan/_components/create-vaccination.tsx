@@ -124,8 +124,10 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         const lastDate = new Date(lastStage.applyStageTime);
         lastDate.setDate(lastDate.getDate() + parseInt(lastStage.timeSpan));
         
+        const firstStageDate = new Date(sortedStages[0].applyStageTime);
+        firstStageDate.setHours(0, 0, 0, 0);
         setDate({
-          start: parseDate(new Date(sortedStages[0].applyStageTime).toJSON().slice(0, 10)),
+          start: parseDate(firstStageDate.toJSON().slice(0, 10)),
           end: parseDate(lastDate.toJSON().slice(0, 10))
         });
       }
