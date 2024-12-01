@@ -197,8 +197,8 @@ const ModalCommonDisease = ({
                       {...register("description", { required: true })}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
+                  <div className="grid grid-cols-1 gap-2">
+                    <Textarea
                       className="mb-5"
                       type="text"
                       radius="sm"

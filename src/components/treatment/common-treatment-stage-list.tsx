@@ -1,39 +1,20 @@
 "use client";
-import {
-  Card,
-  CardBody,
-  Divider,
-  Selection,
-  SortDescriptor,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-} from "@nextui-org/react";
-import { Medicine, StageMedicine } from "@oursrc/lib/models/medicine";
-import { ResponseObject } from "@oursrc/lib/models/response-object";
-import {
-  MedicineEachStage,
-  VaccinationStageProps,
-} from "@oursrc/lib/models/vaccination";
-import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
-import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
-import { pluck } from "@oursrc/lib/utils/dev-utils";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
-import React, { useMemo } from "react";
-import { CiBoxList } from "react-icons/ci";
+import React from "react";
+import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
+import { dateConverter } from "@oursrc/lib/utils";
+import { Card, CardBody, Divider } from "@nextui-org/react";
 import { FaCheckCircle } from "react-icons/fa";
 import { GrStatusGoodSmall } from "react-icons/gr";
-import { medicineService } from "@oursrc/lib/services/medicineService";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
+import { Medicine, StageMedicine } from "@oursrc/lib/models/medicine";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { treatmentStageService } from "@oursrc/lib/services/treatmentStageService";
 
-const statusMapColor = [
-  { name: "red", value: 0 },
-  { name: "green", value: 1 },
-];
+interface RenderStageProps {
+  stage: CreateTreatmentStageProps;
+}
 
-const RenderStage = ({ stage }: { stage: VaccinationStageProps }) => {
+const RenderStage = ({ stage }: RenderStageProps) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
   const [selectedMedicineDetail, setSelectedMedicineDetail] = React.useState<Medicine | null>(null);
@@ -42,7 +23,7 @@ const RenderStage = ({ stage }: { stage: VaccinationStageProps }) => {
     try {
       setIsLoading(true);
       const response: ResponseObject<any> =
-        await vaccinationService.getMedicineInStage(stageId ?? "");
+        await treatmentStageService.getMedicineInStage(stageId ?? "");
       if (response.isSuccess) {
         setMedicineList(response.data?.medicine);
       } else {
@@ -54,60 +35,37 @@ const RenderStage = ({ stage }: { stage: VaccinationStageProps }) => {
       setIsLoading(false);
     }
   };
-
+  
   React.useEffect(() => {
     fetchMedicine(stage.id ?? "");
-  }, [stage]); // Add an empty dependency array here
+  }, [stage]);
 
   return (
-    <div className="grid ml-16 relative">
+    <div className="relative">
       {stage.isDone ? (
-        <FaCheckCircle
-          size={20}
-          className={`text-primary absolute left-0 translate-x-[-33.5px] z-10 top-1`}
-        />
+        <FaCheckCircle size={20} className={`text-primary absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
       ) : (
-        <GrStatusGoodSmall
-          size={20}
-          className={`text-danger absolute left-0 translate-x-[-33.5px] z-10 top-1`}
-        />
+        <GrStatusGoodSmall size={20} className={`text-danger absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
       )}
       <div className="mb-10 flex">
         <div className="w-1/3 border-r-1">
-          <Divider
-            orientation="vertical"
-            className="absolute left-0 translate-x-[-24.3px] z-0 top-1"
-          />
-          <div className="text-lg my-1 font-semibold">
-            {dateConverter(stage.applyStageTime)}
-          </div>
+          <Divider orientation="vertical" className="absolute left-0 translate-x-[-24.3px] z-0 top-1" />
+          <div className="text-lg my-1 font-semibold">{dateConverter(stage.applyStageTime)}</div>
           <div className="text-lg my-3 font-extrabold">{stage.title}</div>
           <div className="my-3 flex items-center gap-2">
-            <div
-              className={`w-3 h-3 ${
-                stage.isDone ? "bg-green-500" : "bg-red-500"
-              } rounded-full`}
-            />
-            <div
-              className={`${stage.isDone ? "text-green-500" : "text-red-500"}`}
-            >
-              {stage.isDone ? "Đã tiêm" : "Chưa tiêm"}
-            </div>
+            <div className={`w-3 h-3 ${stage.isDone ? "bg-green-500" : "bg-red-500"} rounded-full`} />
+            <span>{stage.isDone ? "Đã hoàn thành" : "Chưa hoàn thành"}</span>
           </div>
-          <div className="my-2 flex gap-2">
-            <CiBoxList className="text-primary" size={25} />
-            <p className="text-lg">Các công việc cần thực hiện:</p>
-          </div>
-          <ul className="list-disc pl-5">
-            {stage.vaccinationToDos.map((todo, idx) => (
-              <li key={idx}>{todo.description}</li>
-            ))}
-          </ul>
         </div>
-        <div className="w-2/3 pl-5 border-l-1">
-          <p className="text-xl mb-3 font-semibold">
-            Danh sách thuốc cần sử dụng
-          </p>
+        <div className="w-2/3 pl-4">
+          <div className="mb-4">
+            <div className="font-semibold mb-2">Các việc cần làm:</div>
+            <ul className="list-disc pl-4">
+              {stage.treatmentToDos.map((todo, index) => (
+                <li key={index}>{todo.description}</li>
+              ))}
+            </ul>
+          </div>
           <div className="grid grid-cols-3 gap-3">
             {medicineList.length > 0 ? (
               medicineList.map((medicine) => (
@@ -150,34 +108,49 @@ const RenderStage = ({ stage }: { stage: VaccinationStageProps }) => {
               </p>
             )}
           </div>
+          {stage.inventoryRequest && (
+            <div>
+              <div className="font-semibold mb-2">Thuốc cần dùng:</div>
+              <ul className="list-disc pl-4">
+                {stage.inventoryRequest.medicines.map((medicine, index) => (
+                  <li key={index}>
+                    {medicine.medicineName} - {medicine.quantity} {medicine.unit}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-const CommonVaccinationStageList = ({
-  stages,
-}: {
-  stages: VaccinationStageProps[];
-}) => {
+const CommonTreatmentStageList = ({ stages }: { stages?: CreateTreatmentStageProps[] }) => {
+  if (!stages || stages.length === 0) {
+    return <div className="text-center mt-4">Không có giai đoạn điều trị nào</div>;
+  }
+
+  const currentTreatmentStages = stages.filter(
+    (stage) => new Date(stage.applyStageTime) >= new Date(new Date().getTime() + 7 * 60 * 60 * 1000)
+  );
+
+  if (currentTreatmentStages.length === 0) {
+    return <div className="text-center mt-4">Chưa có giai đoạn điều trị nào đến hạn</div>;  
+  }
+
   return (
-    <div className="mt-5">
-      <p className="text-xl my-3 font-semibold">Các giai đoạn tiêm phòng</p>
-      {stages.length === 0 ? (
-        <p className="text-center text-lg mt-3">
-          Không có giai đoạn tiêm phòng
-        </p>
-      ) : (
-        stages
-          ?.sort(
-            (a, b) =>
-              new Date(a.applyStageTime).getTime() -
-              new Date(b.applyStageTime).getTime()
-          )
-          ?.map((stage) => <RenderStage key={stage.id} stage={stage} />)
-      )}
+    <div className="py-2">
+      <p className="text-xl my-3 font-semibold">Các giai đoạn điều trị</p>
+      <div className="px-8 py-2">
+        {currentTreatmentStages
+          ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
+          ?.map((stage) => (
+            <RenderStage key={stage.id} stage={stage} />
+          ))}
+      </div>
     </div>
   );
 };
-export default CommonVaccinationStageList;
+
+export default CommonTreatmentStageList;

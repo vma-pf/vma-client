@@ -32,6 +32,7 @@ type StageMedicine = {
   medicineName: string;
   quantity: number;
   id: string;
+  medicine? : Medicine;
 }
 
 export type { CreateMedicineRequest, UpdateMedicineRequest, Medicine, StageMedicine };
