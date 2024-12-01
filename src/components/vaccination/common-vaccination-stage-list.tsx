@@ -113,20 +113,25 @@ const RenderStage = ({ stage }: { stage: VaccinationStageProps }) => {
               medicineList.map((medicine) => (
                 <HoverCard key={medicine.id}>
                     <HoverCardTrigger>
-                    <Card>
-                      <CardBody>
-                      <p className="text-lg font-semibold">
-                        {medicine.medicineName}
-                      </p>
-                      <p className="text-md">Số lượng: {medicine.quantity}</p>
-                      <p className="text-md">Trạng thái: {medicine.status}</p>
+                    <Card className="hover:scale-105 transition-transform">
+                      <CardBody className="px-3 py-2">
+                      <h4 className="text-small font-semibold leading-none text-default-600">{medicine.medicineName}</h4>
+                      <div className="flex flex-col gap-1 mt-2">
+                        <div className="flex items-center gap-1">
+                        <span className="text-small text-default-500">Số lượng:</span>
+                        <p className="text-small">{medicine.quantity}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                        <span className="text-small text-default-500">Trạng thái:</span>
+                        <p className="text-small">{medicine.status}</p>
+                        </div>
+                      </div>
                       </CardBody>
                     </Card>
                     </HoverCardTrigger>
-                  <HoverCardContent align="start" className="w-96">
+                  <HoverCardContent align="start" className="w-96 bg-gray-100">
                     {(medicine.medicine && medicine.medicine != null) ? (
                       <div>
-                        <h3 className="font-semibold mb-2">{medicine.medicine?.name}</h3>
                         <p><strong>Thành phần chính:</strong> {medicine.medicine.mainIngredient}</p>
                         <p><strong>Số đăng ký:</strong> {medicine.medicine.registerNumber}</p>
                         <p><strong>Số lượng còn:</strong> {medicine.medicine.quantity}</p>

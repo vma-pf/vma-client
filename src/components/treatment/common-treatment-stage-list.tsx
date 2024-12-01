@@ -2,15 +2,44 @@
 import React from "react";
 import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
 import { dateConverter } from "@oursrc/lib/utils";
-import { Divider } from "@nextui-org/react";
+import { Card, CardBody, Divider } from "@nextui-org/react";
 import { FaCheckCircle } from "react-icons/fa";
 import { GrStatusGoodSmall } from "react-icons/gr";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
+import { Medicine, StageMedicine } from "@oursrc/lib/models/medicine";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { treatmentStageService } from "@oursrc/lib/services/treatmentStageService";
 
 interface RenderStageProps {
   stage: CreateTreatmentStageProps;
 }
 
 const RenderStage = ({ stage }: RenderStageProps) => {
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
+  const [selectedMedicineDetail, setSelectedMedicineDetail] = React.useState<Medicine | null>(null);
+
+  const fetchMedicine = async (stageId: string) => {
+    try {
+      setIsLoading(true);
+      const response: ResponseObject<any> =
+        await treatmentStageService.getMedicineInStage(stageId ?? "");
+      if (response.isSuccess) {
+        setMedicineList(response.data?.medicine);
+      } else {
+        console.log(response.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  React.useEffect(() => {
+    fetchMedicine(stage.id ?? "");
+  }, [stage]);
+
   return (
     <div className="relative">
       {stage.isDone ? (
@@ -36,6 +65,48 @@ const RenderStage = ({ stage }: RenderStageProps) => {
                 <li key={index}>{todo.description}</li>
               ))}
             </ul>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {medicineList.length > 0 ? (
+              medicineList.map((medicine) => (
+                <HoverCard key={medicine.id}>
+                    <HoverCardTrigger>
+                    <Card className="hover:scale-105 transition-transform">
+                      <CardBody className="px-3 py-2">
+                      <h4 className="text-small font-semibold leading-none text-default-600">{medicine.medicineName}</h4>
+                      <div className="flex flex-col gap-1 mt-2">
+                        <div className="flex items-center gap-1">
+                        <span className="text-small text-default-500">Số lượng:</span>
+                        <p className="text-small">{medicine.quantity}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                        <span className="text-small text-default-500">Trạng thái:</span>
+                        <p className="text-small">{medicine.status}</p>
+                        </div>
+                      </div>
+                      </CardBody>
+                    </Card>
+                    </HoverCardTrigger>
+                  <HoverCardContent align="start" className="w-96 bg-gray-100">
+                    {(medicine.medicine && medicine.medicine != null) ? (
+                      <div>
+                        <p><strong>Thành phần chính:</strong> {medicine.medicine.mainIngredient}</p>
+                        <p><strong>Số đăng ký:</strong> {medicine.medicine.registerNumber}</p>
+                        <p><strong>Số lượng còn:</strong> {medicine.medicine.quantity}</p>
+                        <p><strong>Cách sử dụng:</strong> {medicine.medicine.usage}</p>
+                        <p><strong>Khối lượng:</strong> {medicine.medicine.netWeight} {medicine.medicine.unit}</p>
+                      </div>
+                    ) : (
+                      <p>Thuốc mới không có sẵn</p>
+                    )}
+                  </HoverCardContent>
+                </HoverCard>
+              ))
+            ) : (
+              <p className="text-center text-lg mt-3">
+                Không có thuốc cần sử dụng
+              </p>
+            )}
           </div>
           {stage.inventoryRequest && (
             <div>
