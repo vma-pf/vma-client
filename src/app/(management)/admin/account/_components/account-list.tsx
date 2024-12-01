@@ -25,26 +25,35 @@ import {
   ModalBody,
   ModalFooter,
   Spinner,
+  Tooltip,
 } from "@nextui-org/react";
 import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
-import { Plus, Search } from "lucide-react";
+import { Edit, Plus, Search, Trash } from "lucide-react";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { User } from "@oursrc/lib/models/account";
 import { accountService } from "@oursrc/lib/services/accountService";
+import AddEditUser from "./_modals/add-edit-user";
+import { LuUserCheck, LuUserX } from "react-icons/lu";
+
+const roleNameMap = [
+  { role: "Veterinarian", name: "Bác sĩ thú y" },
+  { role: "Farmer", name: "Chủ trang trại" },
+  { role: "FarmerAssistant", name: "Nhân viên trang trại" },
+  { role: "Admin", name: "Quản trị viên" },
+];
 
 const columns = [
-  { uid: "name", name: "Tên", sortable: true },
   { uid: "email", name: "Email", sortable: true },
   { uid: "username", name: "Tên đăng nhập", sortable: true },
-  { uid: "role", name: "Vai trò", sortable: true },
+  { uid: "roleName", name: "Vai trò", sortable: true },
   { uid: "isActive", name: "Tình trạng", sortable: true },
   { uid: "actions", name: "Hành động", sortable: false },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["name", "email", "username", "role", "isActive", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["name", "email", "username", "roleName", "isActive", "actions"];
 
 const AccountList = () => {
-  const [pigList, setPigList] = React.useState<User[]>([]);
+  const [userList, setUserList] = React.useState<User[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
@@ -59,8 +68,10 @@ const AccountList = () => {
     direction: "ascending",
   });
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [selectedPig, setSelectedPig] = React.useState<User>();
+  const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure();
+  const { isOpen: isOpenActivate, onOpen: onOpenActivate, onClose: onCloseActivate } = useDisclosure();
+  const { isOpen: isOpenDeactivate, onOpen: onOpenDeactivate, onClose: onCloseDeactivate } = useDisclosure();
+  const [selectedUser, setSelectedUser] = React.useState<User>();
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -71,17 +82,14 @@ const AccountList = () => {
   }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredPigs: User[] = [...pigList];
+    let filteredUsers: User[] = [...userList];
 
-    // if (hasSearchFilter) {
-    //   filteredPigs = filteredPigs.filter((pig) => pig.breed.toLowerCase().includes(filterValue.toLowerCase()));
-    // }
-    // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-    //   filteredPigs = filteredPigs.filter((pig) => Array.from(statusFilter).includes(pig.healthStatus as string));
-    // }
+    if (hasSearchFilter) {
+      filteredUsers = filteredUsers.filter((user) => user.username.toLowerCase().includes(filterValue.toLowerCase()));
+    }
 
-    return filteredPigs;
-  }, [pigList, filterValue, statusFilter]);
+    return filteredUsers;
+  }, [userList, filterValue, statusFilter]);
 
   React.useEffect(() => {
     fetchData();
@@ -96,8 +104,8 @@ const AccountList = () => {
 
   const sortedItems = React.useMemo(() => {
     return [...filteredItems].sort((a: User, b: User) => {
-      const first = a[sortDescriptor.column as keyof User];
-      const second = b[sortDescriptor.column as keyof User];
+      const first = a[sortDescriptor.column as keyof User] as string;
+      const second = b[sortDescriptor.column as keyof User] as string;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -108,9 +116,8 @@ const AccountList = () => {
     try {
       setIsLoading(true);
       const response: ResponseObjectList<User> = await accountService.getAll(page, rowsPerPage);
-      console.log("response: ", response);
       if (response.isSuccess) {
-        setPigList(response.data.data || []);
+        setUserList(response.data.data || []);
         setTotalRecords(response.data.totalRecords || 0);
         setPages(response.data?.totalPages || 1);
         setRowsPerPage(response.data?.pageSize || 5);
@@ -126,36 +133,51 @@ const AccountList = () => {
     const cellValue = pig[columnKey as keyof User];
 
     switch (columnKey) {
-      // case "status":
-      //   return (
-      //     <Chip className="capitalize" color={statusColorMap[pig.healthStatus as string]} size="sm" variant="flat">
-      //       {cellValue === "active" ? "Khỏe mạnh" : cellValue === "sick" ? "Bệnh" : "Chết"}
-      //     </Chip>
-      //   );
-      // case "vaccinationDate":
-      //   return new Date(cellValue as string).toLocaleDateString("vi-VN");
+      case "roleName":
+        return roleNameMap.find((role) => role.role === cellValue)?.name;
+      case "isActive":
+        return cellValue ? (
+          <Chip size="sm" color="primary">
+            Hoạt động
+          </Chip>
+        ) : (
+          <Chip size="sm" color="danger">
+            Không hoạt động
+          </Chip>
+        );
       case "actions":
         return (
-          <div className="relative flex justify-center items-center gap-2">
-            <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <HiDotsVertical className="text-default-300" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  onClick={() => {
-                    setSelectedPig(pig);
-                    onOpen();
-                  }}
-                >
-                  View
-                </DropdownItem>
-                <DropdownItem>Edit</DropdownItem>
-                <DropdownItem>Delete</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+          <div className="flex justify-center items-center gap-2">
+            <Tooltip content="Kích hoạt">
+              <Button
+                size="sm"
+                variant="light"
+                color="warning"
+                isDisabled={pig.isActive}
+                onPress={() => {
+                  setSelectedUser(pig);
+                  onOpenActivate();
+                }}
+                isIconOnly
+              >
+                <LuUserCheck size={20} />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Vô hiệu hóa">
+              <Button
+                size="sm"
+                variant="light"
+                color="danger"
+                isIconOnly
+                isDisabled={!pig.isActive}
+                onPress={() => {
+                  setSelectedUser(pig);
+                  onOpenDeactivate();
+                }}
+              >
+                <LuUserX size={20} />
+              </Button>
+            </Tooltip>
           </div>
         );
       default:
@@ -189,34 +211,13 @@ const AccountList = () => {
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
-            placeholder="Tìm kiếm theo giống heo..."
+            placeholder="Tìm kiếm theo tên đăng nhập"
             startContent={<Search />}
             value={filterValue}
             onClear={() => onClear()}
             onValueChange={onSearchChange}
           />
           <div className="flex gap-3">
-            {/* <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
-                  Tình trạng
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={statusFilter}
-                selectionMode="multiple"
-                onSelectionChange={setStatusFilter}
-              >
-                {statusOptions.map((status: any) => (
-                  <DropdownItem key={status.uid} className="capitalize">
-                    {status.name.toUpperCase()}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown> */}
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
@@ -238,6 +239,9 @@ const AccountList = () => {
                 ))}
               </DropdownMenu>
             </Dropdown>
+            <Button variant="solid" color="primary" onPress={onOpenCreate} endContent={<Plus />}>
+              Thêm người dùng
+            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -253,7 +257,7 @@ const AccountList = () => {
         </div>
       </div>
     );
-  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, pigList.length, hasSearchFilter]);
+  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, userList.length, hasSearchFilter]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -266,7 +270,7 @@ const AccountList = () => {
   }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
   return (
     <div>
-      {/* <Table
+      <Table
         aria-label="Example table with custom cells, pagination and sorting"
         isHeaderSticky
         bottomContent={bottomContent}
@@ -274,12 +278,12 @@ const AccountList = () => {
         classNames={{
           wrapper: "max-h-[750px]",
         }}
-        selectedKeys={selectedKeys}
-        selectionMode="multiple"
+        // selectedKeys={selectedKeys}
+        // selectionMode="multiple"
+        // onSelectionChange={setSelectedKeys}
         sortDescriptor={sortDescriptor}
         topContent={topContent}
         topContentPlacement="outside"
-        onSelectionChange={setSelectedKeys}
         onSortChange={setSortDescriptor}
       >
         <TableHeader columns={headerColumns}>
@@ -292,7 +296,10 @@ const AccountList = () => {
         <TableBody emptyContent={"Không có kết quả"} loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
           {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
         </TableBody>
-      </Table> */}
+      </Table>
+      {isOpenCreate && <AddEditUser isOpen={isOpenCreate} onClose={onCloseCreate} operation="add" />}
+      {isOpenActivate && selectedUser && <AddEditUser isOpen={isOpenActivate} onClose={onCloseActivate} operation="activate" user={selectedUser} />}
+      {isOpenDeactivate && selectedUser && <AddEditUser isOpen={isOpenDeactivate} onClose={onCloseDeactivate} operation="deactivate" user={selectedUser} />}
     </div>
   );
 };

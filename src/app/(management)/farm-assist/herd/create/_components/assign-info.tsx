@@ -10,7 +10,7 @@ import { pigService } from "@oursrc/lib/services/pigService";
 import { cageService } from "@oursrc/lib/services/cageService";
 import { Pig } from "@oursrc/lib/models/pig";
 import { SensorData } from "./assign-tag";
-import LoadingStateContext from "@oursrc/components/context/loading-state-context";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 
 const AssignInfo = ({
   isOpen,

@@ -46,14 +46,14 @@ const AddEditCamera = ({ isOpen, onClose, camera, operation }: { isOpen: boolean
         ...data,
         cageIds: selectedCages.map((cage) => cage.id),
       };
-      console.log(payload);
       if (operation === "edit") {
-        const res: ResponseObject<Camera> = await cameraService.update(payload);
+        const res: ResponseObject<Camera> = await cameraService.update(camera?.id ?? "", payload);
         if (res && res.isSuccess) {
           toast({
             variant: "success",
             title: "Chỉnh sửa camera thành công",
           });
+          onClose();
         } else {
           toast({
             variant: "destructive",
@@ -303,7 +303,7 @@ const AddEditCamera = ({ isOpen, onClose, camera, operation }: { isOpen: boolean
               <Button color="danger" variant="light" onPress={onClose}>
                 Hủy
               </Button>
-              <Button color="primary" type="submit" isDisabled={Object.keys(errors).length > 0 || selectedCages.length === 0 ? false : true}>
+              <Button color="primary" type="submit" isDisabled={Object.keys(errors).length > 0 || selectedCages.length === 0 ? true : false}>
                 Lưu
               </Button>
             </ModalFooter>

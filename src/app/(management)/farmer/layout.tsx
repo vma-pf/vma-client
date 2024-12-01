@@ -7,7 +7,7 @@ import { MdSpaceDashboard } from "react-icons/md";
 import Footer from "@oursrc/app/(management)/footer";
 import CustomNavbar, { NavbarItem } from "@oursrc/components/custom-navbar";
 import CustomHeader from "@oursrc/components/custom-header";
-import { LoadingStateProvider } from "@oursrc/components/context/loading-state-context";
+import { LoadingStateProvider } from "@oursrc/lib/context/loading-state-context";
 
 const FarmerLayout = ({
   children,

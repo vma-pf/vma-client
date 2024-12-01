@@ -7,7 +7,7 @@ import { CreateMedicineRequest, Medicine, UpdateMedicineRequest } from "@oursrc/
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
-import LoadingStateContext from "@oursrc/components/context/loading-state-context";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean; onClose: () => void; medicine?: Medicine; context: "create" | "edit" | "delete" }) => {
   const {
     register,

@@ -61,7 +61,7 @@ import CommonPlanTemplate from "@oursrc/components/template/plan-template";
 import AreaListReadOnly from "@oursrc/components/areas/area-list-read-only";
 import { Area } from "@oursrc/lib/models/area";
 import { areaService } from "@oursrc/lib/services/areaService";
-import LoadingStateContext from "@oursrc/components/context/loading-state-context";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 import { HerdInfo } from "@oursrc/lib/models/herd";
 
 export type TreatmentPlanStep = {

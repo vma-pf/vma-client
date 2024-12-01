@@ -35,10 +35,7 @@ import { Cage } from "@oursrc/lib/models/cage";
 import { Pig } from "@oursrc/lib/models/pig";
 import { PlanTemplate } from "@oursrc/lib/models/plan-template";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import {
-  CreateVaccinationStageProps,
-  VaccinationStageProps,
-} from "@oursrc/lib/models/vaccination";
+import { CreateVaccinationStageProps, VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { planTemplateService } from "@oursrc/lib/services/planTemplateService";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
@@ -53,7 +50,7 @@ import SelectedPigsList from "./selected-pigs-list";
 import { areaService } from "@oursrc/lib/services/areaService";
 import { Area } from "@oursrc/lib/models/area";
 import AreaListReadOnly from "@oursrc/components/areas/area-list-read-only";
-import LoadingStateContext from "@oursrc/components/context/loading-state-context";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 import { HerdInfo } from "@oursrc/lib/models/herd";
 
 const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
@@ -88,18 +85,10 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   ]);
   const [date, setDate] = React.useState<RangeValue<CalendarDate>>({
     start: parseDate(new Date().toJSON().slice(0, 10)),
-    end: parseDate(
-      new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)
-    ),
+    end: parseDate(new Date(new Date().getTime() + 86400000).toJSON().slice(0, 10)),
   });
-  const [firstStageDate, setFirstStageDate] = React.useState<DateValue>(
-    today(getLocalTimeZone())
-  );
-  const {
-    isOpen: isOpenChooseStageDate,
-    onOpen: onOpenChooseStageDate,
-    onClose: onCloseChooseStageDate,
-  } = useDisclosure();
+  const [firstStageDate, setFirstStageDate] = React.useState<DateValue>(today(getLocalTimeZone()));
+  const { isOpen: isOpenChooseStageDate, onOpen: onOpenChooseStageDate, onClose: onCloseChooseStageDate } = useDisclosure();
   const {
     register,
     handleSubmit,
@@ -161,8 +150,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
 
   const fetchTemplates = async () => {
     try {
-      const res: ResponseObjectList<PlanTemplate> =
-        await planTemplateService.getVaccinationPlanTemplate(1, 500);
+      const res: ResponseObjectList<PlanTemplate> = await planTemplateService.getVaccinationPlanTemplate(1, 500);
       if (res.isSuccess) {
         setTemplates(res.data.data);
       }
@@ -174,8 +162,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const fetchPigs = async (fetchBy: string) => {
     try {
       if (fetchBy === "herd") {
-        const response: ResponseObjectList<Pig> =
-          await pigService.getPigsByHerdId(selectedHerds[0]?.id ?? "", 1, 500);
+        const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerds[0]?.id ?? "", 1, 500);
         if (response.isSuccess) {
           setAllSelectedPigs(response.data.data || []);
         } else {
@@ -183,12 +170,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         }
       } else if (fetchBy === "cage") {
         for (let i = 0; i < selectedCages.length; i++) {
-          const response: ResponseObjectList<Pig> =
-            await pigService.getPigsByCageId(
-              selectedCages[i]?.id ?? "",
-              1,
-              500
-            );
+          const response: ResponseObjectList<Pig> = await pigService.getPigsByCageId(selectedCages[i]?.id ?? "", 1, 500);
           if (response.isSuccess) {
             setAllSelectedPigs(response.data.data || []);
           } else {
@@ -197,8 +179,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         }
       } else if (fetchBy === "area") {
         for (let i = 0; i < selectedAreas.length; i++) {
-          const response: ResponseObjectList<Pig> =
-            await areaService.getPigsByAreaId(selectedAreas[i]?.id ?? "");
+          const response: ResponseObjectList<Pig> = await areaService.getPigsByAreaId(selectedAreas[i]?.id ?? "");
           if (response.isSuccess) {
             setAllSelectedPigs(response.data.data || []);
           } else {
@@ -261,10 +242,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
 
   const handleTemplateChanges = (keys: Selection) => {
     const selectedKeysArray = Array.from(keys);
-    const template =
-      templates?.filter(
-        (item) => item.id && selectedKeysArray.includes(item.id)
-      )[0] || undefined;
+    const template = templates?.filter((item) => item.id && selectedKeysArray.includes(item.id))[0] || undefined;
     if (!template) {
       setSelectedTemplate(undefined);
       setStages([
@@ -324,9 +302,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const handleCreateTemplate = async () => {
     try {
       setLoading(true);
-      const isNewMedicine = stages.some((x) =>
-        x.inventoryRequest.medicines.some((y: any) => y.type === "new")
-      );
+      const isNewMedicine = stages.some((x) => x.inventoryRequest.medicines.some((y: any) => y.type === "new"));
       if (isNewMedicine) {
         toast({
           variant: "destructive",
@@ -335,28 +311,16 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         });
         return;
       }
-      const templateRequest = stages.map(
-        (x: VaccinationStageProps, index: number) => ({
-          title: x.title,
-          timeSpan: x.timeSpan,
-          numberOfDays:
-            index === 0
-              ? 0
-              : Math.round(
-                  (new Date(x.applyStageTime).valueOf() -
-                    new Date(stages[0].applyStageTime).valueOf()) /
-                    (1000 * 3600 * 24)
-                ) + 1,
-          medicineTemplates: x.inventoryRequest.medicines.map(
-            (medicine: any) => ({
-              medicineId:
-                medicine.type === "existed" ? medicine.medicineId : null,
-              portionEachPig: medicine.portionEachPig,
-            })
-          ),
-          toDoTemplates: x.vaccinationToDos,
-        })
-      );
+      const templateRequest = stages.map((x: VaccinationStageProps, index: number) => ({
+        title: x.title,
+        timeSpan: x.timeSpan,
+        numberOfDays: index === 0 ? 0 : Math.round((new Date(x.applyStageTime).valueOf() - new Date(stages[0].applyStageTime).valueOf()) / (1000 * 3600 * 24)) + 1,
+        medicineTemplates: x.inventoryRequest.medicines.map((medicine: any) => ({
+          medicineId: medicine.type === "existed" ? medicine.medicineId : null,
+          portionEachPig: medicine.portionEachPig,
+        })),
+        toDoTemplates: x.vaccinationToDos,
+      }));
       if (!checkStages()) {
         return;
       }
@@ -370,8 +334,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         toast({
           variant: "success",
           title: "Lưu mẫu lịch tiêm phòng thành công!!!",
-          description:
-            "Đã tạo thành công mẫu lịch tiêm phòng! Vui lòng hoàn thành các bước còn lại để kết thúc",
+          description: "Đã tạo thành công mẫu lịch tiêm phòng! Vui lòng hoàn thành các bước còn lại để kết thúc",
         });
       } else {
         throw new AggregateError([new Error()], response.errorMessage);
@@ -439,8 +402,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         toast({
           variant: "success",
           title: "Tạo thành công lịch tiêm phòng",
-          description:
-            "Đã tạo thành công lịch tiêm phòng! Xem chi tiết tại màn hình thống kê",
+          description: "Đã tạo thành công lịch tiêm phòng! Xem chi tiết tại màn hình thống kê",
         });
         router.push("/veterinarian/vaccination");
       } else {
@@ -499,10 +461,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                 <Popover placement="bottom">
                   <PopoverTrigger>
                     <Button color="default" variant="solid" isIconOnly>
-                      <Tooltip
-                        placement="bottom"
-                        content="Lưu lịch tiêm phòng thành mẫu"
-                      >
+                      <Tooltip placement="bottom" content="Lưu lịch tiêm phòng thành mẫu">
                         <SaveAll size={20} />
                       </Tooltip>
                     </Button>
@@ -533,13 +492,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                   </PopoverContent>
                 </Popover>
               </div>
-              <Button
-                color="primary"
-                variant="solid"
-                isDisabled={Object.keys(errors).length > 0 && !isDoneAll}
-                type="submit"
-                isLoading={loading}
-              >
+              <Button color="primary" variant="solid" isDisabled={Object.keys(errors).length > 0 && !isDoneAll} type="submit" isLoading={loading}>
                 Xác nhận lịch tiêm phòng
               </Button>
             </div>
@@ -548,22 +501,13 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         {pigIds.length === 0 && (
           <Card className="mt-4">
             <CardBody>
-              <p className="text-2xl font-semibold">
-                Chọn heo cho kế hoạch tiêm phòng
-              </p>
+              <p className="text-2xl font-semibold">Chọn heo cho kế hoạch tiêm phòng</p>
               <div className="mt-2 grid grid-cols-2 gap-4">
                 <div>
                   <Card className="mt-2" radius="sm">
                     <CardBody>
                       <div className="mb-1 flex justify-between">
-                        <p className="text-lg">
-                          Chọn heo theo{" "}
-                          {openBy === "cage"
-                            ? "Chuồng"
-                            : openBy === "herd"
-                            ? "Đàn"
-                            : "Khu"}
-                        </p>
+                        <p className="text-lg">Chọn heo theo {openBy === "cage" ? "Chuồng" : openBy === "herd" ? "Đàn" : "Khu"}</p>
                         <Dropdown>
                           <DropdownTrigger>
                             <Button isIconOnly color="primary" size="sm">
@@ -573,18 +517,10 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                           <DropdownMenu
                             disallowEmptySelection
                             selectionMode="single"
-                            selectedKeys={
-                              openBy ? new Set([openBy]) : new Set()
-                            }
+                            selectedKeys={openBy ? new Set([openBy]) : new Set()}
                             onSelectionChange={(selectedKeys: Selection) => {
-                              const selectedKeysArray =
-                                Array.from(selectedKeys);
-                              setOpenBy(
-                                selectedKeysArray[0].toString() as
-                                  | "herd"
-                                  | "cage"
-                                  | "area"
-                              );
+                              const selectedKeysArray = Array.from(selectedKeys);
+                              setOpenBy(selectedKeysArray[0].toString() as "herd" | "cage" | "area");
                             }}
                           >
                             <DropdownItem color="primary" key="herd">
@@ -622,9 +558,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
           </Card>
         )}
         <Card className="p-4 mt-4">
-          <p className="text-2xl mb-2 font-semibold">
-            Thông tin kế hoạch tiêm phòng
-          </p>
+          <p className="text-2xl mb-2 font-semibold">Thông tin kế hoạch tiêm phòng</p>
           <div className="grid grid-flow-row grid-cols-2 gap-4 mt-2">
             <div className="flex flex-col w-full flex-wrap md:flex-nowrap">
               <Input
@@ -693,11 +627,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
           </CardBody>
         </Card>
       </form>
-      <Modal
-        size="lg"
-        isOpen={isOpenChooseStageDate}
-        onClose={onCloseChooseStageDate}
-      >
+      <Modal size="lg" isOpen={isOpenChooseStageDate} onClose={onCloseChooseStageDate}>
         <ModalContent>
           <ModalHeader> Chọn ngày bắt đầu cho giai đoạn 1</ModalHeader>
           <ModalBody>
@@ -716,12 +646,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
             />
           </ModalBody>
           <ModalFooter>
-            <Button
-              color="primary"
-              variant="solid"
-              disabled={!firstStageDate}
-              onClick={handleChooseTemplate}
-            >
+            <Button color="primary" variant="solid" disabled={!firstStageDate} onClick={handleChooseTemplate}>
               Xác nhận
             </Button>
           </ModalFooter>

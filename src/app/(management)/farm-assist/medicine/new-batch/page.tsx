@@ -34,7 +34,7 @@ import { Trash, Trash2Icon } from "lucide-react";
 import { invoiceService } from "@oursrc/lib/services/invoiceService";
 import { useRouter } from "next/navigation";
 import { SERVERURL } from "@oursrc/lib/http";
-import LoadingStateContext from "@oursrc/components/context/loading-state-context";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 
 const NewBatch = () => {
   const {
