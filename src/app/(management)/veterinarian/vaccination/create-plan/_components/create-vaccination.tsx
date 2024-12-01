@@ -477,11 +477,11 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
           <CardBody>
             <div className="flex justify-end">
               <div className="w-2/5 mr-2 flex justify-end">
-                <Dropdown>
+                <Dropdown isDisabled={allSelectedPigs.length == 0}>
                   <DropdownTrigger>
                     <Button color="primary" variant="ghost" endContent={<ChevronDown size={20} />}>
                       {selectedTemplate ? selectedTemplate.name : "Chọn mẫu"}
-                    </Button>
+                    </Button> 
                   </DropdownTrigger>
                   <DropdownMenu
                     selectionMode="single"
