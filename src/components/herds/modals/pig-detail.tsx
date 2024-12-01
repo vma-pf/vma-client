@@ -19,11 +19,16 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
   const [currentTreatmentStages, setCurrentTreatmentStages] = React.useState<any[]>([]);
   const [treatment, setSelectedTreatment] = React.useState<any>();
   React.useEffect(() => {
+    console.log(treatment)
     if(treatment){
       const selectedTreatment: string[] = Array.from(treatment);
-      const id = selectedTreatment.length > 0 ? selectedTreatment[0] : undefined;
-      if(Array.from(treatment).length > 0){
-        getTreatmentPlanById(id);
+      if(selectedTreatment.length === 0){
+        setCurrentTreatmentStages([])
+      }else {
+        const id = selectedTreatment.length > 0 ? selectedTreatment[0] : undefined;
+        if(Array.from(treatment).length > 0){
+          getTreatmentPlanById(id);
+        }
       }
     }
   }, [treatment]);

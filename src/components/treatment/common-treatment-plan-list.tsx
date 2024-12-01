@@ -64,7 +64,7 @@ const CommonTreatmentPlanList = ({ pigId, herdId, setSelectedTreatment }: { pigI
   const [page, setPage] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const hasSearchFilter = filterValue.length > 0;
-
+  
   const headerColumns = React.useMemo(() => {
     if (visibleColumns === "all") return columns;
 
@@ -225,8 +225,6 @@ const CommonTreatmentPlanList = ({ pigId, herdId, setSelectedTreatment }: { pigI
       bottomContent={bottomContent}
       sortDescriptor={sortDescriptor}
       onSortChange={setSortDescriptor}
-      //   align="center"
-      // selectedKeys={selectedKeys}
       onSelectionChange={setSelectedTreatment}
       aria-label="Example static collection table"
     >

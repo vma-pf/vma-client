@@ -36,7 +36,6 @@ const statusMapColor = [
 const RenderStage = ({ stage }: { stage: VaccinationStageProps }) => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
-  const [selectedMedicineDetail, setSelectedMedicineDetail] = React.useState<Medicine | null>(null);
 
   const fetchMedicine = async (stageId: string) => {
     try {
