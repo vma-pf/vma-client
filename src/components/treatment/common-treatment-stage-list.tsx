@@ -35,7 +35,7 @@ const RenderStage = ({ stage }: RenderStageProps) => {
       setIsLoading(false);
     }
   };
-  
+
   React.useEffect(() => {
     fetchMedicine(stage.id ?? "");
   }, [stage]);
@@ -66,6 +66,7 @@ const RenderStage = ({ stage }: RenderStageProps) => {
               ))}
             </ul>
           </div>
+          <div className="font-semibold mb-2">Danh sách thuốc cần sử dụng:</div>
           <div className="grid grid-cols-3 gap-3">
             {medicineList.length > 0 ? (
               medicineList.map((medicine) => (

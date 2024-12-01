@@ -94,20 +94,17 @@ const RenderStage = ({ stage }: { stage: VaccinationStageProps }) => {
               {stage.isDone ? "Đã tiêm" : "Chưa tiêm"}
             </div>
           </div>
-          <div className="my-2 flex gap-2">
-            <CiBoxList className="text-primary" size={25} />
-            <p className="text-lg">Các công việc cần thực hiện:</p>
-          </div>
-          <ul className="list-disc pl-5">
-            {stage.vaccinationToDos.map((todo, idx) => (
-              <li key={idx}>{todo.description}</li>
-            ))}
-          </ul>
         </div>
         <div className="w-2/3 pl-5 border-l-1">
-          <p className="text-xl mb-3 font-semibold">
-            Danh sách thuốc cần sử dụng
-          </p>
+          <div className="mb-4">
+            <div className="font-semibold mb-2">Các việc cần làm:</div>
+            <ul className="list-disc pl-4">
+              {stage.vaccinationToDos.map((todo, index) => (
+                <li key={index}>{todo.description}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="font-semibold mb-2">Danh sách thuốc cần sử dụng:</div>
           <div className="grid grid-cols-3 gap-3">
             {medicineList.length > 0 ? (
               medicineList.map((medicine) => (
