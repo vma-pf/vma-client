@@ -11,7 +11,7 @@ import { Area } from "@oursrc/lib/models/area";
 import { FaLightbulb } from "react-icons/fa6";
 import { HiOutlineLightBulb } from "react-icons/hi";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
-import LoadingStateContext from "@oursrc/components/context/loading-state-context";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 
 const AddEditCage = ({ isOpen, onClose, cage, operation }: { isOpen: boolean; onClose: () => void; cage?: Cage; operation: "add" | "edit" | "delete" }) => {
   const {

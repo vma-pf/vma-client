@@ -12,5 +12,5 @@ export const cameraService = {
         }
     }),
     create: (camera: Camera) => http.post(endpoint, camera),
-    update: (camera: Camera) => http.put(`${endpoint}/${camera.id}`, camera),
+    update: (id: string, camera: Camera) => http.put(`${endpoint}/${id}`, camera),
 };

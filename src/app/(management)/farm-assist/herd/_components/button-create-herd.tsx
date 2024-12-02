@@ -3,7 +3,7 @@ import { Button } from "@nextui-org/react";
 import React from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import LoadingStateContext from "@oursrc/components/context/loading-state-context";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 
 const ButtonCreateHerd = () => {
   const router = useRouter();

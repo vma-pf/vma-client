@@ -7,7 +7,7 @@ import { HiBellAlert } from "react-icons/hi2";
 import { MdSpaceDashboard } from "react-icons/md";
 import CustomHeader from "@oursrc/components/custom-header";
 import CustomNavbar, { NavbarItem } from "@oursrc/components/custom-navbar";
-import { LoadingStateProvider } from "@oursrc/components/context/loading-state-context";
+import { LoadingStateProvider } from "@oursrc/lib/context/loading-state-context";
 
 const VetLayout = ({
   children,

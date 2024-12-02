@@ -79,7 +79,6 @@ const request = async <Response>(
   //   await fetch("/api/auth/logout", {
   //     method: "POST",
   //   });
-  //   window.location.href = "/login";
   // }
 
   // check if token is expired before 10 minutes

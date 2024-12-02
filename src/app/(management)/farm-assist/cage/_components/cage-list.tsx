@@ -34,6 +34,8 @@ import AddEditCage from "./_modals/add-edit-cage";
 import { Area } from "@oursrc/lib/models/area";
 import { areaService } from "@oursrc/lib/services/areaService";
 import { IoIosArrowDown } from "react-icons/io";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 
 const CageList = () => {
   const videoRef = React.useRef<string | Element>("");
@@ -87,6 +89,7 @@ const CageList = () => {
       const contentType = res.headers.get("content-type");
       if (contentType && contentType.includes("application/vnd.apple.mpegurl")) {
         const m3uData = await res.text();
+        console.log(m3uData);
         playerRef.current = videojs(videoRef.current, {
           controls: true,
           sources: [
@@ -125,14 +128,55 @@ const CageList = () => {
   }, []);
 
   React.useEffect(() => {
-    if (!isOpenCamera) {
+    if (isOpenCamera) {
+      const accessToken = localStorage.getItem("accessToken")?.toString();
+      const connect = new HubConnectionBuilder()
+        .withUrl(`${SERVERURL}/hubs/camera`, {
+          // send access token here
+          accessTokenFactory: () => accessToken || "",
+          headers: {
+            CameraId: selectedCage?.cameraId ?? "",
+          },
+        })
+        .withAutomaticReconnect()
+        .withHubProtocol(
+          new MessagePackHubProtocol({
+            // encoder: encode,
+          })
+        )
+        .configureLogging(LogLevel.Information)
+        .build();
+      connect
+        .start()
+        .then(() => {
+          console.log("Connected to SignalR Camera Hub");
+          connect.on("", () => {});
+        })
+
+        .catch((err) => console.log("Error while connecting to SignalR Hub:", err));
+
+      return () => {
+        if (connect) {
+          connect.off("ReceiveMessage");
+          connect.stop();
+        }
+      };
+    } else {
       if (playerRef.current) {
-        console.log(playerRef.current);
-        onStopLiveCamera();
         playerRef.current.dispose();
       }
     }
   }, [isOpenCamera]);
+
+  // React.useEffect(() => {
+  //   if (!isOpenCamera) {
+  //     if (playerRef.current) {
+  //       console.log(playerRef.current);
+  //       onStopLiveCamera();
+  //       playerRef.current.dispose();
+  //     }
+  //   }
+  // }, [isOpenCamera]);
   return (
     <div>
       <div className="mb-5">
@@ -219,6 +263,7 @@ const CageList = () => {
                         variant="solid"
                         onPress={() => {
                           setSelectedCage(cage);
+                          // setIsOpenCamera(true);
                           onLiveCamera(cage.cameraId ?? "");
                         }}
                         isDisabled={!cage.cameraId}

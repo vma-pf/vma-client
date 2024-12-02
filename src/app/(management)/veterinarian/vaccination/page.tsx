@@ -308,7 +308,11 @@ const Vaccination = () => {
                           {stage.isDone ? (
                             <FaCheckCircle size={20} className={`text-primary absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
                           ) : (
-                            <GrStatusGoodSmall size={20} className={`text-danger absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
+                            <GrStatusGoodSmall
+                              size={20}
+                              className={`${stage.applyStageTime > new Date().toISOString() ? "text-default" : "text-danger"}
+                            absolute left-0 translate-x-[-33.5px] z-10 top-1`}
+                            />
                           )}
                           <div className="mb-10 grid gap-3">
                             <Divider orientation="vertical" className="absolute left-0 translate-x-[-24.3px] z-0 top-1" />
