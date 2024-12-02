@@ -8,6 +8,7 @@ export const accountService = {
             pageSize: pageSize.toString() || "",
         }
     }),
+    getUsersInFarm: () => http.get(`${endpoint}/vet-assist`),
     create: (request: any) => http.post(endpoint, request),
     activate: (id: string) => http.put(`${endpoint}/${id}/activate`, {}),
     deactivate: (id: string) => http.put(`${endpoint}/${id}/deactivate`, {}),

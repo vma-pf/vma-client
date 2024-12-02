@@ -42,7 +42,7 @@ const Schedule = () => {
           type: event.type,
         }));
         setEventData(events);
-        localStorage.setItem("events", JSON.stringify(events));
+        localStorage.setItem("all-events", JSON.stringify(events));
         setCurrentEvents(events.filter((event) => new Date(event.start).getMonth() === new Date().getMonth()) as EventApi[]);
       }
     } catch (error) {
@@ -131,7 +131,7 @@ const Schedule = () => {
             // console.log(event);
             // event.el.setAttribute("title", event.event.title);
           }}
-          initialEvents={typeof window !== "undefined" ? JSON.parse(localStorage.getItem("events") || "[]") : []} // Initial events loaded from local storage.
+          initialEvents={typeof window !== "undefined" ? JSON.parse(localStorage.getItem("all-events") || "[]") : []} // Initial events loaded from local storage.
         />
         {/* </div> */}
       </div>

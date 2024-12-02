@@ -1,39 +1,28 @@
-"use client";
-import React from "react";
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
   Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
   Chip,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
   Pagination,
   Selection,
-  ChipProps,
   SortDescriptor,
-  useDisclosure,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Spinner,
-  Tooltip,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@nextui-org/react";
-import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
-import { Edit, Plus, Search, Trash } from "lucide-react";
-import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { User } from "@oursrc/lib/models/account";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { accountService } from "@oursrc/lib/services/accountService";
-import AddEditUser from "./_modals/add-edit-user";
-import { LuUserCheck, LuUserX } from "react-icons/lu";
+import { Search } from "lucide-react";
+import React from "react";
+import { HiChevronDown } from "react-icons/hi";
 
 const roleNameMap = [
   { role: "Veterinarian", name: "Bác sĩ thú y" },
@@ -47,12 +36,11 @@ const columns = [
   { uid: "username", name: "Tên đăng nhập", sortable: true },
   { uid: "roleName", name: "Vai trò", sortable: true },
   { uid: "isActive", name: "Tình trạng", sortable: true },
-  { uid: "actions", name: "Hành động", sortable: false },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["name", "email", "username", "roleName", "isActive", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["name", "email", "username", "roleName", "isActive"];
 
-const AccountList = () => {
+const UserList = () => {
   const [userList, setUserList] = React.useState<User[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
@@ -67,11 +55,6 @@ const AccountList = () => {
     column: "breed",
     direction: "ascending",
   });
-
-  const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure();
-  const { isOpen: isOpenActivate, onOpen: onOpenActivate, onClose: onCloseActivate } = useDisclosure();
-  const { isOpen: isOpenDeactivate, onOpen: onOpenDeactivate, onClose: onCloseDeactivate } = useDisclosure();
-  const [selectedUser, setSelectedUser] = React.useState<User>();
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -95,6 +78,23 @@ const AccountList = () => {
     fetchData();
   }, [page, rowsPerPage]);
 
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const response: ResponseObjectList<User> = await accountService.getUsersInFarm();
+      if (response.isSuccess) {
+        setUserList(response.data.data || []);
+        setTotalRecords(response.data.totalRecords || 0);
+        setPages(response.data?.totalPages || 1);
+        setRowsPerPage(response.data?.pageSize || 5);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
@@ -111,24 +111,6 @@ const AccountList = () => {
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
   }, [sortDescriptor, items]);
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const response: ResponseObjectList<User> = await accountService.getAll(page, rowsPerPage);
-      if (response.isSuccess) {
-        setUserList(response.data.data || []);
-        setTotalRecords(response.data.totalRecords || 0);
-        setPages(response.data?.totalPages || 1);
-        setRowsPerPage(response.data?.pageSize || 5);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const renderCell = React.useCallback((pig: User, columnKey: React.Key) => {
     const cellValue = pig[columnKey as keyof User];
 
@@ -144,41 +126,6 @@ const AccountList = () => {
           <Chip size="sm" color="danger">
             Không hoạt động
           </Chip>
-        );
-      case "actions":
-        return (
-          <div className="flex justify-center items-center gap-2">
-            <Tooltip content="Kích hoạt">
-              <Button
-                size="sm"
-                variant="light"
-                color="warning"
-                isDisabled={pig.isActive}
-                onPress={() => {
-                  setSelectedUser(pig);
-                  onOpenActivate();
-                }}
-                isIconOnly
-              >
-                <LuUserCheck size={20} />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Vô hiệu hóa">
-              <Button
-                size="sm"
-                variant="light"
-                color="danger"
-                isIconOnly
-                isDisabled={!pig.isActive}
-                onPress={() => {
-                  setSelectedUser(pig);
-                  onOpenDeactivate();
-                }}
-              >
-                <LuUserX size={20} />
-              </Button>
-            </Tooltip>
-          </div>
         );
       default:
         return cellValue;
@@ -239,9 +186,6 @@ const AccountList = () => {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button variant="solid" color="primary" onPress={onOpenCreate} endContent={<Plus />}>
-              Thêm người dùng
-            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -297,11 +241,8 @@ const AccountList = () => {
           {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
         </TableBody>
       </Table>
-      {isOpenCreate && <AddEditUser isOpen={isOpenCreate} onClose={onCloseCreate} operation="add" />}
-      {isOpenActivate && selectedUser && <AddEditUser isOpen={isOpenActivate} onClose={onCloseActivate} operation="activate" user={selectedUser} />}
-      {isOpenDeactivate && selectedUser && <AddEditUser isOpen={isOpenDeactivate} onClose={onCloseDeactivate} operation="deactivate" user={selectedUser} />}
     </div>
   );
 };
 
-export default AccountList;
+export default UserList;
