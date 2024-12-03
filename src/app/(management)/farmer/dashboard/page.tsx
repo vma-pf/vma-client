@@ -10,16 +10,12 @@ import { User } from "@oursrc/lib/models/account";
 import { accountService } from "@oursrc/lib/services/accountService";
 import UserList from "./_components/user-list";
 import Abnormal from "./_components/abnormality";
+import { HerdStatistic } from "@oursrc/lib/models/statistic";
 
 const Dashboard = () => {
   const { loading, setLoading } = React.useContext(LoadingStateContext);
   const [dashboard, setDashboard] = React.useState<any>({});
-  const [statisticData, setStatisticData] = React.useState<{
-    numberOfPigsAlive: number;
-    numberOfPigsDead: number;
-    numberOfPigsHealthNormal: number;
-    numberOfPigsHealthSick: number;
-  }>();
+  const [statisticData, setStatisticData] = React.useState<HerdStatistic | undefined>();
   const fetchDashboard = async () => {
     try {
       setLoading(true);

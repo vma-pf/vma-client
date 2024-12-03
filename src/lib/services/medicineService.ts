@@ -15,6 +15,14 @@ export const medicineService = {
     }),
   getMedicineById: (id: string) =>
     http.get(endpoint + `/${id}`),
+  getMedicineTransactions: (medicineId: string, pageIndex: number, pageSize: number) =>
+    http.get(`${endpoint}/${medicineId}/transactions`, {
+      params: {
+        pageIndex: pageIndex?.toString() || "",
+        pageSize: pageSize?.toString() || "",
+      },
+    }
+    ),
   createMedicine: (model: CreateMedicineRequest) =>
     http.post(endpoint, {
       unit: model.unit,

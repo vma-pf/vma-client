@@ -205,7 +205,7 @@ const Treatment = () => {
                       color="primary"
                       // isDisabled={!selectedGuideId}
                       onPress={() => {
-                        router.push(`/veterinarian/treatment/${selectedGuideId}/create-plan`);
+                        router.push(`/veterinarian/treatment/create-plan`);
                       }}
                     >
                       Tạo kế hoạch mới
@@ -416,7 +416,7 @@ const Treatment = () => {
                       variant="solid"
                       isDisabled={!selectedGuideId}
                       onPress={() => {
-                        router.push(`/veterinarian/treatment/${selectedGuideId}/create-plan`);
+                        router.push(`/veterinarian/treatment/create-plan`);
                         onClose();
                       }}
                     >

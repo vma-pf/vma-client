@@ -21,34 +21,30 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
+  Chip,
 } from "@nextui-org/react";
 import { toast } from "@oursrc/hooks/use-toast";
-import { Batch } from "@oursrc/lib/models/batch";
+import { Transaction } from "@oursrc/lib/models/batch";
 import { Medicine } from "@oursrc/lib/models/medicine";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { batchService } from "@oursrc/lib/services/batchService";
+import { medicineService } from "@oursrc/lib/services/medicineService";
 import { dateTimeConverter } from "@oursrc/lib/utils";
 import { EyeIcon, Plus, Search } from "lucide-react";
 import React from "react";
 import { HiChevronDown } from "react-icons/hi2";
 
 const columns = [
-  { name: "TÊN THUỐC", uid: "medicineId", sortable: true },
-  {
-    name: "HÓA ĐƠN",
-    uid: "invoiceId",
-    sortable: true,
-  },
+  { name: "NGÀY THỰC HIỆN", uid: "actionDate", sortable: true },
+  { name: "TÊN THUỐC", uid: "medicineName", sortable: true },
+  { name: "MÃ THUỐC", uid: "medicineName", sortable: true },
   { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
-  { name: "CÒN LẠI", uid: "remainingQuantity", sortable: true },
-  { name: "NGÀY NHẬP", uid: "importedDate", sortable: true },
-  { name: "NGÀY HẾT HẠN", uid: "expiredAt", sortable: true },
+  { name: "PHÂN LOẠI", uid: "type", sortable: true },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["invoiceId", "quantity", "remainingQuantity", "importedDate", "expiredAt"];
+const INITIAL_VISIBLE_COLUMNS = ["actionDate", "medicineName", "quantity", "type"];
 
-const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: () => void; medicine: Medicine | undefined }) => {
-  //Table field
+const TransactionList = ({ medicine }: { medicine: Medicine | undefined }) => {
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
@@ -69,25 +65,24 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
 
     return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
-  const [batchList, setBatchList] = React.useState<Batch[]>([]);
+  const [transactionList, setTransactionList] = React.useState<Transaction[]>([]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredBatches: Batch[] = [...batchList];
+    let filteredTransactions: Transaction[] = [...transactionList];
 
     if (hasSearchFilter) {
-      filteredBatches = filteredBatches.filter((batch) => batch.importedDate.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredTransactions = filteredTransactions.filter((transaction) => transaction.medicineName.toLowerCase().includes(filterValue.toLowerCase()));
     }
     // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
     //   filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.name as string));
     // }
-    return filteredBatches;
-  }, [batchList, filterValue]);
+    return filteredTransactions;
+  }, [transactionList, filterValue]);
 
   const [loading, setLoading] = React.useState(false);
 
   // Use Effect
   React.useEffect(() => {
-    // onClose();
     fetchData();
   }, [page, rowsPerPage]);
 
@@ -95,9 +90,9 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response: ResponseObjectList<Batch> = await batchService.getBatchByMedicineId(medicine?.id || "", page, rowsPerPage);
+      const response: ResponseObjectList<Transaction> = await medicineService.getMedicineTransactions(medicine?.id || "", page, rowsPerPage);
       if (response.isSuccess) {
-        setBatchList(response.data.data);
+        setTransactionList(response.data.data);
         setRowsPerPage(response.data.pageSize);
         setTotalPages(response.data.totalPages);
         setTotalRecords(response.data.totalRecords);
@@ -112,18 +107,14 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
     }
   };
 
-  React.useEffect(() => {
-    // fetchData();
-  }, [page, rowsPerPage]);
-
   const items = React.useMemo(() => {
     return filteredItems;
   }, [filteredItems]);
 
   const sortedItems = React.useMemo(() => {
-    return [...items].sort((a: Batch, b: Batch) => {
-      const first = a[sortDescriptor.column as keyof Batch] as number;
-      const second = b[sortDescriptor.column as keyof Batch] as number;
+    return [...items].sort((a: Transaction, b: Transaction) => {
+      const first = a[sortDescriptor.column as keyof Transaction];
+      const second = b[sortDescriptor.column as keyof Transaction];
       const cmp = first < second ? -1 : first > second ? 1 : 0;
 
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
@@ -200,22 +191,30 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
         </div>
       </div>
     );
-  }, [filterValue, visibleColumns, onSearchChange, onRowsPerPageChange, batchList.length, hasSearchFilter]);
+  }, [filterValue, visibleColumns, onSearchChange, onRowsPerPageChange, transactionList.length, hasSearchFilter]);
 
-  const renderCell = React.useCallback((data: Batch, columnKey: React.Key) => {
-    const cellValue = data[columnKey as keyof Batch];
+  const renderCell = React.useCallback((data: Transaction, columnKey: React.Key) => {
+    const cellValue = data[columnKey as keyof Transaction];
 
     switch (columnKey) {
       case "medicineId":
-      case "invoiceId":
         return (
           <Tooltip showArrow={true} content={String(cellValue)} color="primary" closeDelay={300}>
             <p className="truncate">{String(cellValue)}</p>
           </Tooltip>
         );
-      case "importedDate":
-      case "expiredAt":
+      case "actionDate":
         return dateTimeConverter(cellValue as string);
+      case "type":
+        return data.type === "Nhập thuốc vào" ? (
+          <Chip color="primary" size="sm">
+            {cellValue}
+          </Chip>
+        ) : (
+          <Chip color="warning" size="sm">
+            {cellValue}
+          </Chip>
+        );
       default:
         return cellValue?.toString();
     }
@@ -230,49 +229,41 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
       </div>
     );
   }, [selectedKeys, items.length, page, totalPages, hasSearchFilter]);
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="4xl">
-      <ModalContent>
-        <ModalHeader>
-          <p className="text-2xl font-bold">Danh sách các đợt nhập của thuốc {medicine?.name || ""}</p>
-        </ModalHeader>
-        <ModalBody>
-          <Table
-            color="primary"
-            layout="fixed"
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-              wrapper: "max-h-[750px] w-fit overflow-auto",
-            }}
-            selectedKeys={selectedKeys}
-            // selectionMode="multiple"
-            sortDescriptor={sortDescriptor}
-            topContent={topContent}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-          >
-            <TableHeader columns={headerColumns}>
-              {(column: any) => (
-                <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
-                  {column.name.toUpperCase()}
-                </TableColumn>
-              )}
-            </TableHeader>
-            <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
-              {(item) => (
-                <TableRow key={item.invoiceId} className="h-12">
-                  {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+    <div>
+      <Table
+        color="primary"
+        layout="fixed"
+        bottomContent={bottomContent}
+        bottomContentPlacement="outside"
+        classNames={{
+          wrapper: "max-h-[750px] w-fit overflow-auto",
+        }}
+        selectedKeys={selectedKeys}
+        // selectionMode="multiple"
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="outside"
+        onSelectionChange={setSelectedKeys}
+        onSortChange={setSortDescriptor}
+      >
+        <TableHeader columns={headerColumns}>
+          {(column: any) => (
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
+              {column.name.toUpperCase()}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
+          {(item) => (
+            <TableRow key={item.id} className="h-12">
+              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
-export default BatchList;
+export default TransactionList;

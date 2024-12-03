@@ -27,12 +27,12 @@ import { MdOutlineWarehouse } from "react-icons/md";
 import { TbPackageExport } from "react-icons/tb";
 import MedicineList from "./_components/medicine-list";
 
-const statusColorMap = {
-  "Chờ xử lý": "warning",
-  "Đã yêu cầu": "sky",
-  "Đã duyệt": "success",
-  "Đã hủy": "danger",
-};
+const statusColorMap = [
+  { status: "Chờ xử lý", color: "text-warning" },
+  { status: "Đã yêu cầu", color: "text-sky-500" },
+  { status: "Đã duyệt", color: "text-primary" },
+  { status: "Đã hủy", color: "text-danger" },
+];
 
 const columns = [
   { name: "TÊN", uid: "medicineName", sortable: true },
@@ -199,7 +199,7 @@ const Medicine = () => {
       case "status":
         return (
           <div className="flex items-center">
-            <span className={`text-${statusColorMap[cellValue as keyof typeof statusColorMap]}-500`}>{cellValue}</span>
+            <span className={`${statusColorMap.find((item) => item.status === cellValue)?.color || "text-default-400"}`}>{cellValue}</span>
           </div>
         );
       default:

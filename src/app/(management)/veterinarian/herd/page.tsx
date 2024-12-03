@@ -19,6 +19,7 @@ import PigList from "./_components/pig-list";
 import { EyeIcon } from "lucide-react";
 import HerdDetail from "@oursrc/components/herds/modals/herd-detail";
 import { calculateProgress } from "@oursrc/lib/utils/dev-utils";
+import { HerdStatistic } from "@oursrc/lib/models/statistic";
 
 const statusColorMap = [
   { status: "Chưa Kết Thúc", color: "bg-default" },
@@ -31,12 +32,7 @@ const Herd = () => {
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
   const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
-  const [statisticData, setStatisticData] = React.useState<{
-    numberOfPigsAlive: number;
-    numberOfPigsDead: number;
-    numberOfPigsHealthNormal: number;
-    numberOfPigsHealthSick: number;
-  }>();
+  const [statisticData, setStatisticData] = React.useState<HerdStatistic | undefined>();
 
   const getStatistics = async () => {
     try {

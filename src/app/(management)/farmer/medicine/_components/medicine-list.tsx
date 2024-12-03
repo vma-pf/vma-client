@@ -30,7 +30,7 @@ import { columns, INITIAL_VISIBLE_COLUMNS, statusOptions } from "../data";
 import MedicineModal from "./_modals/modal-medicine";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import BatchList from "./_modals/batch-list";
+import DetailMedicine from "@oursrc/components/medicines/modals/detail-medicine";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -245,7 +245,7 @@ export default function MedicineList() {
         );
       case "actions":
         return (
-          <div className="flex justify-end items-center gap-2">
+          <div className="flex justify-center items-center gap-2">
             <Tooltip content="Chi tiết" color="primary">
               <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                 <EyeIcon
@@ -306,7 +306,7 @@ export default function MedicineList() {
           )}
         </TableBody>
       </Table>
-      {isOpenDetail && selectedMedicine && <BatchList isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine || undefined} />}
+      {isOpenDetail && selectedMedicine && <DetailMedicine isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine || undefined} />}
       {/* {isOpenEdit && <MedicineModal isOpen={isOpenEdit} onClose={onCloseEdit} context="edit" medicine={selectedMedicine || undefined} />} */}
       {/* {isOpenDelete && <MedicineModal isOpen={isOpenDelete} onClose={onCloseDelete} context="delete" medicine={selectedMedicine || undefined} />} */}
     </div>

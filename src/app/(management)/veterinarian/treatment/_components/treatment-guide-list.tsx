@@ -341,6 +341,7 @@ const TreatmentGuideList = ({
           const selectedKeysArray = Array.from(keys);
           const selectedTreatmentGuide = dataList.filter((data) => data.id && selectedKeysArray.includes(data.id));
           setSelectedGuideId(selectedTreatmentGuide[0].id);
+          localStorage.setItem("treatmentGuideId", selectedTreatmentGuide[0].id || "");
         }}
         sortDescriptor={sortDescriptor}
         topContent={topContent}

@@ -28,7 +28,7 @@ import React from "react";
 import { HiChevronDown } from "react-icons/hi";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import BatchList from "./_modals/batch-list";
+import DetailMedicine from "@oursrc/components/medicines/modals/detail-medicine";
 
 const columns = [
   { name: "TÊN", uid: "name", sortable: true },
@@ -44,10 +44,10 @@ const columns = [
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
   { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
   { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
-  // { name: "ACTIONS", uid: "actions" },
+  { name: "ACTIONS", uid: "actions" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "registerNumber", "netWeight", "usage"];
+const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "registerNumber", "netWeight", "usage", "actions"];
 
 export default function MedicineList() {
   const { toast } = useToast();
@@ -262,7 +262,7 @@ export default function MedicineList() {
         );
       case "actions":
         return (
-          <div className="flex justify-end items-center gap-2">
+          <div className="flex justify-center items-center gap-2">
             <Tooltip content="Chi tiết" color="primary">
               <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
                 <EyeIcon
@@ -323,6 +323,7 @@ export default function MedicineList() {
           )}
         </TableBody>
       </Table>
+      {isOpenDetail && selectedMedicine && <DetailMedicine isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine || undefined} />}
     </div>
   );
 }
