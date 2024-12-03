@@ -47,8 +47,7 @@ const columns = [
 
 const INITIAL_VISIBLE_COLUMNS = ["invoiceId", "quantity", "remainingQuantity", "importedDate", "expiredAt"];
 
-const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: () => void; medicine: Medicine | undefined }) => {
-  //Table field
+const BatchList = ({ medicine }: { medicine: Medicine | undefined }) => {
   const [filterValue, setFilterValue] = React.useState("");
   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
@@ -75,7 +74,7 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
     let filteredBatches: Batch[] = [...batchList];
 
     if (hasSearchFilter) {
-      filteredBatches = filteredBatches.filter((batch) => batch.importedDate.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredBatches = filteredBatches.filter((batch) => batch.expiredAt.toLowerCase().includes(filterValue.toLowerCase()));
     }
     // if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
     //   filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.name as string));
@@ -87,7 +86,6 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
 
   // Use Effect
   React.useEffect(() => {
-    // onClose();
     fetchData();
   }, [page, rowsPerPage]);
 
@@ -111,10 +109,6 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
       setLoading(false);
     }
   };
-
-  React.useEffect(() => {
-    // fetchData();
-  }, [page, rowsPerPage]);
 
   const items = React.useMemo(() => {
     return filteredItems;
@@ -230,48 +224,40 @@ const BatchList = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClose: ()
       </div>
     );
   }, [selectedKeys, items.length, page, totalPages, hasSearchFilter]);
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="4xl">
-      <ModalContent>
-        <ModalHeader>
-          <p className="text-2xl font-bold">Danh sách các đợt nhập của thuốc {medicine?.name || ""}</p>
-        </ModalHeader>
-        <ModalBody>
-          <Table
-            color="primary"
-            layout="fixed"
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-              wrapper: "max-h-[750px] w-fit overflow-auto",
-            }}
-            selectedKeys={selectedKeys}
-            // selectionMode="multiple"
-            sortDescriptor={sortDescriptor}
-            topContent={topContent}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-          >
-            <TableHeader columns={headerColumns}>
-              {(column: any) => (
-                <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
-                  {column.name.toUpperCase()}
-                </TableColumn>
-              )}
-            </TableHeader>
-            <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
-              {(item) => (
-                <TableRow key={item.invoiceId} className="h-12">
-                  {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+    <div>
+      <Table
+        color="primary"
+        layout="fixed"
+        bottomContent={bottomContent}
+        bottomContentPlacement="outside"
+        classNames={{
+          wrapper: "max-h-[750px] w-fit overflow-auto",
+        }}
+        selectedKeys={selectedKeys}
+        // selectionMode="multiple"
+        sortDescriptor={sortDescriptor}
+        topContent={topContent}
+        topContentPlacement="outside"
+        onSelectionChange={setSelectedKeys}
+        onSortChange={setSortDescriptor}
+      >
+        <TableHeader columns={headerColumns}>
+          {(column: any) => (
+            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
+              {column.name.toUpperCase()}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
+          {(item) => (
+            <TableRow key={item.invoiceId} className="h-12">
+              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

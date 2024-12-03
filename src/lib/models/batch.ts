@@ -20,3 +20,12 @@ export type Batch = {
     medicine: Medicine | null;
     invoice: Invoice | null;
 }
+
+export type Transaction = {
+    id: string;
+    actionDate: string;
+    medicineName: string;
+    medicineId: string;
+    quantity: number;
+    type: "Xuất thuốc ra" | "Nhập thuốc vào";
+}

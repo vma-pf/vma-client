@@ -132,7 +132,13 @@ const TreatmentGuideGridList = ({
                   ) : (
                     <Tooltip content="Chọn" color="primary">
                       <span className="text-lg text-primary cursor-pointer active:opacity-50">
-                        <FaRegSave size={24} onClick={() => setSelectedGuideId(x.id)} />
+                        <FaRegSave
+                          size={24}
+                          onClick={() => {
+                            setSelectedGuideId(x.id);
+                            localStorage.setItem("treatmentGuideId", x.id || "");
+                          }}
+                        />
                       </span>
                     </Tooltip>
                   )}

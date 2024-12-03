@@ -71,14 +71,8 @@ export type TreatmentPlanStep = {
   isCurrentTab: boolean;
 };
 
-const CreatePLan = ({
-  params,
-}: {
-  params: {
-    id: string;
-  };
-}) => {
-  const treatmentGuideId = params.id;
+const CreatePLan = () => {
+  const treatmentGuideId = localStorage.getItem("treatmentGuideId") ?? "";
   const { toast } = useToast();
   const { loading, setLoading } = React.useContext(LoadingStateContext);
   const router = useRouter();
@@ -249,6 +243,7 @@ const CreatePLan = ({
           title: "Tạo kế hoạch điều trị thành công",
           variant: "success",
         });
+        localStorage.removeItem("treatmentGuideId");
         setIsDoneAll(true);
         router.push("/veterinarian/treatment");
       } else {
@@ -409,40 +404,42 @@ const CreatePLan = ({
   }, [selectedAreas]);
   return (
     <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ duration: 0.4 }}>
-      <Sheet
-        open={openTreatmentGuide}
-        onOpenChange={() => {
-          if (!openTreatmentGuide) {
-            fetchTreatmentGuide();
-          }
-          setOpenTreatmentGuide(!openTreatmentGuide);
-        }}
-      >
-        <SheetTrigger>
-          <Tooltip placement="top-end" content="Xem hướng dẫn điều trị" showArrow closeDelay={200}>
-            <div className="fixed z-50 top-44 right-0 rounded-l-2xl bg-primary text-white w-9 cursor-pointer hover:w-11 duration-300">
-              <MdOutlineKeyboardDoubleArrowLeft size={35} />
-            </div>
-          </Tooltip>
-        </SheetTrigger>
-        <SheetContent className="w-1/3">
-          <SheetHeader>
-            <p className="text-2xl font-bold">Hướng dẫn điều trị</p>
-          </SheetHeader>
-          <div className="p-5 overflow-auto">
-            {treatmentGuide ? (
-              <div>
-                <p className="text-lg font-semibold">Bệnh:</p>
-                <p className="text-lg">{treatmentGuide?.diseaseDescription}</p>
-                <p className="text-lg mt-2">Cách điều trị:</p>
-                <p>{treatmentGuide?.cure}</p>
+      {treatmentGuideId && (
+        <Sheet
+          open={openTreatmentGuide}
+          onOpenChange={() => {
+            if (!openTreatmentGuide) {
+              fetchTreatmentGuide();
+            }
+            setOpenTreatmentGuide(!openTreatmentGuide);
+          }}
+        >
+          <SheetTrigger>
+            <Tooltip placement="top-end" content="Xem hướng dẫn điều trị" showArrow closeDelay={200}>
+              <div className="fixed z-50 top-44 right-0 rounded-l-2xl bg-primary text-white w-9 cursor-pointer hover:w-11 duration-300">
+                <MdOutlineKeyboardDoubleArrowLeft size={35} />
               </div>
-            ) : (
-              <p>Không tìm thấy hướng dẫn điều trị</p>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
+            </Tooltip>
+          </SheetTrigger>
+          <SheetContent className="w-1/3">
+            <SheetHeader>
+              <p className="text-2xl font-bold">Hướng dẫn điều trị</p>
+            </SheetHeader>
+            <div className="p-5 overflow-auto">
+              {treatmentGuide ? (
+                <div>
+                  <p className="text-lg font-semibold">Bệnh:</p>
+                  <p className="text-lg">{treatmentGuide?.diseaseDescription}</p>
+                  <p className="text-lg mt-2">Cách điều trị:</p>
+                  <p>{treatmentGuide?.cure}</p>
+                </div>
+              ) : (
+                <p>Không tìm thấy hướng dẫn điều trị</p>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
       {/* {selectedUpdateTemplate && isOpenUpdateTemplate && (
         <UpdateDeleteTemplate
           isOpen={isOpenUpdateTemplate}

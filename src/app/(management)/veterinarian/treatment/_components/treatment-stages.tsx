@@ -227,7 +227,14 @@ const TreatmentStages = ({
                     )}
                     <div className="mb-10 grid gap-3">
                       <Divider orientation="vertical" className="absolute left-0 translate-x-[-24.3px] z-0 top-1" />
-                      <div className="text-lg font-semibold">{dateConverter(stage.applyStageTime)}</div>
+                      <div className="text-lg font-semibold">
+                        {dateConverter(stage.applyStageTime)}{" "}
+                        {!stage.isDone && stage.applyStageTime < new Date().toISOString() && (
+                          <span className="ml-4 text-danger text-md">
+                            *Đã quá hạn {Math.floor((new Date().getTime() - new Date(stage.applyStageTime).getTime()) / (1000 * 60 * 60 * 24))} ngày
+                          </span>
+                        )}
+                      </div>
                       <div className="text-lg font-extrabold">{stage.title}</div>
                       {/* <div className="">{stage.timeSpan}</div> */}
                       <div className="flex items-center gap-2">

@@ -1,9 +1,10 @@
 "use client";
 import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@oursrc/components/ui/chart";
+import { HerdStatistic } from "@oursrc/lib/models/statistic";
 import React from "react";
 import { LabelList, Pie, PieChart } from "recharts";
 
-const Chart = ({ data }: { data: { numberOfPigsAlive: number; numberOfPigsDead: number; numberOfPigsHealthNormal: number; numberOfPigsHealthSick: number } }) => {
+const Chart = ({ data }: { data: HerdStatistic }) => {
   // const chartData = [
   //   { status: "healthy", pigs: 80, fill: "#6ee7b7" },
   //   { status: "sick", pigs: 15, fill: "#10b981" },
