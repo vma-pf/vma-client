@@ -62,7 +62,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const [selectedHerds, setSelectedHerds] = React.useState<HerdInfo[]>([]);
   const [selectedAreas, setSelectedAreas] = React.useState<Area[]>([]);
   const [allSelectedPigs, setAllSelectedPigs] = React.useState<Pig[]>([]);
-  const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);
+  // const [selectedPigs, setSelectedPigs] = React.useState<Pig[]>([]);
   const [openBy, setOpenBy] = React.useState<"herd" | "cage" | "area">("herd");
   const [templateName, setTemplateName] = React.useState("");
   const [templates, setTemplates] = React.useState<PlanTemplate[]>([]);
@@ -104,32 +104,30 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
 
   React.useEffect(() => {
     if (stages.length > 0) {
-      const sortedStages = [...stages].sort((a, b) => 
-        new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime()
-      );
-      
+      const sortedStages = [...stages].sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime());
+
       if (sortedStages[0].applyStageTime) {
         const lastStage = sortedStages[sortedStages.length - 1];
         const lastDate = new Date(lastStage.applyStageTime);
         lastDate.setDate(lastDate.getDate() + parseInt(lastStage.timeSpan));
-        
+
         const firstStageDate = new Date(sortedStages[0].applyStageTime);
         firstStageDate.setHours(0, 0, 0, 0);
         setDate({
           start: parseDate(firstStageDate.toJSON().slice(0, 10)),
-          end: parseDate(lastDate.toJSON().slice(0, 10))
+          end: parseDate(lastDate.toJSON().slice(0, 10)),
         });
       }
     }
   }, [stages]);
 
   React.useEffect(() => {
+    console.log(selectedHerds);
     if (selectedHerds.length > 0) {
       fetchPigs("herd");
     } else {
       setAllSelectedPigs([]);
     }
-    console.log(selectedHerds);
   }, [selectedHerds]);
 
   React.useEffect(() => {
@@ -147,6 +145,27 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
       setAllSelectedPigs([]);
     }
   }, [selectedAreas]);
+
+  React.useEffect(() => {
+    if (allSelectedPigs.length === 0) {
+      setStages([
+        {
+          id: v4(),
+          title: "",
+          timeSpan: "1",
+          applyStageTime: "",
+          vaccinationToDos: [{ description: "" }],
+          inventoryRequest: {
+            id: v4(),
+            title: "",
+            description: "",
+            medicines: [],
+          },
+        },
+      ]);
+      setSelectedTemplate(undefined);
+    }
+  }, [allSelectedPigs]);
 
   const fetchTemplates = async () => {
     try {
@@ -190,9 +209,22 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
     } catch (e) {
       console.log(e);
     } finally {
-      setSelectedPigs([]);
-      setStages([])
-      setSelectedTemplate(undefined)
+      setStages([
+        {
+          id: v4(),
+          title: "",
+          timeSpan: "1",
+          applyStageTime: "",
+          vaccinationToDos: [{ description: "" }],
+          inventoryRequest: {
+            id: v4(),
+            title: "",
+            description: "",
+            medicines: [],
+          },
+        },
+      ]);
+      setSelectedTemplate(undefined);
     }
   };
 
@@ -481,13 +513,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                         value={templateName}
                         onChange={(e) => setTemplateName(e.target.value)}
                       />
-                      <Button
-                        color="primary"
-                        isIconOnly
-                        onClick={handleCreateTemplate}
-                        isLoading={loading}
-                        isDisabled={allSelectedPigs.length === 0}
-                      >
+                      <Button color="primary" isIconOnly onClick={handleCreateTemplate} isLoading={loading} isDisabled={allSelectedPigs.length === 0}>
                         <Check />
                       </Button>
                     </div>
