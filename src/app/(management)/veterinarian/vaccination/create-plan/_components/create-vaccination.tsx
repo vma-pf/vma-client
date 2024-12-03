@@ -108,7 +108,17 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
 
       if (sortedStages[0].applyStageTime) {
         const lastStage = sortedStages[sortedStages.length - 1];
-        const lastDate = new Date(lastStage.applyStageTime);
+        let lastDate = new Date(lastStage.applyStageTime);
+
+        // Check if lastDate is valid
+        if (isNaN(lastDate.getTime())) {
+          // If invalid, get date from previous stage
+          const prevStage = sortedStages[sortedStages.length - 2];
+          if (prevStage) {
+            lastDate = new Date(prevStage.applyStageTime);
+          }
+        }
+
         lastDate.setDate(lastDate.getDate() + parseInt(lastStage.timeSpan));
 
         const firstStageDate = new Date(sortedStages[0].applyStageTime);
