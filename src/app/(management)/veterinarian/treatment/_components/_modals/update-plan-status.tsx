@@ -29,12 +29,12 @@ const UpdatePlanStatus = ({
   isOpen,
   onClose,
   selectedTreatment,
-  setSelectedTreatment,
+  setSelectedTreatmentId,
 }: {
   isOpen: boolean;
   onClose: () => void;
   selectedTreatment: CreateTreatmentStageProps;
-  setSelectedTreatment: React.Dispatch<React.SetStateAction<CreateTreatmentStageProps | undefined>>;
+  setSelectedTreatmentId: any;
 }) => {
   const { toast } = useToast();
   const [selectedPigs, setSelectedPigs] = React.useState<TreatmentLog[]>([]);
@@ -52,7 +52,7 @@ const UpdatePlanStatus = ({
           variant: "success",
         });
         onClose();
-        setSelectedTreatment(undefined);
+        setSelectedTreatmentId("");
       } else {
         toast({
           title: res.errorMessage || "Câp nhật trạng thái kế hoạch điều trị thất bại",

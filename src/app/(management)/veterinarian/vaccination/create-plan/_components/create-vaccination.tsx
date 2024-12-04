@@ -132,7 +132,6 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   }, [stages]);
 
   React.useEffect(() => {
-    console.log(selectedHerds);
     if (selectedHerds.length > 0) {
       fetchPigs("herd");
     } else {

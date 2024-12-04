@@ -1,14 +1,5 @@
 import { Cage } from "./cage";
 
-export type CreateHerdRequest = {
-    code: string;
-    breed: string;
-    totalNumber: number;
-    expectedEndDate: Date;
-    startDate: Date;
-    description: string;
-};
-
 export type UpdateHerdRequest = {
     breed: string;
     totalNumber: number;
@@ -36,6 +27,7 @@ export type HerdInfo = {
     expectedEndDate: string;
     actualEndDate: string;
     startDate: string;
+    dateOfBirth: string;
     description: string;
     averageWeight: number;
     status: string;

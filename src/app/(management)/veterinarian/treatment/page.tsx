@@ -4,16 +4,23 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import {
+  Accordion,
+  AccordionItem,
   Button,
   Card,
   CardBody,
   Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Image,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Progress,
   Skeleton,
   Spinner,
   Tab,
@@ -32,10 +39,9 @@ import TreatmentGuideList from "./_components/treatment-guide-list";
 import CommonDiseaseList from "./_components/common-disease-list";
 import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
 import { Pig } from "@oursrc/lib/models/pig";
-import { Layers3, Star, Table } from "lucide-react";
+import { Filter, Layers3, Star, Table } from "lucide-react";
 import TreatmentGuideGridList from "./_components/treatment-guide-grid-list";
 import CommonDiseaseGridList from "./_components/common-disease-grid-list";
-import TreatmentStages from "./_components/treatment-stages";
 import { Sheet, SheetClose, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@oursrc/components/ui/sheet";
 import { GiCage } from "react-icons/gi";
 import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
@@ -44,6 +50,18 @@ import { abnormalityService } from "@oursrc/lib/services/abnormalityService";
 import { CommonDisease } from "@oursrc/lib/models/common-disease";
 import { FaRegSave, FaStar } from "react-icons/fa";
 import { BsArrowReturnRight } from "react-icons/bs";
+import { FaRegCalendarPlus } from "react-icons/fa6";
+import { dateConverter } from "@oursrc/lib/utils";
+import { BiDetail } from "react-icons/bi";
+import { HiOutlineDocumentReport } from "react-icons/hi";
+import TreatmentStages from "@oursrc/components/treatment/treatment-stages";
+
+const statusColorMap = [
+  { status: "Đã hoàn thành", color: "text-primary" },
+  { status: "Đang diễn ra", color: "text-sky-500" },
+  { status: "Chưa bắt đầu", color: "text-warning" },
+  { status: "Đã hủy", color: "text-danger" },
+];
 
 const Treatment = () => {
   const router = useRouter();
@@ -53,6 +71,7 @@ const Treatment = () => {
   const [loadMore, setLoadMore] = React.useState(true);
   const [page, setPage] = React.useState(1);
   const [totalPages, setTotalPages] = React.useState(1);
+  const [filterStatus, setFilterStatus] = React.useState("all");
 
   const [selectedTreatmentId, setSelectedTreatmentId] = React.useState(new Set<string>());
   const [treatmentData, setTreatmentData] = React.useState<TreatmentData | undefined>();
@@ -69,6 +88,34 @@ const Treatment = () => {
       ...prevState,
       [id]: !prevState[id],
     }));
+  };
+
+  const calculateProgress = (startDate: string, endDate: string) => {
+    const start = new Date(startDate).getTime();
+    const end = new Date(endDate).getTime();
+    const now = new Date().getTime();
+    return ((now - start) / (end - start)) * 100;
+  };
+
+  const filterValue = React.useMemo(() => {
+    if (filterStatus === "all") {
+      return "Tất cả";
+    } else if (filterStatus === "done") {
+      return "Đã tiêm";
+    } else {
+      return "Chưa tiêm";
+    }
+  }, [filterStatus]);
+
+  const filterTreatment = (status: string) => {
+    const data = treatmentData?.treatmentStages || [];
+    if (status === "all") {
+      return data;
+    } else if (status === "done") {
+      return data.filter((treatment) => treatment.isDone === true);
+    } else {
+      return data.filter((treatment) => treatment.isDone === false);
+    }
   };
 
   const findTreatmentPlan = async (id: string) => {
@@ -288,13 +335,149 @@ const Treatment = () => {
                 ))}
               </div>
             ) : (
-              <TreatmentStages
-                treatmentData={treatmentData}
-                diseaseReports={diseaseReports}
-                pigs={pigs}
-                selectedTreatment={selectedTreatment}
-                setSelectedTreatment={setSelectedTreatment}
-              />
+              <div className="w-full mb-3 p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+                <div className="flex flex-shrink gap-5">
+                  <div className="p-3 border-2 rounded-2xl w-1/2">
+                    <p className="text-xl font-semibold">Chi tiết kế hoạch điều trị</p>
+                    {treatmentData ? (
+                      <div>
+                        <div className="my-2 flex items-center">
+                          <FaRegCalendarPlus className="my-auto mr-4 text-3xl" />
+                          <p className="my-auto text-2xl font-bold mt-3">{treatmentData.title}</p>
+                        </div>
+                        <p className="text-lg mt-3">{treatmentData.description}</p>
+                        <div className="flex justify-between">
+                          <p className="text-md mt-3">Đàn:</p>
+                          <p className="text-lg mt-3 font-semibold">{treatmentData.herdId}</p>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-md mt-3">Ngày bắt đầu</p>
+                          <p className="text-md mt-3">Ngày kết thúc (dự kiến)</p>
+                        </div>
+                        <Progress value={calculateProgress(treatmentData.startDate, treatmentData.expectedEndDate)} />
+                        <div className="flex justify-between">
+                          <p className="text-lg mt-3 font-semibold">{dateConverter(treatmentData.startDate)}</p>
+                          <p className="text-lg mt-3 font-semibold">{dateConverter(treatmentData.expectedEndDate)}</p>
+                        </div>
+                        {treatmentData.actualEndDate && (
+                          <div className="flex justify-between">
+                            <p className="text-md mt-3">Ngày kết thúc (thực tế):</p>
+                            <p className="text-lg mt-3 font-semibold">{treatmentData.actualEndDate}</p>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <p className="text-md mt-3">Ghi chú:</p>
+                          <p className="text-lg mt-3 font-semibold">{treatmentData.note ? treatmentData.note : "Không có"}</p>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-md mt-3">Tình trạng</p>
+                          <p className={`text-lg mt-3 font-semibold ${statusColorMap.find((status) => status.status === treatmentData.status)?.color}`}>
+                            {treatmentData.status}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-center text-lg mt-3">Chưa chọn kế hoạch điều trị</p>
+                    )}
+                  </div>
+                  <div className="p-3 border-2 rounded-2xl w-1/2">
+                    <Accordion variant="splitted" defaultExpandedKeys={["2"]}>
+                      <AccordionItem key="1" title="Danh sách heo áp dụng" startContent={<BiDetail className="text-sky-500" size={25} />}>
+                        {/* <p className="text-xl font-semibold">Thông tin đàn heo</p> */}
+                        {pigs?.length > 0 ? (
+                          <div className="grid grid-cols-2 gap-3">
+                            {pigs.map((pig) => (
+                              <div key={pig.id} className="p-3 border-2 rounded-lg">
+                                <div className="mt-3 flex justify-between">
+                                  <p className="text-md">Mã heo:</p>
+                                  <p className="text-lg font-semibold">{pig.pigCode}</p>
+                                </div>
+                                <div className="mt-3 flex justify-between">
+                                  <p className="text-md">Chuồng:</p>
+                                  <p className="text-lg font-semibold">{pig.cageCode}</p>
+                                </div>
+                                <div className="mt-3 flex justify-between">
+                                  <p className="text-md">Giống:</p>
+                                  <p className="text-lg font-semibold">{pig.breed}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-center text-lg mt-3">Chưa chọn kế hoạch điều trị</p>
+                        )}
+                      </AccordionItem>
+                      <AccordionItem key="2" title="Báo cáo bệnh" startContent={<HiOutlineDocumentReport className="text-emerald-500" size={25} />}>
+                        {diseaseReports.length > 0 ? (
+                          diseaseReports &&
+                          diseaseReports?.map((diseaseReport) => (
+                            <div key={diseaseReport.id}>
+                              <div className="mt-3 flex justify-between">
+                                <p className="text-md">Nội dung:</p>
+                                <p className="text-lg font-semibold">{diseaseReport.description}</p>
+                              </div>
+                              <div className="mt-3 flex justify-between">
+                                <p className="text-md">Tổng thời gian điều trị (dự kiến):</p>
+                                <p className="text-lg font-semibold">{diseaseReport.totalTreatmentTime}</p>
+                              </div>
+                              {diseaseReport.treatmentResult && (
+                                <div className="mt-3 flex justify-between">
+                                  <p className="text-md">Kết quả điều trị:</p>
+                                  <p className="text-lg font-semibold">{diseaseReport.treatmentResult}</p>
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-center text-lg mt-3">Chưa có báo cáo bệnh</p>
+                        )}
+                      </AccordionItem>
+                    </Accordion>
+                  </div>
+                </div>
+                {treatmentData?.treatmentStages && (
+                  <div>
+                    <div className="mt-5 mb-3 flex justify-between items-center">
+                      <p className="text-xl font-semibold">Các giai đoạn điều trị</p>
+                      <Dropdown>
+                        <DropdownTrigger>
+                          <Button variant="bordered" color="primary" className="capitalize" startContent={<Filter size={20} />}>
+                            {filterValue}
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu
+                          aria-label="Single selection example"
+                          variant="flat"
+                          disallowEmptySelection
+                          selectionMode="single"
+                          selectedKeys={filterStatus ? [filterStatus] : []}
+                          onSelectionChange={(selectedKeys: any) => {
+                            setFilterStatus(selectedKeys.values().next().value);
+                          }}
+                        >
+                          <DropdownItem key="all">Tất cả</DropdownItem>
+                          <DropdownItem key="done">Đã tiêm</DropdownItem>
+                          <DropdownItem key="not-done">Chưa tiêm</DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
+                    </div>
+                    <div className="relative after:absolute after:inset-y-0 after:w-px after:bg-muted-foreground/20">
+                      {treatmentData?.treatmentStages.length === 0 || filterTreatment(filterStatus).length === 0 ? (
+                        <p className="text-center text-lg mt-3">Không có lịch trình tiêm phòng</p>
+                      ) : (
+                        filterTreatment(filterStatus)
+                          // ?.filter((vaccination: VaccinationStageProps) => vaccination.applyStageTime < new Date().toISOString())
+                          ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
+                          ?.map((stage) => (
+                            <div key={stage.id} className="grid ml-16 relative">
+                              <TreatmentStages stage={stage} setSelectedTreatmentId={setSelectedTreatmentId} action="request" />
+                            </div>
+                          ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
             {selectedAbnormality && isOpen && (
               <Modal size="4xl" isOpen={isOpen} onClose={onClose} scrollBehavior="inside">

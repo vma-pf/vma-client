@@ -1,6 +1,6 @@
 "use client";
 import { CalendarDate, getLocalTimeZone, parseDate, today } from "@internationalized/date";
-import { Autocomplete, AutocompleteItem, Button, DateRangePicker, Input, RangeValue, Textarea } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem, Button, DatePicker, DateRangePicker, Input, RangeValue, Textarea } from "@nextui-org/react";
 import AttachMedia from "@oursrc/components/ui/attach-media/attach-media";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -30,6 +30,7 @@ const HerdCreate = () => {
   const code = watch("code");
   const breed = watch("breed");
   const description = watch("description");
+  const dateOfBirth = watch("dateOfBirth");
 
   const breedOptions = [
     { label: "Lợn Móng Cái", value: "Lợn Móng Cái" },
@@ -177,21 +178,37 @@ const HerdCreate = () => {
               </Autocomplete>
             </div>
           </div>
-          <DateRangePicker
-            label="Ngày bắt đầu - Ngày kết thúc (dự kiến)"
-            radius="sm"
-            size="lg"
-            labelPlacement="outside"
-            isRequired
-            isInvalid={dateRange.end <= dateRange.start ? true : false}
-            errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
-            minValue={today(getLocalTimeZone())}
-            validationBehavior="native"
-            value={dateRange || ""}
-            onChange={(event) => {
-              handleDateChange(event);
-            }}
-          />
+          <div className="grid grid-flow-row grid-cols-2 gap-4 mt-10">
+            <DateRangePicker
+              label="Ngày bắt đầu - Ngày kết thúc (dự kiến)"
+              radius="sm"
+              size="lg"
+              labelPlacement="outside"
+              isRequired
+              isInvalid={dateRange.end <= dateRange.start ? true : false}
+              errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
+              minValue={today(getLocalTimeZone())}
+              validationBehavior="native"
+              value={dateRange || ""}
+              onChange={(event) => {
+                handleDateChange(event);
+              }}
+            />
+            <DatePicker
+              label="Ngày sinh"
+              radius="sm"
+              size="lg"
+              labelPlacement="outside"
+              isRequired
+              isInvalid={errors.dateOfBirth ? true : false}
+              errorMessage="Ngày sinh không được để trống"
+              validationBehavior="native"
+              value={dateOfBirth ? parseDate(dateOfBirth.split("T")[0]) : today(getLocalTimeZone())}
+              onChange={(event) => {
+                setValue("dateOfBirth", new Date(event.toString()).toISOString());
+              }}
+            />
+          </div>
           <div className="grid grid-cols-1 mb-5">
             <Textarea
               minRows={20}

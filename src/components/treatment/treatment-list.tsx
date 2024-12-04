@@ -18,12 +18,8 @@ import {
   Pagination,
 } from "@nextui-org/react";
 import React, { useMemo } from "react";
-import { VaccinationData } from "../../../../../lib/models/vaccination";
-import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
-import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { TreatmentData } from "@oursrc/lib/models/treatment";
-import { treatmentGuideService } from "@oursrc/lib/services/treatmentGuideService";
 import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
 import { Search } from "lucide-react";
 import { HiChevronDown } from "react-icons/hi2";
@@ -35,92 +31,6 @@ const columns = [
 ];
 
 const INITIAL_VISIBLE_COLUMNS = ["title", "description", "note"];
-
-const statusMapColor = [
-  { name: "red", value: 0 },
-  { name: "blue", value: 1 },
-  { name: "green", value: 2 },
-  { name: "red", value: 3 },
-];
-const statusMap = [
-  { name: "Chưa bắt đầu", value: 0 },
-  { name: "Đang thực hiện", value: 1 },
-  { name: "Đã hoàn thành", value: 2 },
-  { name: "Đã hủy", value: 3 },
-];
-
-// const treatmentData: TreatmentData[] = [
-//   {
-//     id: "1",
-//     title: "Lịch 1",
-//     description: "Mô tả 1",
-//     herdId: "1",
-//     startDate: "2022-10-10",
-//     expectedEndDate: "2022-10-20",
-//     actualEndDate: "2022-10-20",
-//     note: "Ghi chú 1",
-//     status: 0,
-//     treatmentStages: [
-//       {
-//         title: "Bước 1",
-//         applyStageTime: "2022-10-10",
-//         timeSpan: "10",
-//         isDone: false,
-//         treatmentToDos: [{ description: "Mô tả 1" }],
-//         inventoryRequest: {
-//           id: "1",
-//           medicines: [
-//             {
-//               medicineId: "1",
-//               medicineName: "Thuốc 1",
-//               quantity: 10,
-//               netWeight: "10",
-//               portionEachPig: 10,
-//               unit: "kg",
-//             },
-//           ],
-//           description: "Mô tả 1",
-//           title: "Yêu cầu 1",
-//         },
-//       },
-//     ],
-//   },
-//   {
-//     id: "2",
-//     title: "Lịch 2",
-//     description: "Mô tả 2",
-//     herdId: "2",
-//     startDate: "2022-10-10",
-//     expectedEndDate: "2022-10-20",
-//     actualEndDate: "2022-10-20",
-//     note: "Ghi chú 2",
-//     status: 1,
-//     treatmentStages: [
-//       {
-//         title: "Bước 2",
-//         applyStageTime: "2022-10-10",
-//         timeSpan: "10",
-//         isDone: false,
-//         treatmentToDos: [{ description: "Mô tả 2" }],
-//         inventoryRequest: {
-//           id: "2",
-//           medicines: [
-//             {
-//               medicineId: "1",
-//               medicineName: "Thuốc 1",
-//               quantity: 10,
-//               netWeight: "10",
-//               portionEachPig: 10,
-//               unit: "kg",
-//             },
-//           ],
-//           description: "Mô tả 2",
-//           title: "Yêu cầu 2",
-//         },
-//       },
-//     ],
-//   },
-// ];
 
 const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) => {
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
