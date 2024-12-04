@@ -1,22 +1,18 @@
 "use client";
 import React from "react";
-import VaccinationList from "./_components/vaccination-list";
-import { FaClock, FaRegCalendarPlus } from "react-icons/fa6";
-import { VaccinationData, VaccinationStageProps } from "@oursrc/lib/models/vaccination";
-import { Accordion, AccordionItem, Button, Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Progress, Skeleton, useDisclosure } from "@nextui-org/react";
-import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { dateConverter, dateTimeConverter } from "@oursrc/lib/utils";
+import { FaRegCalendarPlus } from "react-icons/fa6";
+import { VaccinationData } from "@oursrc/lib/models/vaccination";
+import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Progress, Skeleton } from "@nextui-org/react";
+import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { dateConverter } from "@oursrc/lib/utils";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
-import { herdService } from "@oursrc/lib/services/herdService";
 import { HerdInfo } from "@oursrc/lib/models/herd";
 import { useRouter } from "next/navigation";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { StageMedicine } from "@oursrc/lib/models/medicine";
-import { TbMedicineSyrup } from "react-icons/tb";
-import { CiBoxList, CiEdit } from "react-icons/ci";
-import { FaCheckCircle } from "react-icons/fa";
-import { GrStatusGoodSmall } from "react-icons/gr";
 import { Filter } from "lucide-react";
+import VaccinationList from "@oursrc/components/vaccination/vaccination-list";
+import VaccinationStage from "@oursrc/components/vaccination/vaccination-stage";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
@@ -26,17 +22,11 @@ const statusColorMap = [
 ];
 
 const Vaccination = () => {
-  const router = useRouter();
-  const { toast } = useToast();
   const [loading, setLoading] = React.useState(false);
   const [selectedVaccinationId, setSelectedVaccinationId] = React.useState(new Set<string>());
   const [vaccinationData, setVaccinationData] = React.useState<VaccinationData | undefined>();
   const [herds, setHerds] = React.useState<HerdInfo[]>([]);
   const [filterStatus, setFilterStatus] = React.useState("all");
-  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
-  const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
-  const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
-  const [selectedVaccination, setSelectedVaccination] = React.useState<VaccinationStageProps>();
 
   const filterValue = React.useMemo(() => {
     if (filterStatus === "all") {
@@ -51,7 +41,6 @@ const Vaccination = () => {
   const findVaccination = async (id: string) => {
     try {
       setLoading(true);
-      // const vaccinationId = "4b75d78c-7c38-4447-9fe7-ebbcaff55faf";
       const res: ResponseObject<any> = await vaccinationService.getVaccinationPlan(id);
       if (res && res.isSuccess) {
         setVaccinationData(res.data);
@@ -89,20 +78,6 @@ const Vaccination = () => {
     }
   };
 
-  const getMedicineInStage = async (id: string) => {
-    try {
-      const res: any = await vaccinationService.getMedicineInStage(id);
-      if (res.isSuccess) {
-        setMedicineList(res.data.medicine || []);
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: error.message || "Có lỗi xảy ra",
-      });
-    }
-  };
-
   React.useEffect(() => {
     if (selectedVaccinationId.size > 0) {
       findVaccination(selectedVaccinationId.values().next().value);
@@ -116,7 +91,7 @@ const Vaccination = () => {
     <div>
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-xl mb-3">Trước tiên, hãy chọn lịch tiêm phòng</p>
-        <VaccinationList setSelectedVaccination={setSelectedVaccinationId} />
+        <VaccinationList selectedVaccination={selectedVaccinationId} setSelectedVaccination={setSelectedVaccinationId} type="all" />
       </div>
       <div className="mb-3 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         {loading ? (
@@ -189,6 +164,10 @@ const Vaccination = () => {
                         <p className="text-lg font-semibold">{herd.breed}</p>
                       </div>
                       <div className="mt-3 flex justify-between">
+                        <p className="text-md">Ngày sinh:</p>
+                        <p className="text-lg font-semibold">{dateConverter(herd.dateOfBirth)}</p>
+                      </div>
+                      <div className="mt-3 flex justify-between">
                         <p className="text-md">Trọng lượng trung bình:</p>
                         <p className="text-lg font-semibold">{herd.averageWeight} kg</p>
                       </div>
@@ -252,56 +231,11 @@ const Vaccination = () => {
                       ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
                       ?.map((stage) => (
                         <div key={stage.id} className="grid ml-16 relative">
-                          {stage.isDone ? (
-                            <FaCheckCircle size={20} className={`text-primary absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
-                          ) : (
-                            <GrStatusGoodSmall
-                              size={20}
-                              className={`${stage.applyStageTime > new Date().toISOString() ? "text-default" : "text-danger"}
-                            absolute left-0 translate-x-[-33.5px] z-10 top-1`}
-                            />
-                          )}
-                          <div className="mb-10 grid gap-3">
-                            <Divider orientation="vertical" className="absolute left-0 translate-x-[-24.3px] z-0 top-1" />
-                            <div className="text-lg font-semibold">
-                              {dateConverter(stage.applyStageTime)}{" "}
-                              {!stage.isDone && stage.applyStageTime < new Date().toISOString() && (
-                                <span className="ml-4 text-danger text-md">
-                                  *Đã quá hạn {Math.floor((new Date().getTime() - new Date(stage.applyStageTime).getTime()) / (1000 * 60 * 60 * 24))} ngày
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-lg font-extrabold">{stage.title}</div>
-                            {/* <div className="">{stage.timeSpan}</div> */}
-                            <div className="flex items-center gap-2">
-                              <div className={`w-3 h-3 ${stage.isDone ? "bg-green-500" : "bg-red-500"} rounded-full`} />
-                              <div className={`${stage.isDone ? "text-green-500" : "text-red-500"}`}>{stage.isDone ? "Đã tiêm" : "Chưa tiêm"}</div>
-                            </div>
-                            <div className="flex gap-2">
-                              <CiBoxList className="text-primary" size={25} />
-                              <p className="text-lg">Các công việc cần thực hiện:</p>
-                            </div>
-                            <ul className="list-disc pl-5">
-                              {stage.vaccinationToDos.map((todo, idx) => (
-                                <li key={idx}>{todo.description}</li>
-                              ))}
-                            </ul>
-                          </div>
+                          <VaccinationStage stage={stage} setSelectedVaccinationId={setSelectedVaccinationId} action="view" />
                         </div>
                       ))
                   )}
                 </div>
-                {/* {isOpenDetail && selectedVaccination && medicineList && (
-                  <DetailPlan isOpen={isOpenDetail} onClose={onCloseDetail} selectedVaccination={selectedVaccination} medicineList={medicineList} />
-                )}
-                {isOpenUpdate && selectedVaccination && (
-                  <UpdatePlanStatus
-                    isOpen={isOpenUpdate}
-                    onClose={onCloseUpdate}
-                    selectedVaccination={selectedVaccination}
-                    setSelectedVaccination={setSelectedVaccination}
-                  />
-                )} */}
               </div>
             )}
           </div>

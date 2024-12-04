@@ -1,6 +1,5 @@
 import http from "@oursrc/lib/http";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
-import { CreateHerdRequest } from "@oursrc/lib/models/herd";
 
 const endpoint = "api/herds";
 
@@ -14,7 +13,7 @@ export const herdService = {
         }),
     getHerdById: (id: string) =>
         http.get<ResponseObjectList<any>>(endpoint + `/${id}`),
-    createHerd: (model: CreateHerdRequest) =>
+    createHerd: (model: any) =>
         http.post<ResponseObjectList<any>>(endpoint, model),
     getHerdStatistics: (id: string) => http.get(endpoint + `/${id}/statistic`),
     getAvgStatistics: (id: string) => http.get(endpoint + `/${id}/statistic-avg-weight`),

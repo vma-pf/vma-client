@@ -2,12 +2,11 @@ export type VaccinationData = {
   id: string;
   title: string;
   description: string;
-  herdCode: string;
   startDate: string;
   expectedEndDate: string;
   actualEndDate: string;
   note: string;
-  status: number;
+  status: string;
   vaccinationStages: VaccinationStageProps[];
 };
 

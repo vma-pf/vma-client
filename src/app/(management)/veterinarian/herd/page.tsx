@@ -86,6 +86,11 @@ const Herd = () => {
                       <p className="my-2 font-semibold">{selectedHerd?.breed}</p>
                     </div>
                     <Divider orientation="horizontal" />
+                    <div className="flex justify-between items-center">
+                      <p className="my-2">Ngày sinh:</p>
+                      <p className="my-2 font-semibold">{dateConverter(selectedHerd?.dateOfBirth)}</p>
+                    </div>
+                    <Divider orientation="horizontal" />
                     <div className="flex justify-between">
                       <p className="text-md mt-3">Ngày bắt đầu đàn</p>
                       <p className="text-md mt-3">Ngày kết thúc nuôi (dự kiến)</p>

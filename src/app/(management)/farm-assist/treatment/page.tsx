@@ -1,10 +1,6 @@
 "use client";
 import React from "react";
 import { dateConverter } from "@oursrc/lib/utils";
-import { HerdInfo } from "@oursrc/lib/models/herd";
-import { useRouter } from "next/navigation";
-import { useToast } from "@oursrc/hooks/use-toast";
-import { StageMedicine } from "@oursrc/lib/models/medicine";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import {
   Accordion,
@@ -21,7 +17,6 @@ import {
   Modal,
   ModalBody,
   ModalContent,
-  ModalFooter,
   ModalHeader,
   Progress,
   Skeleton,
@@ -30,34 +25,29 @@ import {
   Tabs,
   useDisclosure,
 } from "@nextui-org/react";
-import { FaClock, FaRegCalendarPlus, FaStar } from "react-icons/fa6";
-import { TbMedicineSyrup } from "react-icons/tb";
-import { CiBoxList, CiClock2, CiEdit, CiStickyNote } from "react-icons/ci";
-import { TreatmentData, CreateTreatmentStageProps, DiseaseReport } from "@oursrc/lib/models/treatment";
-import TreatmentList from "./_components/treatment-list";
-import { MdCalendarToday, MdOutlineStickyNote2 } from "react-icons/md";
+import { FaRegCalendarPlus, FaStar } from "react-icons/fa6";
+import { CiClock2, CiStickyNote } from "react-icons/ci";
+import { TreatmentData, DiseaseReport } from "@oursrc/lib/models/treatment";
+import { MdOutlineStickyNote2 } from "react-icons/md";
 import { IoIosAlert, IoIosCalendar } from "react-icons/io";
 import { PiNotebookDuotone, PiStethoscope } from "react-icons/pi";
 import { BiDetail } from "react-icons/bi";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { GoDotFill } from "react-icons/go";
 import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
-import { pigService } from "@oursrc/lib/services/pigService";
 import { Pig } from "@oursrc/lib/models/pig";
-import { FaCheckCircle, FaRegSave } from "react-icons/fa";
-import { GrStatusGoodSmall } from "react-icons/gr";
-import { treatmentStageService } from "@oursrc/lib/services/treatmentStageService";
 import { Abnormality } from "@oursrc/lib/models/abnormality";
 import { CommonDisease } from "@oursrc/lib/models/common-disease";
 import { abnormalityService } from "@oursrc/lib/services/abnormalityService";
 import { GiCage } from "react-icons/gi";
-import { BsArrowReturnRight } from "react-icons/bs";
-import { Tooltip } from "recharts";
 import { Filter, Layers3, Table } from "lucide-react";
+import TreatmentStages from "@oursrc/components/treatment/treatment-stages";
 import TreatmentGuideGridList from "../../veterinarian/treatment/_components/treatment-guide-grid-list";
 import TreatmentGuideList from "../../veterinarian/treatment/_components/treatment-guide-list";
 import CommonDiseaseGridList from "../../veterinarian/treatment/_components/common-disease-grid-list";
 import CommonDiseaseList from "../../veterinarian/treatment/_components/common-disease-list";
+import { BsArrowReturnRight } from "react-icons/bs";
+import TreatmentList from "@oursrc/components/treatment/treatment-list";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
@@ -67,8 +57,6 @@ const statusColorMap = [
 ];
 
 const Treatment = () => {
-  const router = useRouter();
-  const { toast } = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = React.useState(false);
   const [loadMore, setLoadMore] = React.useState(true);
@@ -82,11 +70,7 @@ const Treatment = () => {
   const [selectedAbnormality, setSelectedAbnormality] = React.useState<Abnormality>();
   const [commonDiseases, setCommonDiseases] = React.useState<CommonDisease[]>([]);
   const [filterStatus, setFilterStatus] = React.useState("all");
-  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
-  const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
-  const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
   const [selectedGuideId, setSelectedGuideId] = React.useState<string>();
-  const [selectedTreatment, setSelectedTreatment] = React.useState<CreateTreatmentStageProps>();
   const [showFullText, setShowFullText] = React.useState<{ [key: string]: boolean }>({});
 
   const filterValue = React.useMemo(() => {
@@ -114,20 +98,6 @@ const Treatment = () => {
       return data.filter((treatment) => treatment.isDone === true);
     } else {
       return data.filter((treatment) => treatment.isDone === false);
-    }
-  };
-
-  const getMedicineInStage = async (id: string) => {
-    try {
-      const res: ResponseObject<any> = await treatmentStageService.getMedicineInStage(id);
-      if (res.isSuccess) {
-        setMedicineList(res.data.medicine || []);
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: error.message || "Có lỗi xảy ra",
-      });
     }
   };
 
@@ -230,14 +200,12 @@ const Treatment = () => {
   React.useEffect(() => {
     if (selectedTreatmentId.size > 0) {
       findTreatmentPlan(selectedTreatmentId.values().next().value);
+    } else {
+      setTreatmentData(undefined);
+      setPigs([]);
+      setDiseaseReports([]);
     }
   }, [selectedTreatmentId]);
-
-  React.useEffect(() => {
-    if (!selectedTreatment) {
-      findTreatmentPlan(selectedTreatmentId.values().next().value);
-    }
-  }, [selectedTreatment]);
 
   React.useEffect(() => {
     fetchAbnormalities();
@@ -387,25 +355,27 @@ const Treatment = () => {
                   </div>
                   <div className="p-3 border-2 rounded-2xl w-1/2">
                     <Accordion variant="splitted" defaultExpandedKeys={["2"]}>
-                      <AccordionItem key="1" title="Thông tin đàn heo" startContent={<BiDetail className="text-sky-500" size={25} />}>
+                      <AccordionItem key="1" title="Danh sách heo áp dụng" startContent={<BiDetail className="text-sky-500" size={25} />}>
                         {/* <p className="text-xl font-semibold">Thông tin đàn heo</p> */}
                         {pigs?.length > 0 ? (
-                          pigs.map((pig) => (
-                            <div key={pig.id}>
-                              <div className="mt-3 flex justify-between">
-                                <p className="text-md">Tên heo:</p>
-                                <p className="text-lg font-semibold">{pig.pigCode}</p>
+                          <div className="grid grid-cols-2 gap-3">
+                            {pigs.map((pig) => (
+                              <div key={pig.id} className="p-3 border-2 rounded-lg">
+                                <div className="mt-3 flex justify-between">
+                                  <p className="text-md">Mã heo:</p>
+                                  <p className="text-lg font-semibold">{pig.pigCode}</p>
+                                </div>
+                                <div className="mt-3 flex justify-between">
+                                  <p className="text-md">Chuồng:</p>
+                                  <p className="text-lg font-semibold">{pig.cageCode}</p>
+                                </div>
+                                <div className="mt-3 flex justify-between">
+                                  <p className="text-md">Giống:</p>
+                                  <p className="text-lg font-semibold">{pig.breed}</p>
+                                </div>
                               </div>
-                              <div className="mt-3 flex justify-between">
-                                <p className="text-md">Chuồng:</p>
-                                <p className="text-lg font-semibold">{pig.cageCode}</p>
-                              </div>
-                              <div className="mt-3 flex justify-between">
-                                <p className="text-md">Giống:</p>
-                                <p className="text-lg font-semibold">{pig.breed}</p>
-                              </div>
-                            </div>
-                          ))
+                            ))}
+                          </div>
                         ) : (
                           <p className="text-center text-lg mt-3">Chưa chọn kế hoạch điều trị</p>
                         )}
@@ -473,41 +443,7 @@ const Treatment = () => {
                           ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
                           ?.map((stage) => (
                             <div key={stage.id} className="grid ml-16 relative">
-                              {stage.isDone ? (
-                                <FaCheckCircle size={20} className={`text-primary absolute left-0 translate-x-[-33.5px] z-10 top-1`} />
-                              ) : (
-                                <GrStatusGoodSmall
-                                  size={20}
-                                  className={`${stage.applyStageTime > new Date().toISOString() ? "text-default" : "text-danger"}
-                            absolute left-0 translate-x-[-33.5px] z-10 top-1`}
-                                />
-                              )}
-                              <div className="mb-10 grid gap-3">
-                                <Divider orientation="vertical" className="absolute left-0 translate-x-[-24.3px] z-0 top-1" />
-                                <div className="text-lg font-semibold">
-                                  {dateConverter(stage.applyStageTime)}{" "}
-                                  {!stage.isDone && stage.applyStageTime < new Date().toISOString() && (
-                                    <span className="ml-4 text-danger text-md">
-                                      *Đã quá hạn {Math.floor((new Date().getTime() - new Date(stage.applyStageTime).getTime()) / (1000 * 60 * 60 * 24))} ngày
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="text-lg font-extrabold">{stage.title}</div>
-                                {/* <div className="">{stage.timeSpan}</div> */}
-                                <div className="flex items-center gap-2">
-                                  <div className={`w-3 h-3 ${stage.isDone ? "bg-green-500" : "bg-red-500"} rounded-full`} />
-                                  <div className={`${stage.isDone ? "text-green-500" : "text-red-500"}`}>{stage.isDone ? "Đã tiêm" : "Chưa tiêm"}</div>
-                                </div>
-                                <div className="flex gap-2">
-                                  <CiBoxList className="text-primary" size={25} />
-                                  <p className="text-lg">Các công việc cần thực hiện:</p>
-                                </div>
-                                <ul className="list-disc pl-5">
-                                  {stage.treatmentToDos.map((todo, idx) => (
-                                    <li key={idx}>{todo.description}</li>
-                                  ))}
-                                </ul>
-                              </div>
+                              <TreatmentStages stage={stage} setSelectedTreatmentId={setSelectedTreatmentId} action="view" />
                             </div>
                           ))
                       )}

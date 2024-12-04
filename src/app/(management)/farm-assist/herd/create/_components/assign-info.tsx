@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, Textarea } from "@nextui-org/react";
+import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, Skeleton, Textarea } from "@nextui-org/react";
 import { IoMdPricetags } from "react-icons/io";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { useToast } from "@oursrc/hooks/use-toast";
@@ -27,7 +27,9 @@ const AssignInfo = ({
   const {
     register,
     handleSubmit,
+    watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm();
   // const [pig, setPig] = React.useState<Pig>();
@@ -35,13 +37,19 @@ const AssignInfo = ({
   //   Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
   // );
   const { loading, setLoading } = React.useContext(LoadingStateContext);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isDoneAll, setIsDoneAll] = React.useState<boolean>(false);
+  const [touched, setTouched] = React.useState(false);
   const [cages, setCages] = React.useState<Cage[]>([]);
   const [selectedCage, setSelectedCage] = React.useState<Cage>();
-  const [height, setHeight] = React.useState<string | undefined>();
-  const [width, setWidth] = React.useState<string | undefined>();
-  const [weight, setWeight] = React.useState<string | undefined>();
-  const [gender, setGender] = React.useState<string | undefined>(undefined);
+  // const [height, setHeight] = React.useState<string | undefined>();
+  // const [width, setWidth] = React.useState<string | undefined>();
+  // const [weight, setWeight] = React.useState<string | undefined>();
+  // const [gender, setGender] = React.useState<string | undefined>(undefined);
+  const weight = watch("weight");
+  const height = watch("height");
+  const width = watch("width");
+  const gender = watch("gender");
 
   // console.log(pigInfo.Weight, pigInfo.Uid);
 
@@ -53,7 +61,7 @@ const AssignInfo = ({
     if (parseFloat(numericValue) > 10000) {
       numericValue = "10000";
     }
-    setHeight(numericValue);
+    setValue("height", numericValue);
   };
 
   const handleWidthChange = (event: string) => {
@@ -64,7 +72,7 @@ const AssignInfo = ({
     if (parseFloat(numericValue) > 10000) {
       numericValue = "10000";
     }
-    setWidth(numericValue);
+    setValue("width", numericValue);
   };
 
   const handleWeightChange = (event: string) => {
@@ -75,7 +83,7 @@ const AssignInfo = ({
     if (parseFloat(numericValue) > 10000) {
       numericValue = "10000";
     }
-    setWeight(numericValue);
+    setValue("weight", numericValue);
   };
 
   const handleAssignPig = async (data: any) => {
@@ -83,14 +91,11 @@ const AssignInfo = ({
       setLoading(true);
       const herdData: HerdInfo = JSON.parse(localStorage.getItem("herdData") || "null");
       const pig = {
-        herdId: herdData.id,
-        cageId: selectedCage?.id,
-        weight: data.weight,
-        height: data.height,
-        width: data.width,
-        code: pigInfo.Uid,
-        gender: gender === "Male" ? "Đực" : "Cái",
-        note: data.note || "",
+        ...data,
+        herdId: herdData.id ?? "",
+        cageId: selectedCage?.id ?? "",
+        code: pigInfo.Uid ?? "",
+        note: data.note ?? "",
       };
       const res: ResponseObject<any> = await pigService.assignPigToCage(pig);
       if (res && res.isSuccess) {
@@ -133,6 +138,7 @@ const AssignInfo = ({
 
   const getCages = async () => {
     try {
+      setIsLoading(true);
       const res: ResponseObjectList<Cage> = await cageService.getCages(1, 500);
       if (res && res.isSuccess) {
         setCages(res.data.data);
@@ -144,14 +150,13 @@ const AssignInfo = ({
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const resetData = () => {
-    setHeight(undefined);
-    setWidth(undefined);
-    setWeight(undefined);
-    setGender(undefined);
+    reset();
     setSelectedCage(undefined);
   };
 
@@ -159,31 +164,25 @@ const AssignInfo = ({
     setValue("height", height || "");
     setValue("width", width || "");
     setValue("weight", weight || "");
+    setValue("gender", gender || "");
   }, [height, width, weight]);
 
   React.useEffect(() => {
     if (isOpen === true) {
       getCages();
       // setTag(Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
-      setWeight(pigInfo.Weight ? pigInfo.Weight.toString() : undefined);
-      setHeight(pigInfo.Height ? pigInfo.Height.toString() : undefined);
-      setWidth(pigInfo.Width ? pigInfo.Width.toString() : undefined);
+      // setWeight(pigInfo.Weight ? pigInfo.Weight.toString() : undefined);
+      // setHeight(pigInfo.Height ? pigInfo.Height.toString() : undefined);
+      // setWidth(pigInfo.Width ? pigInfo.Width.toString() : undefined);
+      setValue("weight", pigInfo.Weight ? pigInfo.Weight.toString() : "");
+      setValue("height", pigInfo.Height ? pigInfo.Height.toString() : "");
+      setValue("width", pigInfo.Width ? pigInfo.Width.toString() : "");
     }
   }, [isOpen]);
 
   return (
     <div>
-      <Modal
-        size="3xl"
-        isOpen={isOpen}
-        onClose={() => {
-          if (selectedCage && height && width && weight && gender) {
-            onClose;
-          }
-        }}
-        hideCloseButton
-        scrollBehavior="inside"
-      >
+      <Modal size="3xl" isOpen={isOpen} onClose={() => onClose} hideCloseButton isDismissable={false} scrollBehavior="inside">
         <form onSubmit={handleSubmit(handleAssignPig)}>
           <ModalContent>
             <ModalHeader className="flex flex-col gap-1">
@@ -206,7 +205,7 @@ const AssignInfo = ({
                   labelPlacement="outside"
                   isRequired
                   endContent="kg"
-                  isInvalid={weight ? false : true}
+                  isInvalid={errors.weight ? true : false}
                   errorMessage="Cân nặng không được để trống"
                   value={weight || ""}
                   onValueChange={(e) => handleWeightChange(e)}
@@ -219,13 +218,18 @@ const AssignInfo = ({
                   radius="sm"
                   labelPlacement="outside"
                   selectionMode="single"
-                  isInvalid={gender ? false : true}
+                  isInvalid={gender || !touched ? false : true}
                   errorMessage="Giới tính không được để trống"
-                  value={gender || ""}
-                  onChange={(e) => setGender(e.target.value)}
+                  // value={gender || ""}
+                  // onChange={(e) => setGender(e.target.value)}
+                  selectedKeys={gender ? new Set([gender.toString()]) : new Set()}
+                  onSelectionChange={(e) => {
+                    setValue("gender", e.anchorKey ? e.anchorKey.toString() : "");
+                  }}
+                  onClose={() => setTouched(true)}
                 >
-                  <SelectItem key={"Male"}>Đực</SelectItem>
-                  <SelectItem key={"Female"}>Cái</SelectItem>
+                  <SelectItem key="Đực">Đực</SelectItem>
+                  <SelectItem key="Cái">Cái</SelectItem>
                 </Select>
               </div>
               <div className="mb-5 flex">
@@ -239,7 +243,7 @@ const AssignInfo = ({
                   labelPlacement="outside"
                   isRequired
                   endContent="cm"
-                  isInvalid={height ? false : true}
+                  isInvalid={errors.height ? true : false}
                   errorMessage="Chiều cao không được để trống"
                   value={height || ""}
                   onValueChange={(e) => handleHeightChange(e)}
@@ -254,7 +258,7 @@ const AssignInfo = ({
                   labelPlacement="outside"
                   isRequired
                   endContent="cm"
-                  isInvalid={width ? false : true}
+                  isInvalid={errors.width ? true : false}
                   errorMessage="Chiều rộng không được để trống"
                   value={width || ""}
                   onValueChange={(e) => handleWidthChange(e)}
@@ -263,20 +267,28 @@ const AssignInfo = ({
               {/* <Textarea minRows={5} type="text" radius="sm" size="lg" label="Ghi chú" placeholder="Nhập ghi chú" labelPlacement="outside" {...register("note")} /> */}
               <p className="text-xl font-semibold">Danh sách chuồng</p>
               <div className="grid grid-cols-2">
-                {cages.map((cage) => (
-                  <div
-                    className={`m-2 border-2 rounded-lg p-2 ${
-                      cage.availableQuantity && cage.availableQuantity >= cage.capacity ? "bg-gray-200 cursor-not-allowed" : "cursor-pointer"
-                    } ${selectedCage?.id === cage.id ? "bg-emerald-200" : ""}`}
-                    key={cage.id}
-                    onClick={() => handleSelectCage(cage)}
-                  >
-                    <p className="text-lg">Chuồng: {cage.code}</p>
-                    <p className="text-lg">
-                      Sức chứa: {cage.availableQuantity ?? 0}/{cage.capacity}
-                    </p>
-                  </div>
-                ))}
+                {isLoading
+                  ? Array.from({ length: 4 }).map((_, index) => (
+                      <div key={index} className="m-2 col-span-1 border-2 rounded-lg">
+                        <Skeleton className="rounded-lg">
+                          <div className="h-24 rounded-lg bg-default-300"></div>
+                        </Skeleton>
+                      </div>
+                    ))
+                  : cages.map((cage) => (
+                      <div
+                        className={`m-2 border-2 rounded-lg p-2 ${
+                          cage.availableQuantity && cage.availableQuantity >= cage.capacity ? "bg-gray-200 cursor-not-allowed" : "cursor-pointer"
+                        } ${selectedCage?.id === cage.id ? "bg-emerald-200" : ""}`}
+                        key={cage.id}
+                        onClick={() => handleSelectCage(cage)}
+                      >
+                        <p className="text-lg">Chuồng: {cage.code}</p>
+                        <p className="text-lg">
+                          Sức chứa: {cage.availableQuantity ?? 0}/{cage.capacity}
+                        </p>
+                      </div>
+                    ))}
               </div>
             </ModalBody>
             <ModalFooter>

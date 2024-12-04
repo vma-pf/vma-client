@@ -2,7 +2,7 @@ import { Button, Divider, Modal, ModalBody, ModalContent, ModalFooter, ModalHead
 import { useToast } from "@oursrc/hooks/use-toast";
 import { StageMedicine } from "@oursrc/lib/models/medicine";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
-import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
+import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
 import { dateConverter } from "@oursrc/lib/utils";
 import Image from "next/image";
@@ -21,13 +21,15 @@ const statusColorMap = [
 const DetailPlan = ({
   isOpen,
   onClose,
-  selectedTreatment,
+  selectedVaccination,
   medicineList,
+  action,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  selectedTreatment: CreateTreatmentStageProps;
+  selectedVaccination: VaccinationStageProps;
   medicineList: StageMedicine[];
+  action: "view" | "request";
 }) => {
   const { toast } = useToast();
   const changeStatusRequest = async () => {
@@ -66,22 +68,22 @@ const DetailPlan = ({
               <div className="col-span-6 flex flex-col items-center">
                 <PiSubtitlesLight className="text-5xl" />
                 <p className="text-md font-light">Nội dung</p>
-                <p className="text-lg">{selectedTreatment?.title}</p>
+                <p className="text-lg">{selectedVaccination?.title}</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
                 <CiClock2 className="text-5xl" />
                 <p className="text-md font-light">Thời gian</p>
-                <p className="text-lg">{selectedTreatment?.timeSpan} ngày</p>
+                <p className="text-lg">{selectedVaccination?.timeSpan} ngày</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
                 <CiCalendar className="text-5xl" />
                 <p className="text-md font-light">Ngày áp dụng</p>
-                <p className="text-lg">{selectedTreatment && dateConverter(selectedTreatment?.applyStageTime)}</p>
+                <p className="text-lg">{selectedVaccination && dateConverter(selectedVaccination?.applyStageTime)}</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
-                <GrStatusGoodSmall className={`text-5xl ${selectedTreatment?.isDone ? "text-green-500" : "text-red-500"}`} />
+                <GrStatusGoodSmall className={`text-5xl ${selectedVaccination?.isDone ? "text-green-500" : "text-red-500"}`} />
                 <p className="text-md font-light">Trạng thái</p>
-                <p className={`text-lg ${selectedTreatment?.isDone ? "text-green-500" : "text-red-500"}`}>{selectedTreatment?.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
+                <p className={`text-lg ${selectedVaccination?.isDone ? "text-green-500" : "text-red-500"}`}>{selectedVaccination?.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
               </div>
             </div>
             <p className="text-lg mt-3">Danh sách thuốc cần tiêm</p>
@@ -108,11 +110,13 @@ const DetailPlan = ({
             </div>
           </div>
         </ModalBody>
-        {/* <ModalFooter>
-          <Button variant="solid" color="primary" isDisabled={medicineList?.every((medicine) => medicine.status !== "Chờ xử lý")} onClick={() => changeStatusRequest()}>
-            Xuất thuốc
-          </Button>
-        </ModalFooter> */}
+        <ModalFooter>
+          {action === "request" && (
+            <Button variant="solid" color="primary" isDisabled={medicineList?.every((medicine) => medicine.status !== "Chờ xử lý")} onClick={() => changeStatusRequest()}>
+              Xuất thuốc
+            </Button>
+          )}
+        </ModalFooter>
       </ModalContent>
     </Modal>
   );

@@ -2,7 +2,7 @@ import { Button, Divider, Modal, ModalBody, ModalContent, ModalFooter, ModalHead
 import { useToast } from "@oursrc/hooks/use-toast";
 import { StageMedicine } from "@oursrc/lib/models/medicine";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
-import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
+import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
 import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
 import { dateConverter } from "@oursrc/lib/utils";
 import Image from "next/image";
@@ -21,30 +21,39 @@ const statusColorMap = [
 const DetailPlan = ({
   isOpen,
   onClose,
-  selectedVaccination,
+  selectedTreatment,
   medicineList,
+  action,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  selectedVaccination: VaccinationStageProps;
+  selectedTreatment: CreateTreatmentStageProps;
   medicineList: StageMedicine[];
+  action: "view" | "request";
 }) => {
   const { toast } = useToast();
   const changeStatusRequest = async () => {
     try {
-      const res: ResponseObject<any> = await medicineRequestService.changeStatusRequest(medicineList?.map((medicine) => medicine.id));
-      if (res.isSuccess) {
+      let isSuccess = true;
+      medicineList?.forEach(async (medicine) => {
+        const res: ResponseObject<any> = await medicineRequestService.changeStatusRequestEach(medicine.id);
+        if (res.isSuccess) {
+        } else {
+          isSuccess = false;
+          console.log(res.errorMessage);
+          toast({
+            title: res.errorMessage || "Yêu cầu xuất thuốc thất bại",
+            variant: "destructive",
+          });
+          return;
+        }
+      });
+      if (isSuccess) {
         toast({
-          title: "Đã yêu cầu xuất thuốc",
+          title: "Yêu cầu xuất thuốc thành công",
           variant: "success",
         });
         onClose();
-      } else {
-        console.log(res.errorMessage);
-        toast({
-          title: res.errorMessage || "Yêu cầu xuất thuốc thất bại",
-          variant: "destructive",
-        });
       }
     } catch (error) {
       console.log(error);
@@ -66,22 +75,22 @@ const DetailPlan = ({
               <div className="col-span-6 flex flex-col items-center">
                 <PiSubtitlesLight className="text-5xl" />
                 <p className="text-md font-light">Nội dung</p>
-                <p className="text-lg">{selectedVaccination?.title}</p>
+                <p className="text-lg">{selectedTreatment?.title}</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
                 <CiClock2 className="text-5xl" />
                 <p className="text-md font-light">Thời gian</p>
-                <p className="text-lg">{selectedVaccination?.timeSpan} ngày</p>
+                <p className="text-lg">{selectedTreatment?.timeSpan} ngày</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
                 <CiCalendar className="text-5xl" />
                 <p className="text-md font-light">Ngày áp dụng</p>
-                <p className="text-lg">{selectedVaccination && dateConverter(selectedVaccination?.applyStageTime)}</p>
+                <p className="text-lg">{selectedTreatment && dateConverter(selectedTreatment?.applyStageTime)}</p>
               </div>
               <div className="col-span-6 flex flex-col items-center">
-                <GrStatusGoodSmall className={`text-5xl ${selectedVaccination?.isDone ? "text-green-500" : "text-red-500"}`} />
+                <GrStatusGoodSmall className={`text-5xl ${selectedTreatment?.isDone ? "text-green-500" : "text-red-500"}`} />
                 <p className="text-md font-light">Trạng thái</p>
-                <p className={`text-lg ${selectedVaccination?.isDone ? "text-green-500" : "text-red-500"}`}>{selectedVaccination?.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
+                <p className={`text-lg ${selectedTreatment?.isDone ? "text-green-500" : "text-red-500"}`}>{selectedTreatment?.isDone ? "Đã tiêm" : "Chưa tiêm"}</p>
               </div>
             </div>
             <p className="text-lg mt-3">Danh sách thuốc cần tiêm</p>
@@ -109,9 +118,11 @@ const DetailPlan = ({
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button variant="solid" color="primary" isDisabled={medicineList?.every((medicine) => medicine.status !== "Chờ xử lý")} onClick={() => changeStatusRequest()}>
-            Xuất thuốc
-          </Button>
+          {action === "request" && (
+            <Button variant="solid" color="primary" isDisabled={medicineList?.every((medicine) => medicine.status !== "Chờ xử lý")} onClick={() => changeStatusRequest()}>
+              Xuất thuốc
+            </Button>
+          )}
         </ModalFooter>
       </ModalContent>
     </Modal>
