@@ -27,6 +27,7 @@ import { CiBoxList } from "react-icons/ci";
 import { FaCheckCircle } from "react-icons/fa";
 import { GrStatusGoodSmall } from "react-icons/gr";
 import { medicineService } from "@oursrc/lib/services/medicineService";
+import { Pill } from "lucide-react";
 
 const statusMapColor = [
   { name: "red", value: 0 },
@@ -109,31 +110,51 @@ const RenderStage = ({ stage }: { stage: VaccinationStageProps }) => {
             {medicineList.length > 0 ? (
               medicineList.map((medicine) => (
                 <HoverCard key={medicine.id}>
-                    <HoverCardTrigger>
-                    <Card className="hover:scale-105 transition-transform">
+                  <HoverCardTrigger>
+                    <Card className="hover:scale-105 transition-transform border-2 rounded-xl px-1 py-2">
                       <CardBody className="px-3 py-2">
-                      <h4 className="text-small font-semibold leading-none text-default-600">{medicine.medicineName}</h4>
-                      <div className="flex flex-col gap-1 mt-2">
-                        <div className="flex items-center gap-1">
-                        <span className="text-small text-default-500">Số lượng:</span>
-                        <p className="text-small">{medicine.quantity}</p>
+                        <div className="flex items-center">
+                          <Pill
+                            size={40}
+                            className="text-primary mr-2"
+                          />
+                          <h4 className="text-small font-semibold leading-none text-default-600">
+                            {medicine.medicineName}
+                          </h4>
                         </div>
-                        <div className="flex items-center gap-1">
-                        <span className="text-small text-default-500">Trạng thái:</span>
-                        <p className="text-small">{medicine.status}</p>
+                        <div className="flex flex-col gap-1 mt-2">
+                          <div className="flex justify-between">
+                            <div className="flex items-center gap-1">
+                              <span className="text-small text-default-500">
+                                Trạng thái:
+                              </span>
+                              <p className="text-small">{medicine.status}</p>
+                            </div>
+                            <p className="text-small">x{medicine.quantity}</p>
+                          </div>
                         </div>
-                      </div>
                       </CardBody>
                     </Card>
-                    </HoverCardTrigger>
+                  </HoverCardTrigger>
                   <HoverCardContent align="start" className="w-96 bg-gray-100">
-                    {(medicine.medicine && medicine.medicine != null) ? (
+                    {medicine.medicine && medicine.medicine != null ? (
                       <div>
-                        <p><strong>Thành phần chính:</strong> {medicine.medicine.mainIngredient}</p>
-                        <p><strong>Số đăng ký:</strong> {medicine.medicine.registerNumber}</p>
-                        <p><strong>Số lượng còn:</strong> {medicine.medicine.quantity}</p>
-                        <p><strong>Cách sử dụng:</strong> {medicine.medicine.usage}</p>
-                        <p><strong>Khối lượng:</strong> {medicine.medicine.netWeight} {medicine.medicine.unit}</p>
+                        <p>
+                          <strong>Thành phần chính:</strong>{" "}
+                          {medicine.medicine.mainIngredient}
+                        </p>
+                        <p>
+                          <strong>Số đăng ký:</strong>{" "}
+                          {medicine.medicine.registerNumber}
+                        </p>
+                        <p>
+                          <strong>Cách sử dụng:</strong>{" "}
+                          {medicine.medicine.usage}
+                        </p>
+                        <p>
+                          <strong>Khối lượng:</strong>{" "}
+                          {medicine.medicine.netWeight} {medicine.medicine.unit}
+                        </p>
                       </div>
                     ) : (
                       <p>Thuốc mới không có sẵn</p>
