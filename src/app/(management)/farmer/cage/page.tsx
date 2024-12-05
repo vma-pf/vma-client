@@ -3,8 +3,8 @@ import React from "react";
 import { Grid2X2 } from "lucide-react";
 import { GiCage } from "react-icons/gi";
 import { Tab, Tabs } from "@nextui-org/react";
-import CageList from "../../veterinarian/cage/_components/cage-list";
-import AreaList from "../../veterinarian/cage/_components/area-list";
+import CageList from "../../farm-assist/cage/_components/cage-list";
+import AreaList from "../../farm-assist/cage/_components/area-list";
 
 const Cage = () => {
   return (

@@ -12,4 +12,20 @@ type Cage = {
   areaCode?: string;
 };
 
-export type { Cage }
+type Activity = {
+  id: string;
+  timeStamp: string;
+  stationary: string;
+  moving: string;
+  feeding: string;
+  cageId: string;
+  isDeleted: boolean;
+};
+
+type ActivityStatistic = {
+  percentageOfStationary: number;
+  percentageOfMoving: number;
+  percentageOfFeeding: number;
+};
+
+export type { Cage, Activity, ActivityStatistic };

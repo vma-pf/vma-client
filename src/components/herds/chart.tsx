@@ -11,16 +11,21 @@ const Chart = ({ data }: { data: HerdStatistic }) => {
   //   { status: "dead", pigs: 5, fill: "#059669" },
   // ];
   const chartData = [
-    { status: "alive", pigs: data.numberOfPigsAlive, fill: "#6ee7b7" },
-    { status: "dead", pigs: data.numberOfPigsDead, fill: "#ef4444" },
+    { status: "normal", pigs: data.numberOfPigsHealthNormal ?? 0, fill: "#6ee7b7" },
+    { status: "sick", pigs: data.numberOfPigsHealthSick ?? 0, fill: "#eab308" },
+    { status: "dead", pigs: data.numberOfPigsDead ?? 0, fill: "#ef4444" },
   ];
   const chartConfig = {
     pigs: {
       label: "Số heo",
     },
-    alive: {
-      label: "Còn sống",
+    normal: {
+      label: "Bình thường",
       color: "#6ee7b7",
+    },
+    sick: {
+      label: "Bệnh",
+      color: "#eab308",
     },
     dead: {
       label: "Chết",
