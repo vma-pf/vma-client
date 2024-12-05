@@ -1,5 +1,5 @@
 "use client";
-import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/react";
+import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem } from "@nextui-org/react";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { ResponseObject } from "@oursrc/lib/models/response-object";
 import { DiseaseReport } from "@oursrc/lib/models/treatment";
@@ -53,6 +53,16 @@ const CreateDiseaseReport = ({
         </ModalHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalBody>
+          <Input
+              className="pb-3"
+              label="Tên tên báo cáo"
+              placeholder="Nhập tên báo cáo"
+              labelPlacement="outside"
+              size="lg"
+              isInvalid={errors.diagnosisDiseaseName ? true : false}
+              errorMessage="Tên báo cáo không được để trống"
+              {...register("diagnosisDiseaseName", { required: true })}
+            />
             <Input
               className="pb-3"
               label="Tên bệnh"
@@ -73,6 +83,34 @@ const CreateDiseaseReport = ({
               errorMessage="Thời gian điều trị không được để trống"
               {...register("totalTreatmentTime", { required: true })}
             />
+            <Input
+              className="pb-3"
+              label="Nguyên nhân"
+              placeholder="Nhập nguyên nhân"
+              labelPlacement="outside"
+              size="lg"
+              isInvalid={errors.cause ? true : false}
+              {...register("cause")}
+            />
+            <Select
+              className="pb-3"
+              label="Mức độ"
+              placeholder="Chọn mức độ bệnh"
+              labelPlacement="outside" 
+              size="lg"
+              isRequired
+              {...register("severityType", { required: true })}
+            >
+              <SelectItem key="0" value="0">
+                Bệnh nhẹ
+              </SelectItem>
+              <SelectItem key="1" value="1">
+                Bệnh bình thường  
+              </SelectItem>
+              <SelectItem key="2" value="2">
+                Bệnh nguy hiểm
+              </SelectItem>
+            </Select>
           </ModalBody>
           <ModalFooter>
             <Button className="mt-4" color="danger" onClick={onClose}>

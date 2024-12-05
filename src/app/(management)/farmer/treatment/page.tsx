@@ -381,10 +381,14 @@ const Treatment = () => {
                         )}
                       </AccordionItem>
                       <AccordionItem key="2" title="Báo cáo bệnh" startContent={<HiOutlineDocumentReport className="text-emerald-500" size={25} />}>
-                        {diseaseReports.length > 0 ? (
+                      {diseaseReports.length > 0 ? (
                           diseaseReports &&
                           diseaseReports?.map((diseaseReport) => (
                             <div key={diseaseReport.id}>
+                              <div className="mt-3 flex justify-between">
+                                <p className="text-md">Tên báo cáo:</p>
+                                <p className="text-lg font-semibold">{diseaseReport.diagnosisDiseaseName}</p>
+                              </div>
                               <div className="mt-3 flex justify-between">
                                 <p className="text-md">Nội dung:</p>
                                 <p className="text-lg font-semibold">{diseaseReport.description}</p>
@@ -392,6 +396,14 @@ const Treatment = () => {
                               <div className="mt-3 flex justify-between">
                                 <p className="text-md">Tổng thời gian điều trị (dự kiến):</p>
                                 <p className="text-lg font-semibold">{diseaseReport.totalTreatmentTime}</p>
+                              </div>
+                              <div className="mt-3 flex justify-between">
+                                <p className="text-md">Loại bệnh:</p>
+                                <p className="text-lg font-semibold">{diseaseReport.severityType}</p>
+                              </div>
+                              <div className="mt-3 flex justify-between">
+                                <p className="text-md">Nguyên nhân:</p>
+                                <p className="text-lg font-semibold">{diseaseReport.cause}</p>
                               </div>
                               {diseaseReport.treatmentResult && (
                                 <div className="mt-3 flex justify-between">

@@ -51,6 +51,9 @@ export type DiseaseReport = {
     description: string;
     treatmentResult: string;
     totalTreatmentTime: string;
+    cause: string;
+    diagnosisDiseaseName: string;
+    severityType: string;
     isDone: boolean;
 };
 
