@@ -1,6 +1,6 @@
 "use client";
 import { TrendingUp } from "lucide-react";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, Line, LineChart, XAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@oursrc/components/ui/card";
 import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@oursrc/components/ui/chart";
 
@@ -22,15 +22,15 @@ import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent, ChartTool
 const chartConfig = {
   weight: {
     label: "Cân nặng",
-    color: "green",
+    color: "#10b981",
   },
   height: {
     label: "Chiều cao",
-    color: "blue",
+    color: "#0ea5e9",
   },
   width: {
     label: "Chiều rộng",
-    color: "yellow",
+    color: "#eab308",
   },
 } satisfies ChartConfig;
 

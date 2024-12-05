@@ -19,7 +19,9 @@ import PigList from "../../veterinarian/herd/_components/pig-list";
 import HerdDetail from "@oursrc/components/herds/modals/herd-detail";
 import { EyeIcon } from "lucide-react";
 import { calculateProgress } from "@oursrc/lib/utils/dev-utils";
-import { HerdStatistic } from "@oursrc/lib/models/statistic";
+import { EndHerdStatistic, HerdStatistic } from "@oursrc/lib/models/statistic";
+import { AvgStatistic } from "../../farm-assist/herd/_components/avg-statistic";
+import { LuFileBarChart } from "react-icons/lu";
 
 const statusColorMap = [
   { status: "Chưa Kết Thúc", color: "bg-default" },
@@ -33,6 +35,7 @@ const Herd = () => {
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
   const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
   const [statisticData, setStatisticData] = React.useState<HerdStatistic | undefined>();
+  const [avgStatisticData, setAvgStatisticData] = React.useState<EndHerdStatistic | undefined>();
 
   const getStatistics = async () => {
     try {
@@ -42,6 +45,16 @@ const Herd = () => {
       } else {
         console.log(res.errorMessage);
       }
+      if (selectedHerd?.status === "Đã kết thúc") {
+        const response: ResponseObject<EndHerdStatistic> = await herdService.getAvgStatistics(selectedHerd?.id ?? "");
+        if (response.isSuccess) {
+          setAvgStatisticData(response.data);
+        } else {
+          console.log(response.errorMessage);
+        }
+      } else {
+        setAvgStatisticData(undefined);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -50,12 +63,29 @@ const Herd = () => {
   React.useEffect(() => {
     if (!selectedHerd) {
       setSelectedPig(undefined);
+      setStatisticData(undefined);
+      setAvgStatisticData(undefined);
     } else {
       getStatistics();
     }
   }, [selectedHerd]);
   return (
     <div>
+      {avgStatisticData && (
+        <div className="mb-4">
+          <Accordion variant="splitted" defaultExpandedKeys={["1"]}>
+            <AccordionItem key="1" title={<p className="text-xl font-bold">Kết quả nuôi</p>} startContent={<LuFileBarChart className="text-primary" size={25} />}>
+              <AvgStatistic data={avgStatisticData} />
+              <div className="flex items-center">
+                <p className="my-2">Cân nặng trung bình ban đầu:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInStart} kg</p>
+              </div>
+              <div className="flex items-center">
+                <p className="my-2">Cân nặng trung bình cuối cùng:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInEnd} kg</p>
+              </div>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <div className="p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
           <div className="mb-2 flex items-center">

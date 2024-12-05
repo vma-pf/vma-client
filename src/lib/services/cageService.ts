@@ -10,6 +10,13 @@ export const cageService = {
       },
     }),
   getCageId: (id: string) => http.get(endpoint + `/${id}`),
+  getActivityLog: (id: string, page: number, pageSize: number) => http.get(endpoint + `/${id}/activity-logs`, {
+    params: {
+      pageIndex: page?.toString() || "",
+      pageSize: pageSize?.toString() || "",
+    },
+  }),
+  getActivityLogByDate: (id: string, date: string) => http.get(endpoint + `/${id}/activity-logs/${date}`),
   createCage: (model: any) =>
     http.post(endpoint, model),
   updateCage: (model: any, id: string) =>

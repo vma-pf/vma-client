@@ -2,9 +2,14 @@ import http from "../http";
 import { ResponseObject } from "../models/response-object";
 
 export const notificationService = {
-    getNotification: () =>
-        http.get<ResponseObject<any>>(`notifications`),
-    sendWariningAI: (model: {cageId?: string; content: string; image: Blob}) => {
+    getNotification: (pageIndex: number, pageSize: number) =>
+        http.get<ResponseObject<any>>(`notifications`, {
+            params: {
+                pageIndex: pageIndex.toString() ?? "1",
+                pageSize: pageSize.toString() ?? "5"
+            }
+        }),
+    sendWariningAI: (model: { cageId?: string; content: string; image: Blob }) => {
         const formData = new FormData();
         formData.append("cageId", model.cageId ?? "");
         formData.append("content", model.content);

@@ -1,10 +1,10 @@
 "use client";
 import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
-import { Avatar, Badge, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
+import { Avatar, Badge, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Popover, PopoverContent, PopoverTrigger, Spinner } from "@nextui-org/react";
 import { SERVERURL } from "@oursrc/lib/http";
 import { NotificationType } from "@oursrc/lib/models/notification";
-import { ResponseObject } from "@oursrc/lib/models/response-object";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { notificationService } from "@oursrc/lib/services/notificationService";
 import { ROLE, decodeToken } from "@oursrc/lib/utils";
 import { checkTime } from "@oursrc/lib/utils/dev-utils";
@@ -34,15 +34,31 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
 
   const [messages, setMessages] = useState<NotificationType[]>([]);
   const [connection, setConnection] = useState<HubConnection | null>(null);
+  // const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [loadMore, setLoadMore] = React.useState(true);
+  const [hasMore, setHasMore] = React.useState(true);
+  const [openNoti, setOpenNoti] = useState(false);
 
   const getNotificationList = async () => {
     try {
-      const res: ResponseObject<any> = await notificationService.getNotification();
+      setLoadMore(true);
+      const res: ResponseObjectList<NotificationType> = await notificationService.getNotification(1, rowsPerPage);
       if (res.isSuccess) {
-        setMessages(res.data);
+        setMessages(res.data.data);
+        setTotalPages(res.data.totalPages);
+        setRowsPerPage(res.data.pageSize);
+        if (res.data.totalPages === 1) {
+          setHasMore(false);
+        }
+      } else {
+        console.log(res.errorMessage);
       }
     } catch (error: any) {
       console.error("Error while getting notification:", error);
+    } finally {
+      setLoadMore(false);
     }
   };
 
@@ -160,6 +176,10 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
     };
   }, []);
 
+  useEffect(() => {
+    getNotificationList();
+  }, [rowsPerPage]);
+
   const toggleMode = () => setTheme(theme === "light" ? "dark" : "light");
   return (
     <div className="bg-slate-100 dark:bg-zinc-800 px-4 py-2 flex justify-between">
@@ -168,14 +188,18 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
         {/* <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "/farmer" ? "Farmer" : "/farm-assist" ? "Farm Assistant" : ""}</p> */}
         <p>Chào, {roleMap[prefix]}</p>
         <Avatar className="mx-2" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
-        <Dropdown
-          placement="bottom-end"
-          className="w-fit"
-          onClose={() => {
-            getNotificationList();
+        <Popover
+          placement="bottom"
+          isOpen={openNoti}
+          onOpenChange={(open) => {
+            setOpenNoti(open);
+            if (!open) {
+              getNotificationList();
+            }
           }}
+          shouldBlockScroll
         >
-          <DropdownTrigger>
+          <PopoverTrigger>
             <Button isIconOnly variant="light">
               <Badge
                 content={messages.filter((msg) => !msg.isRead).length === 0 ? null : messages.filter((msg) => !msg.isRead).length}
@@ -186,31 +210,43 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
                 <FaBell className="text-2xl text-yellow-400" />
               </Badge>
             </Button>
-          </DropdownTrigger>
-          <DropdownMenu emptyContent="Không có thông báo" className="max-h-[300px] max-w-[600px] overflow-auto">
-            {messages.map((msg: NotificationType, index) => (
-              <DropdownItem key={index} onClick={() => navigateTo(msg)}>
-                {msg.isRead ? (
-                  <div>
-                    <p className="text-lg font-semibold">{msg.title}</p>
-                    <p className="text-md text-wrap">Nội dung: {msg.content}</p>
-                    {/* display period from now to msg.createdAt */}
-                    <p className="text-sm text-gray-400">{checkTime(msg)}</p>
-                  </div>
-                ) : (
-                  <div className="flex justify-between">
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="my-2 max-h-[300px] max-w-[600px] overflow-auto">
+              {messages.map((msg: NotificationType, index) => (
+                <div key={index} onClick={() => navigateTo(msg)} className="mx-1 p-3 cursor-pointer rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700">
+                  {msg.isRead ? (
                     <div>
                       <p className="text-lg font-semibold">{msg.title}</p>
                       <p className="text-md text-wrap">Nội dung: {msg.content}</p>
                       <p className="text-sm text-gray-400">{checkTime(msg)}</p>
                     </div>
-                    <LuDot size={50} className="text-primary" />
-                  </div>
-                )}
-              </DropdownItem>
-            ))}
-          </DropdownMenu>
-        </Dropdown>
+                  ) : (
+                    <div className="flex justify-between">
+                      <div>
+                        <p className="text-lg font-semibold">{msg.title}</p>
+                        <p className="text-md text-wrap">Nội dung: {msg.content}</p>
+                        <p className="text-sm text-gray-400">{checkTime(msg)}</p>
+                      </div>
+                      <LuDot size={50} className="text-primary" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              {hasMore && (
+                <div className="flex justify-center">
+                  {loadMore ? (
+                    <Spinner color="primary" />
+                  ) : (
+                    <Button className="w-full" variant="light" size="sm" color="default" onPress={() => setRowsPerPage(rowsPerPage + 5)}>
+                      Xem thêm
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
         <Button isIconOnly variant="light" onClick={toggleMode}>
           <HiSun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <HiMoon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />

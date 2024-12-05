@@ -21,7 +21,7 @@ import { Cage } from "@oursrc/lib/models/cage";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { cageService } from "@oursrc/lib/services/cageService";
 import React from "react";
-import { SearchIcon } from "lucide-react";
+import { Cctv, SearchIcon } from "lucide-react";
 import { SERVERURL } from "@oursrc/lib/http";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
@@ -29,11 +29,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@our
 import { Area } from "@oursrc/lib/models/area";
 import { areaService } from "@oursrc/lib/services/areaService";
 import { IoIosArrowDown } from "react-icons/io";
+import { HiDotsVertical } from "react-icons/hi";
+import { MdHistory } from "react-icons/md";
+import ActivityLog from "@oursrc/components/cages/modals/activty-log";
 
 const CageList = () => {
   const videoRef = React.useRef<string | Element>("");
   const playerRef = React.useRef<any>(null);
   const [isOpenCamera, setIsOpenCamera] = React.useState(false);
+  const { isOpen: isOpenLog, onOpen: onOpenLog, onClose: onCloseLog } = useDisclosure();
   const [isLoading, setIsLoading] = React.useState(false);
   const [cageList, setCageList] = React.useState<Cage[]>([]);
   const [areaList, setAreaList] = React.useState<Area[]>([]);
@@ -170,66 +174,83 @@ const CageList = () => {
           }}
         />
       </div>
-      <Sheet open={isOpenCamera} onOpenChange={setIsOpenCamera}>
-        <div className="grid grid-cols-4 gap-5">
-          {!isLoading ? (
-            filteredCageList.length > 0 ? (
-              filteredCageList.map((cage, idx) => (
-                <Card key={idx} shadow="md">
-                  <CardHeader>
-                    <p className="text-lg m-auto">
-                      Chuồng <strong>{cage.code}</strong>
-                    </p>
-                  </CardHeader>
-                  <CardBody className="p-2 mx-auto">
-                    <Image
-                      className="mx-auto"
-                      width={200}
-                      height={200}
-                      alt="chuong"
-                      src="https://s.alicdn.com/@sc04/kf/H728f3a37513d4379be01ae6cb8628e980.jpg_300x300.jpg"
-                    />
-                    <div className="flex justify-between">
-                      <p className="text-center">Sức chứa tối đa</p>
-                      <p className="text-center text-lg font-semibold">{cage.capacity}</p>
-                    </div>
-                    <div className="flex justify-between">
-                      <p className="text-center">Số lượng hiện tại</p>
-                      <p className="text-center text-lg font-semibold">{cage.availableQuantity}</p>
-                    </div>
-                    <p className="text-center font-semibold">Mô tả:</p>
-                    <p className="text-center">{cage.description}</p>
-                  </CardBody>
-                  <CardFooter className="flex justify-center gap-2">
-                    <SheetTrigger asChild>
-                      <Button
-                        color="primary"
-                        variant="solid"
-                        onPress={() => {
-                          setSelectedCage(cage);
-                          onLiveCamera(cage.cameraId ?? "");
-                        }}
-                        isDisabled={!cage.cameraId}
-                      >
-                        Xem Camera
-                      </Button>
-                    </SheetTrigger>
-                  </CardFooter>
-                </Card>
-              ))
-            ) : (
-              <p className="mt-5 w-full col-span-4 text-center">Không có dữ liệu</p>
-            )
-          ) : (
-            [...Array(8)].map((_, idx) => (
-              <div key={idx} className="m-2 border-2 rounded-lg">
-                <Skeleton className="rounded-lg">
-                  <div className="h-72 w-full"></div>
-                </Skeleton>
-              </div>
+      <div className="grid grid-cols-4 gap-5">
+        {!isLoading ? (
+          filteredCageList.length > 0 ? (
+            filteredCageList.map((cage, idx) => (
+              <Card key={idx} shadow="md">
+                <CardHeader className="flex justify-between">
+                  <p className="text-lg font-semibold">Chuồng {cage.code}</p>
+                  <div>
+                    <Dropdown>
+                      <DropdownTrigger>
+                        <Button isIconOnly variant="light">
+                          <HiDotsVertical size={20} className="text-default-400" />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu disabledKeys={cage.cameraId ? [] : ["camera"]}>
+                        <DropdownItem
+                          key="camera"
+                          variant="solid"
+                          onPress={() => {
+                            setSelectedCage(cage);
+                            setIsOpenCamera(true);
+                            onLiveCamera(cage.cameraId ?? "");
+                          }}
+                          startContent={<Cctv size={25} className="text-primary" />}
+                        >
+                          Xem Camera
+                        </DropdownItem>
+                        <DropdownItem
+                          key="activity-log"
+                          variant="solid"
+                          onPress={() => {
+                            onOpenLog();
+                            setSelectedCage(cage);
+                          }}
+                          startContent={<MdHistory size={25} className="text-primary" />}
+                        >
+                          Lịch sử hoạt động chuồng
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                  </div>
+                </CardHeader>
+                <CardBody className="p-2 mx-auto">
+                  <Image
+                    className="mx-auto"
+                    width={200}
+                    height={200}
+                    alt="chuong"
+                    src="https://s.alicdn.com/@sc04/kf/H728f3a37513d4379be01ae6cb8628e980.jpg_300x300.jpg"
+                  />
+                  <div className="flex justify-between">
+                    <p className="text-center">Sức chứa tối đa</p>
+                    <p className="text-center text-lg font-semibold">{cage.capacity}</p>
+                  </div>
+                  <div className="flex justify-between">
+                    <p className="text-center">Số lượng hiện tại</p>
+                    <p className="text-center text-lg font-semibold">{cage.availableQuantity}</p>
+                  </div>
+                  <p className="text-center font-semibold">Mô tả:</p>
+                  <p className="text-center">{cage.description}</p>
+                </CardBody>
+              </Card>
             ))
-          )}
-        </div>
+          ) : (
+            <p className="mt-5 w-full col-span-4 text-center">Không có dữ liệu</p>
+          )
+        ) : (
+          [...Array(8)].map((_, idx) => (
+            <div key={idx} className="m-2 border-2 rounded-lg">
+              <Skeleton className="rounded-lg">
+                <div className="h-72 w-full"></div>
+              </Skeleton>
+            </div>
+          ))
+        )}
+      </div>
+      <Sheet open={isOpenCamera} onOpenChange={setIsOpenCamera}>
         <SheetContent className="w-3/5">
           <SheetHeader>
             <SheetTitle>Camera</SheetTitle>
@@ -239,6 +260,7 @@ const CageList = () => {
           </div>
         </SheetContent>
       </Sheet>
+      {isOpenLog && <ActivityLog isOpen={isOpenLog} onClose={onCloseLog} cage={selectedCage || undefined} />}
     </div>
   );
 };

@@ -85,7 +85,7 @@ const LoginForm = () => {
       />
       <Button
         className="bg-gradient-to-r from-indigo-500 to-emerald-500 w-full mt-6"
-        variant="solid"
+        variant="shadow"
         isLoading={isLoading}
         size="lg"
         type="submit"

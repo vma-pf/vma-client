@@ -72,10 +72,10 @@ export type TreatmentPlanStep = {
 };
 
 const CreatePLan = () => {
-  const treatmentGuideId = localStorage.getItem("treatmentGuideId") ?? "";
   const { toast } = useToast();
   const { loading, setLoading } = React.useContext(LoadingStateContext);
   const router = useRouter();
+  const treatmentGuideId = typeof window !== "undefined" && localStorage.getItem("treatmentGuideId") ? localStorage.getItem("treatmentGuideId") : "";
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenChooseStageDate, onOpen: onOpenChooseStageDate, onClose: onCloseChooseStageDate } = useDisclosure();
   const [isDoneAll, setIsDoneAll] = React.useState<boolean>(false);
@@ -156,7 +156,7 @@ const CreatePLan = () => {
 
   const fetchTreatmentGuide = async () => {
     try {
-      const res: ResponseObject<TreatmentGuide> = await treatmentGuideService.getById(treatmentGuideId);
+      const res: ResponseObject<TreatmentGuide> = await treatmentGuideService.getById(treatmentGuideId ?? "");
       if (res.isSuccess) {
         setTreatmentGuide(res.data);
       }
@@ -167,7 +167,7 @@ const CreatePLan = () => {
 
   const fetchTemplate = async () => {
     try {
-      const res: ResponseObjectList<PlanTemplate> = await planTemplateService.getTemplateByTreatmentGuideId(treatmentGuideId, 1, 500);
+      const res: ResponseObjectList<PlanTemplate> = await planTemplateService.getTemplateByTreatmentGuideId(treatmentGuideId ?? "", 1, 500);
       if (res.isSuccess) {
         setTemplates(res.data.data);
       }

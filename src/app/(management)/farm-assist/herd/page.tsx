@@ -52,13 +52,15 @@ const Herd = () => {
       } else {
         console.log(res.errorMessage);
       }
-      if (selectedHerd?.status === "Đã Kết Thúc") {
+      if (selectedHerd?.status === "Đã kết thúc") {
         const response: ResponseObject<EndHerdStatistic> = await herdService.getAvgStatistics(selectedHerd?.id ?? "");
         if (response.isSuccess) {
           setAvgStatisticData(response.data);
         } else {
           console.log(response.errorMessage);
         }
+      } else {
+        setAvgStatisticData(undefined);
       }
     } catch (error) {
       console.log(error);
