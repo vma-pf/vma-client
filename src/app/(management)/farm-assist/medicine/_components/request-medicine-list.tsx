@@ -107,7 +107,7 @@ const RequestMedicineList = () => {
     let filteredMedicines: MedicineRequest[] = [...medicineList];
 
     if (hasSearchFilter) {
-      filteredMedicines = filteredMedicines.filter((medicine) => medicine.id.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredMedicines = filteredMedicines.filter((medicine) => medicine.medicineName?.toLowerCase().includes(filterValue.toLowerCase()));
     }
     if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
       filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.status));
@@ -121,14 +121,14 @@ const RequestMedicineList = () => {
     if (!isOpen) {
       fetchData();
     }
-    getAllMedicineRequest();
+    // getAllMedicineRequest();
   }, [page, rowsPerPage, isOpen]);
   React.useEffect(() => {
     getAllMedicineRequest();
   }, []);
 
   const filterNewMedicine = () => {
-    return medicineList
+    return allMedicineList
       .filter((medicine) => !medicine.medicineId)
       .map((medicine) => {
         return {
@@ -154,7 +154,7 @@ const RequestMedicineList = () => {
 
   const getAllMedicineRequest = async () => {
     try {
-      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(1, 500);
+      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(1, 99999);
       if (response.isSuccess) {
         setAllMedicineList(response.data.data);
       } else {

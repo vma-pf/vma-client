@@ -295,7 +295,7 @@ const NewBatch = () => {
               <Modal size="5xl" isOpen={isOpen} onClose={onClose} scrollBehavior="inside" isDismissable={false}>
                 <ModalContent>
                   <ModalHeader>
-                    <p className="text-xl font-semibold mb-3">Chọn thuốc</p>
+                    <p className="text-xl font-semibold">Chọn thuốc</p>
                   </ModalHeader>
                   <ModalBody>
                     <MedicineList
