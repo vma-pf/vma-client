@@ -394,10 +394,6 @@ const Treatment = () => {
                                 <p className="text-lg font-semibold">{diseaseReport.description}</p>
                               </div>
                               <div className="mt-3 flex justify-between">
-                                <p className="text-md">Tổng thời gian điều trị (dự kiến):</p>
-                                <p className="text-lg font-semibold">{diseaseReport.totalTreatmentTime}</p>
-                              </div>
-                              <div className="mt-3 flex justify-between">
                                 <p className="text-md">Loại bệnh:</p>
                                 <p className="text-lg font-semibold">{diseaseReport.severityType}</p>
                               </div>

@@ -32,12 +32,11 @@ import { pigService } from "@oursrc/lib/services/pigService";
 const columns = [
   { name: "Mô tả", uid: "description", sortable: true },
   { name: "Kết quả chữa bệnh", uid: "treatmentResult", sortable: true },
-  { name: "Thời gian chữa bệnh", uid: "totalTreatmentTime", sortable: true },
   { name: "Tiến độ", uid: "isDone", sortable: true },
   { name: "Ngày tạo", uid: "createdAt", sortable: true },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["treatmentResult", "description", "totalTreatmentTime", "isDone", "createdAt"];
+const INITIAL_VISIBLE_COLUMNS = ["treatmentResult", "description", "isDone", "createdAt"];
 
 const statusMapColor = [
   { name: "red", value: 0 },

@@ -75,16 +75,6 @@ const CreateDiseaseReport = ({
             />
             <Input
               className="pb-3"
-              label="Tổng thời gian điều trị"
-              placeholder="Nhập tổng thời gian điều trị"
-              labelPlacement="outside"
-              size="lg"
-              isInvalid={errors.totalTreatmentTime ? true : false}
-              errorMessage="Thời gian điều trị không được để trống"
-              {...register("totalTreatmentTime", { required: true })}
-            />
-            <Input
-              className="pb-3"
               label="Nguyên nhân"
               placeholder="Nhập nguyên nhân"
               labelPlacement="outside"
