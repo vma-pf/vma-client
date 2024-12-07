@@ -11,6 +11,7 @@ import { accountService } from "@oursrc/lib/services/accountService";
 import UserList from "./_components/user-list";
 import Abnormal from "./_components/abnormality";
 import { HerdStatistic } from "@oursrc/lib/models/statistic";
+import DiseaseReportPigs from "./_components/disease-report-pigs";
 
 const Dashboard = () => {
   const { loading, setLoading } = React.useContext(LoadingStateContext);
@@ -39,8 +40,8 @@ const Dashboard = () => {
     <div>
       {loading ? (
         <div className="my-3">
-          <div className="mx-7 my-3 grid grid-cols-4 gap-6">
-            {Array.from({ length: 4 }).map((_, index) => (
+          <div className="mx-7 my-3 grid grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="m-2 col-span-1 border-2 rounded-lg">
                 <Skeleton className="rounded-lg">
                   <div className="h-60 rounded-lg bg-default-300"></div>
@@ -74,20 +75,12 @@ const Dashboard = () => {
         </div>
       ) : (
         <div className="my-3">
-          <div className="mx-7 my-3 grid grid-cols-4 gap-6">
+          <div className="mx-7 my-3 grid grid-cols-3 gap-6">
             <Card>
               <CardBody className="m-2">
                 <p className="text-lg text-default-500">Tổng số đàn</p>
                 <p className="text-3xl font-bold text-primary">
                   {dashboard.totalHerdNotEndInFarm ? dashboard.totalHerdNotEndInFarm : 0} <span className="text-sm text-default-400">đàn</span>
-                </p>
-              </CardBody>
-            </Card>
-            <Card>
-              <CardBody className="m-2">
-                <p className="text-lg text-default-500">Tổng heo đã nuôi</p>
-                <p className="text-3xl font-bold text-primary">
-                  200 <span className="text-sm text-default-400">con</span>
                 </p>
               </CardBody>
             </Card>
@@ -118,7 +111,9 @@ const Dashboard = () => {
             </div>
             <div>
               <Card>
-                <CardBody>Heo đang bị bệnh</CardBody>
+                <CardBody>
+                  <DiseaseReportPigs />
+                </CardBody>
               </Card>
             </div>
           </div>
