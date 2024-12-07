@@ -19,7 +19,7 @@ const FarmerAssistantLayout = ({
     "/dashboard": projectName + " - " + "Tổng quan",
     "/herd": projectName + " - " + "Quản lý đàn heo",
     "/herd/create": projectName + " - " + "Tạo đàn mới",
-    "/medicine": projectName + " - " + "Quản lý thuốc",
+    "/medicine": projectName + " - " + "Quản lý danh mục thuốc",
     "/medicine/new-batch": projectName + " - " + "Tạo đợt nhập thuốc",
     "/vaccination": projectName + " - " + "Lịch tiêm phòng",
     "/treatment": projectName + " - " + "Kế hoạch điều trị",
@@ -38,7 +38,7 @@ const FarmerAssistantLayout = ({
     },
     {
       path: "/medicine",
-      title: "Quản lý thuốc",
+      title: "Danh mục thuốc",
       icon: <GiMedicines size={25} />,
     },
     {

@@ -1,5 +1,5 @@
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
-import { Button, Divider, Input, Spinner, Textarea } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem, Button, Divider, Input, Spinner, Textarea } from "@nextui-org/react";
 import { toast } from "@oursrc/hooks/use-toast";
 import React from "react";
 import { useForm } from "react-hook-form";
@@ -37,6 +37,13 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
         return "Xóa";
     }
   };
+
+  const unitOptions = [
+    { label: "g", value: "g" },
+    { label: "mg", value: "mg" },
+    { label: "l", value: "l" },
+    { label: "ml", value: "ml" },
+  ];
 
   const handleRegisterNumberChange = (event: string) => {
     let numericValue = event.replace(/[^0-9]/g, "");
@@ -160,20 +167,30 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
                     errorMessage="Tên thuốc không được để trống"
                     {...register("name", { required: true })}
                   />
-                  <Input
+                  <Autocomplete
                     className="mb-5"
-                    type="text"
                     radius="sm"
                     size="lg"
                     label="Đơn vị"
                     placeholder="Nhập đơn vị"
                     labelPlacement="outside"
-                    isRequired
-                    value={unit || ""}
                     isInvalid={errors.unit ? true : false}
+                    defaultItems={unitOptions}
+                    selectedKey={unit || ""}
+                    onSelectionChange={(item) => {
+                      setValue("unit", item?.toString() || "");
+                    }}
                     errorMessage="Đơn vị không được để trống"
-                    {...register("unit", { required: true })}
-                  />
+                    // {...register("breed", {
+                    //   required: true,
+                    // })}
+                  >
+                    {(item) => (
+                      <AutocompleteItem color="primary" key={item.value}>
+                        {item.label}
+                      </AutocompleteItem>
+                    )}
+                  </Autocomplete>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input

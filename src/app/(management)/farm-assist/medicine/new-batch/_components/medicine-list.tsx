@@ -1,5 +1,7 @@
 "use client";
 import {
+  Autocomplete,
+  AutocompleteItem,
   Button,
   ChipProps,
   Dropdown,
@@ -59,7 +61,7 @@ export default function MedicineList({
     watch,
     formState: { errors },
   } = useForm();
-  const name = watch("name");
+  const unit = watch("unit");
   const [registerNumber, setRegisterNumber] = React.useState<string>("");
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
@@ -85,6 +87,13 @@ export default function MedicineList({
     return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
   }, [visibleColumns]);
   const [medicineList, setMedicineList] = React.useState<Medicine[]>([]);
+
+  const unitOptions = [
+    { label: "g", value: "g" },
+    { label: "mg", value: "mg" },
+    { label: "l", value: "l" },
+    { label: "ml", value: "ml" },
+  ];
 
   const filteredItems = React.useMemo(() => {
     let filteredMedicines: Medicine[] = [...medicineList];
@@ -349,19 +358,30 @@ export default function MedicineList({
                 errorMessage="Tên thuốc không được để trống"
                 {...register("name", { required: true })}
               />
-              <Input
+              <Autocomplete
                 className="mb-5"
-                type="text"
-                radius="md"
+                radius="sm"
                 size="lg"
                 label="Đơn vị"
                 placeholder="Nhập đơn vị"
                 labelPlacement="outside"
-                isRequired
-                // value={unit || ""}
-                isInvalid={errors.unit && true}
-                {...register("unit", { required: true })}
-              />
+                isInvalid={errors.unit ? true : false}
+                defaultItems={unitOptions}
+                selectedKey={unit || ""}
+                onSelectionChange={(item) => {
+                  setValue("unit", item?.toString() || "");
+                }}
+                errorMessage="Đơn vị không được để trống"
+                // {...register("breed", {
+                //   required: true,
+                // })}
+              >
+                {(item) => (
+                  <AutocompleteItem color="primary" key={item.value}>
+                    {item.label}
+                  </AutocompleteItem>
+                )}
+              </Autocomplete>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Input

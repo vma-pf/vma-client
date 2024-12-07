@@ -241,8 +241,6 @@ export default function MedicineList() {
 
     switch (columnKey) {
       case "mainIngredient":
-      case "name":
-      case "unit":
       case "usage":
         return (
           <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={300}>
