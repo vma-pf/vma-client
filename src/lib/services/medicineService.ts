@@ -42,4 +42,13 @@ export const medicineService = {
       usage: model.usage,
     }),
   deleteMedicine: (id: string) => http.delete(endpoint + `/${id}`),
+  importMedicineExcel: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return http.post(endpoint + "/import-medicine-excel", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
 };

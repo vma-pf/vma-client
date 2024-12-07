@@ -31,6 +31,7 @@ import MedicineModal from "./_modals/modal-medicine";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import DetailMedicine from "@oursrc/components/medicines/modals/detail-medicine";
+import ImportMedicineModal from "./_modals/modal-import-medicine";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   active: "success",
@@ -43,6 +44,7 @@ export default function MedicineList() {
 
   //Modal field
   const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
+  const { isOpen: isOpenImport, onOpen: onOpenImport, onClose: onCloseImport } = useDisclosure();
   // const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
   // const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure();
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
@@ -219,6 +221,9 @@ export default function MedicineList() {
             <Button color="primary" endContent={<Plus />} onPress={onOpenAdd}>
               Tạo mới
             </Button>
+            <Button color="primary" endContent={<Plus />} onPress={onOpenImport}>
+              Nhập từ file
+            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -314,6 +319,7 @@ export default function MedicineList() {
       </Table>
       {isOpenAdd && <MedicineModal isOpen={isOpenAdd} onClose={onCloseAdd} context="create" />}
       {isOpenDetail && selectedMedicine && <DetailMedicine isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine || undefined} />}
+      {isOpenImport && <ImportMedicineModal isOpen={isOpenImport} onClose={onCloseImport} />}
       {/* {isOpenEdit && <MedicineModal isOpen={isOpenEdit} onClose={onCloseEdit} context="edit" medicine={selectedMedicine || undefined} />} */}
       {/* {isOpenDelete && <MedicineModal isOpen={isOpenDelete} onClose={onCloseDelete} context="delete" medicine={selectedMedicine || undefined} />} */}
     </div>
