@@ -8,7 +8,7 @@ import { ClipboardCheck, ClipboardList } from "lucide-react";
 import React from "react";
 import { TbVaccine } from "react-icons/tb";
 import DevelopmentLogList from "../../../app/(management)/farm-assist/herd/_components/development-log-list";
-import PigDiseaseReportList from "@oursrc/components/disease-reports/pig-disease-report-list";
+import CommonDiseaseReportList from "@oursrc/components/disease-reports/common-disease-report-list";
 import { TreatmentData } from "@oursrc/lib/models/treatment";
 import CommonTreatmentStageList from "@oursrc/components/treatment/common-treatment-stage-list";
 import { toast } from "@oursrc/hooks/use-toast";
@@ -20,10 +20,10 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
   const [treatment, setSelectedTreatment] = React.useState<any>();
   React.useEffect(() => {
     setCurrentTreatmentStages([]);
-    if(treatment){
+    if (treatment) {
       const selectedTreatment: string[] = Array.from(treatment);
       const id = selectedTreatment.length > 0 ? selectedTreatment[0] : undefined;
-      if(Array.from(treatment).length > 0){
+      if (Array.from(treatment).length > 0) {
         getTreatmentPlanById(id);
       }
     }
@@ -32,16 +32,13 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
   const getTreatmentPlanById = async (id: string | undefined) => {
     try {
       const res = await treatmentPlanService.getTreatmentPlan(id ?? "");
-      if(res.isSuccess){
+      if (res.isSuccess) {
         setCurrentTreatmentStages(res.data.treatmentStages);
       }
-    }catch(e){
-      toast({
-        variant: "destructive",
-        title: "Có lỗi xảy ra trong quá trình lấy dữ liệu hệ thống! Vui lòng thử lại",
-      });
+    } catch (e) {
+      console.log(e);
     }
-  }
+  };
   return (
     <Modal
       isOpen={isOpen}
@@ -104,7 +101,9 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
             >
               <div>
                 <CommonTreatmentPlanList pigId={pigInfo.id} setSelectedTreatment={setSelectedTreatment} />
-                <div className="px-4 pt-4"><CommonTreatmentStageList stages={currentTreatmentStages} /></div>
+                <div className="px-4 pt-4">
+                  <CommonTreatmentStageList stages={currentTreatmentStages} />
+                </div>
               </div>
             </Tab>
             <Tab
@@ -116,9 +115,7 @@ const PigDetail = ({ isOpen, onClose, pigInfo }: { isOpen: boolean; onClose: () 
                 </div>
               }
             >
-              <div>
-                <PigDiseaseReportList pigId={pigInfo.id} />
-              </div>
+              <CommonDiseaseReportList pigId={pigInfo.id} />
             </Tab>
           </Tabs>
         </ModalBody>

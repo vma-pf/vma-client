@@ -261,7 +261,7 @@ const Medicine = () => {
           title={
             <div className="flex items-center">
               <MdOutlineWarehouse size={20} />
-              <span className="ml-2">Kho thuốc</span>
+              <span className="ml-2">Danh mục thuốc</span>
             </div>
           }
         >
