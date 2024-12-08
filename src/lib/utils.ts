@@ -91,6 +91,17 @@ export const eliminateTime = (date: string): string => {
   return `${year}-${month}-${day}`;
 }
 
+export const eliminateDate = (date: string): string => {
+  if (!date) {
+    return "";
+  }
+  const dateObj = new Date(date);
+  const hours = ("0" + dateObj.getHours()).slice(-2);
+  const minutes = ("0" + dateObj.getMinutes()).slice(-2);
+  const seconds = ("0" + dateObj.getSeconds()).slice(-2);
+  return `${hours}:${minutes}:${seconds}`;
+}
+
 export const dateArrayConverter = (dates: string[]): string[] => {
   return dates.map((date) => eliminateTime(date));
 };

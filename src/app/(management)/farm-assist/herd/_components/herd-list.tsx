@@ -51,7 +51,15 @@ const statusColorMap = {
 
 const INITIAL_VISIBLE_COLUMNS = ["code", "breed", "averageWeight", "totalNumber", "startDate", "expectedEndDate", "status"];
 
-const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.SetStateAction<HerdInfo | undefined>> }) => {
+const HerdList = ({
+  selectedHerd,
+  setSelectedHerd,
+  isEndHerd,
+}: {
+  selectedHerd: HerdInfo | undefined;
+  setSelectedHerd: React.Dispatch<React.SetStateAction<HerdInfo | undefined>>;
+  isEndHerd: boolean;
+}) => {
   const [herdList, setHerdList] = React.useState<HerdInfo[]>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
@@ -91,6 +99,12 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
   React.useEffect(() => {
     fetchData();
   }, [page, rowsPerPage]);
+
+  React.useEffect(() => {
+    if (isEndHerd) {
+      fetchData();
+    }
+  }, [isEndHerd]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -273,6 +287,7 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
       sortDescriptor={sortDescriptor}
       topContent={topContent}
       topContentPlacement="outside"
+      selectedKeys={selectedHerd ? new Set([selectedHerd.id]) : new Set([])}
       onSelectionChange={(selectedKeys: Selection) => {
         const selectedKeysArray = Array.from(selectedKeys);
         const selectedHerds = herdList.filter((herd) => herd.id && selectedKeysArray.includes(herd.id));

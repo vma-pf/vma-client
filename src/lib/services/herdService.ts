@@ -30,4 +30,6 @@ export const herdService = {
             pageSize: pageSize?.toString() || "",
         },
     }),
+    endHerd: (id: string) => http.put(endpoint + `/${id}/end-herd`, {}),
+    downloadReport: (id: string) => http.get(endpoint + `/${id}/export-statistics`),
 };

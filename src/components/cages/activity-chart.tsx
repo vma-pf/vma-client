@@ -7,14 +7,12 @@ import { cageService } from "@oursrc/lib/services/cageService";
 import { CalendarDate, parseDate } from "@internationalized/date";
 import { DatePicker, DateValue } from "@nextui-org/react";
 
-const ActivityChart = ({ cage }: { cage?: Cage }) => {
+const ActivityChart = ({ cage, date }: { cage?: Cage; date: DateValue }) => {
   // const chartData = [
   //   { status: "stationary", percent: data.percentageOfStationary },
   //   { status: "moving", percent: data.percentageOfMoving },
   //   { status: "feeding", percent: data.percentageOfFeeding },
   // ];
-  const [date, setDate] = React.useState<DateValue>(parseDate(new Date().toISOString().split("T")[0]));
-
   const [chartData, setChartData] = React.useState<
     {
       status: string;
@@ -29,7 +27,7 @@ const ActivityChart = ({ cage }: { cage?: Cage }) => {
     },
     stationary: {
       label: "Đứng im",
-      color: "#6ee7b7",
+      color: "#059669",
     },
     moving: {
       label: "Di chuyển",
@@ -37,18 +35,18 @@ const ActivityChart = ({ cage }: { cage?: Cage }) => {
     },
     feeding: {
       label: "Đang ăn",
-      color: "#059669",
+      color: "#6ee7b7",
     },
   } satisfies ChartConfig;
 
   const fetchData = async () => {
     try {
-      const res: ResponseObject<ActivityStatistic> = await cageService.getActivityLogByDate(cage?.id ?? "", date.toString());
+      const res: ResponseObject<ActivityStatistic> = await cageService.getActivityLogPercent(cage?.id ?? "", date.toString());
       if (res.isSuccess) {
         setChartData([
-          { status: "Đứng im", percent: isNaN(res.data.percentageOfStationary) ? 0 : res.data.percentageOfStationary, fill: "#6ee7b7" },
+          { status: "Đứng im", percent: isNaN(res.data.percentageOfStationary) ? 0 : res.data.percentageOfStationary, fill: "#059669" },
           { status: "Di chuyển", percent: isNaN(res.data.percentageOfMoving) ? 0 : res.data.percentageOfMoving, fill: "#10b981" },
-          { status: "Đang ăn", percent: isNaN(res.data.percentageOfFeeding) ? 0 : res.data.percentageOfFeeding, fill: "#059669" },
+          { status: "Đang ăn", percent: isNaN(res.data.percentageOfFeeding) ? 0 : res.data.percentageOfFeeding, fill: "#6ee7b7" },
         ]);
       }
     } catch (error) {
@@ -61,15 +59,6 @@ const ActivityChart = ({ cage }: { cage?: Cage }) => {
   }, [date]);
   return (
     <div>
-      <DatePicker
-        className="mb-4 mx-auto w-2/3"
-        label="Chọn ngày"
-        labelPlacement="outside"
-        value={date}
-        onChange={(value) => {
-          setDate(value);
-        }}
-      />
       {chartData && (
         <ChartContainer config={chartConfig} className="mx-auto w-3/5 aspect-square max-h-[420px]">
           <BarChart accessibilityLayer data={chartData}>

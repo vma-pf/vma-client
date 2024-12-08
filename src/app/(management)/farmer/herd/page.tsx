@@ -22,6 +22,10 @@ import { calculateProgress } from "@oursrc/lib/utils/dev-utils";
 import { EndHerdStatistic, HerdStatistic } from "@oursrc/lib/models/statistic";
 import { AvgStatistic } from "../../farm-assist/herd/_components/avg-statistic";
 import { LuFileBarChart } from "react-icons/lu";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
+import { useToast } from "@oursrc/hooks/use-toast";
+import { TbReportSearch } from "react-icons/tb";
+import { FaFileDownload } from "react-icons/fa";
 
 const statusColorMap = [
   { status: "Chưa Kết Thúc", color: "bg-default" },
@@ -30,8 +34,12 @@ const statusColorMap = [
 ];
 
 const Herd = () => {
+  const { toast } = useToast();
+  const { loading, setLoading } = React.useContext(LoadingStateContext);
+  const [isEndHerd, setIsEndHerd] = React.useState(false);
   const { isOpen: isOpenHerdDetail, onOpen: onOpenHerdDetail, onClose: onCloseHerdDetail } = useDisclosure();
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
+  const { isOpen: isOpenEndHerd, onOpen: onOpenEndHerd, onClose: onCloseEndHerd } = useDisclosure();
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
   const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
   const [statisticData, setStatisticData] = React.useState<HerdStatistic | undefined>();
@@ -60,6 +68,47 @@ const Herd = () => {
     }
   };
 
+  const handleEndHerd = async () => {
+    try {
+      setLoading(true);
+      const res: ResponseObject<any> = await herdService.endHerd(selectedHerd?.id ?? "");
+      if (res.isSuccess) {
+        setIsEndHerd(true);
+        onCloseEndHerd();
+        setSelectedHerd(undefined);
+        setStatisticData(undefined);
+        setAvgStatisticData(undefined);
+        toast({
+          title: "Kết thúc đàn thành công",
+          variant: "success",
+        });
+      } else {
+        console.log(res.errorMessage);
+        toast({
+          title: "Kết thúc đàn thất bại",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadReport = async () => {
+    try {
+      const res: ResponseObject<any> = await herdService.downloadReport(selectedHerd?.id ?? "");
+      if (res.isSuccess) {
+        console.log(res.data);
+      } else {
+        console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   React.useEffect(() => {
     if (!selectedHerd) {
       setSelectedPig(undefined);
@@ -82,6 +131,9 @@ const Herd = () => {
               <div className="flex items-center">
                 <p className="my-2">Cân nặng trung bình cuối cùng:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInEnd} kg</p>
               </div>
+              <Button color="primary" endContent={<FaFileDownload size={20} />} onPress={handleDownloadReport}>
+                Tải xuống báo cáo
+              </Button>
             </AccordionItem>
           </Accordion>
         </div>
@@ -92,7 +144,7 @@ const Herd = () => {
             <Image src="/assets/vma-logo.png" alt="logo" width={50} height={50} />
             <p className="text-2xl font-bold ml-4">Danh sách đàn</p>
           </div>
-          <HerdList setSelectedHerd={setSelectedHerd} />
+          <HerdList selectedHerd={selectedHerd} setSelectedHerd={setSelectedHerd} isEndHerd={isEndHerd} />
         </div>
         <div className="p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
           <p className="text-2xl font-bold mb-2">Thông tin đàn heo</p>
@@ -148,9 +200,16 @@ const Herd = () => {
                     <Divider orientation="horizontal" />
                     <p className="my-2">Mô tả:</p>
                     <p className="my-2">{selectedHerd?.description}</p>
-                    <Button color="primary" onClick={onOpenHerdDetail} endContent={<EyeIcon size={20} />}>
-                      Xem chi tiết
-                    </Button>
+                    <div className="my-2 flex gap-2">
+                      <Button color="primary" onPress={onOpenHerdDetail} endContent={<EyeIcon size={20} />}>
+                        Xem chi tiết
+                      </Button>
+                      {selectedHerd?.status !== "Đã kết thúc" && (
+                        <Button color="danger" onPress={onOpenEndHerd} endContent={<AiFillAlert size={20} />}>
+                          Kết thúc đàn
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </AccordionItem>
                 <AccordionItem key="2" title="Tình trạng đàn" startContent={<FaChartPie className="text-primary" size={25} />}>
@@ -176,6 +235,29 @@ const Herd = () => {
       </div>
       {isOpenHerdDetail && selectedHerd && <HerdDetail isOpen={isOpenHerdDetail} onClose={onCloseHerdDetail} herdInfo={selectedHerd} />}
       {isOpenDetail && selectedPig && <PigDetail isOpen={isOpenDetail} onClose={onCloseDetail} pigInfo={selectedPig} />}
+      {isOpenEndHerd && selectedHerd && (
+        <Modal isOpen={isOpenEndHerd} onClose={onCloseEndHerd} size="xl">
+          <ModalContent>
+            <ModalHeader>
+              <p className="text-xl">Kết thúc đàn {selectedHerd?.code}</p>
+            </ModalHeader>
+            <ModalBody>
+              <div className="flex flex-col items-center">
+                <p className="text-lg font-semibold">Bạn có chắc chắn muốn kết thúc đàn {selectedHerd?.code}?</p>
+                <p className="text-md mt-3">Khi kết thúc đàn các thông tin tiêm phòng, điều trị, sức khỏe của heo sẽ kết thúc</p>
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="danger" onPress={onCloseEndHerd}>
+                Hủy
+              </Button>
+              <Button color="primary" onPress={handleEndHerd} isLoading={loading}>
+                Xác nhận
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
     </div>
   );
 };
