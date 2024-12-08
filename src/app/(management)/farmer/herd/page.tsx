@@ -1,5 +1,5 @@
 "use client";
-import { Accordion, AccordionItem, Button, Divider, Progress, useDisclosure } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button, Divider, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Progress, useDisclosure } from "@nextui-org/react";
 import Image from "next/image";
 import React from "react";
 import Chart from "@oursrc/components/herds/chart";
