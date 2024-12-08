@@ -63,7 +63,7 @@ const DetailMedicine = ({ isOpen, onClose, medicine }: { isOpen: boolean; onClos
               title={
                 <div className="flex items-center">
                   <GrTransaction size={20} />
-                  <span className="ml-2">Danh sách giao dịch</span>
+                  <span className="ml-2">Lịch sử nhập xuất</span>
                 </div>
               }
             >

@@ -24,4 +24,10 @@ export const herdService = {
             pageSize: pageSize?.toString() || "",
         },
     }),
+    getHerdDiseaseReport: (id: string, pageIndex: number, pageSize: number) => http.get(endpoint + `/${id}/disease-reports`, {
+        params: {
+            pageIndex: pageIndex?.toString() || "",
+            pageSize: pageSize?.toString() || "",
+        },
+    }),
 };

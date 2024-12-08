@@ -73,13 +73,13 @@ const request = async <Response>(
     method,
   });
 
-  // if (response.status === 401 || response.status === 403) {
-  //   localStorage.removeItem("accessToken");
-  //   localStorage.removeItem("refreshToken");
-  //   await fetch("/api/auth/logout", {
-  //     method: "POST",
-  //   });
-  // }
+  if (response.status === 401 || response.status === 403) {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    await fetch("/api/auth/logout", {
+      method: "POST",
+    });
+  }
 
   // check if token is expired before 10 minutes
   if (token && decodeToken(token).exp - Date.now() / 1000 < 60 * 10) {

@@ -28,15 +28,19 @@ import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService"
 import { Search } from "lucide-react";
 import { HiChevronDown } from "react-icons/hi2";
 import { pigService } from "@oursrc/lib/services/pigService";
+import { herdService } from "@oursrc/lib/services/herdService";
 
 const columns = [
   { name: "Mô tả", uid: "description", sortable: true },
+  { name: "Nguyên nhân", uid: "cause", sortable: true },
   { name: "Kết quả chữa bệnh", uid: "treatmentResult", sortable: true },
+  { name: "Tên bệnh chẩn đoán", uid: "diagnosisDiseaseName", sortable: true },
+  { name: "Mức độ", uid: "severityType", sortable: true },
   { name: "Tiến độ", uid: "isDone", sortable: true },
   { name: "Ngày tạo", uid: "createdAt", sortable: true },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["treatmentResult", "description", "isDone", "createdAt"];
+const INITIAL_VISIBLE_COLUMNS = ["diagnosisDiseaseName", "cause", "severityType", "isDone", "treatmentResult"];
 
 const statusMapColor = [
   { name: "red", value: 0 },
@@ -47,7 +51,7 @@ const statusMap = [
   { name: "Đã hoàn thành", value: 1 },
 ];
 
-const PigDiseaseReportList = ({ pigId }: { pigId: string }) => {
+const CommonDiseaseReportList = ({ pigId, herdId }: { pigId?: string; herdId?: string }) => {
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "createdAt",
     direction: "ascending",
@@ -94,10 +98,12 @@ const PigDiseaseReportList = ({ pigId }: { pigId: string }) => {
     });
   }, [sortDescriptor, items]);
 
-  const getAllVaccinationPlan = async () => {
+  const getAllDiseaseReport = async () => {
     try {
       setIsLoading(true);
-      const res: ResponseObjectList<DiseaseReport> = await pigService.getDiseaseReportByPigId(pigId, page, rowsPerPage);
+      const res: ResponseObjectList<DiseaseReport> = pigId
+        ? await pigService.getDiseaseReportByPigId(pigId, page, rowsPerPage)
+        : await herdService.getHerdDiseaseReport(herdId ?? "", page, rowsPerPage);
       if (res && res.isSuccess) {
         setDiseaseReportList(res.data.data || []);
         setPage(res.data.pageIndex);
@@ -116,7 +122,7 @@ const PigDiseaseReportList = ({ pigId }: { pigId: string }) => {
   // console.log(selectedKeys);
 
   React.useEffect(() => {
-    getAllVaccinationPlan();
+    getAllDiseaseReport();
   }, [page, rowsPerPage]);
 
   const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -212,7 +218,7 @@ const PigDiseaseReportList = ({ pigId }: { pigId: string }) => {
       classNames={{
         wrapper: "max-h-[500px] overflow-auto",
       }}
-      selectionMode="single"
+      selectionMode="none"
       topContent={topContent}
       bottomContent={bottomContent}
       sortDescriptor={sortDescriptor}
@@ -240,4 +246,4 @@ const PigDiseaseReportList = ({ pigId }: { pigId: string }) => {
   );
 };
 
-export default PigDiseaseReportList;
+export default CommonDiseaseReportList;
