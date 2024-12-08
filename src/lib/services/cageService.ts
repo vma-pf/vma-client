@@ -16,6 +16,7 @@ export const cageService = {
       pageSize: pageSize?.toString() || "",
     },
   }),
+  getActivityLogPercent: (id: string, date: string) => http.get(endpoint + `/${id}/activity-logs/${date}/statistics`),
   getActivityLogByDate: (id: string, date: string) => http.get(endpoint + `/${id}/activity-logs/${date}`),
   createCage: (model: any) =>
     http.post(endpoint, model),
