@@ -34,7 +34,7 @@ const MedicinesListReadOnly = ({ setSelected }: any) => {
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(1);
-  const [rowsPerPage, setRowsPerPage] = React.useState(30);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "lastUpdatedAt",
     direction: "ascending",

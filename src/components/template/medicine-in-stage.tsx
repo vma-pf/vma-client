@@ -41,6 +41,7 @@ const MedicineListInStage = ({ stage, setPlan }: { stage: StageTemplate; setPlan
             ...existingMedicine,
             portionEachPig: existingMedicine.portionEachPig + selectedMedicine.portionEachPig,
           };
+          console.log("updatedMedicine", updatedMedicine);
           newMedicines = stage.medicineTemplates.map((medicine) =>
             medicine.medicineId === selectedMedicine.id || medicine.medicineName === selectedMedicine.name ? updatedMedicine : medicine
           );
@@ -57,7 +58,15 @@ const MedicineListInStage = ({ stage, setPlan }: { stage: StageTemplate; setPlan
           ];
         }
       } else {
-        newMedicines = [selectedMedicine];
+        newMedicines = [
+          {
+            medicineId: selectedMedicine.id,
+            medicineName: selectedMedicine.name,
+            stageTemplateId: stage.id ?? "",
+            portionEachPig: selectedMedicine.portionEachPig,
+            id: v4(),
+          },
+        ];
       }
       const newMedicinesInStage = {
         ...stage,
