@@ -64,25 +64,50 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
     }
   };
 
+  const isAllFieldsFilled = () => {
+    return selectedPlanTemplate?.stageTemplates.every((stage) => stage.title && stage.timeSpan && stage.medicineTemplates.length > 0 && stage.toDoTemplates.length > 0)
+      ? true
+      : false;
+  };
+
   const handleUpdateTemplate = async () => {
     try {
       if (selectedPlanTemplate) {
-        const response: ResponseObject<any> = await planTemplateService.updatePlanTemplate(selectedPlanTemplate.id, selectedPlanTemplate);
-        if (response.isSuccess) {
+        if (!isAllFieldsFilled()) {
           toast({
-            title: "Cập nhật mẫu thành công",
-            variant: "success",
-          });
-          fetchTemplate();
-          setSelectedPlanTemplate(undefined);
-          setSelectedStage(undefined);
-        } else {
-          toast({
-            title: response.errorMessage || "Cập nhật mẫu thất bại",
+            title: "Vui lòng điền đầy đủ thông tin cho giai đoạn",
             variant: "destructive",
           });
-          console.log(response.errorMessage);
+          return;
         }
+
+        console.log(selectedPlanTemplate);
+        const payload = {
+          ...selectedPlanTemplate,
+          stageTemplates: selectedPlanTemplate.stageTemplates.map((stage) => {
+            return {
+              ...stage,
+              id: stage.toDoTemplates.every((todo) => todo.id === null) ? null : stage.id,
+            };
+          }),
+        };
+        console.log(payload);
+        // const response: ResponseObject<any> = await planTemplateService.updatePlanTemplate(selectedPlanTemplate.id, selectedPlanTemplate);
+        // if (response.isSuccess) {
+        //   toast({
+        //     title: "Cập nhật mẫu thành công",
+        //     variant: "success",
+        //   });
+        //   fetchTemplate();
+        //   setSelectedPlanTemplate(undefined);
+        //   setSelectedStage(undefined);
+        // } else {
+        //   toast({
+        //     title: response.errorMessage || "Cập nhật mẫu thất bại",
+        //     variant: "destructive",
+        //   });
+        //   console.log(response.errorMessage);
+        // }
       }
     } catch (error) {
       console.log(error);
@@ -187,7 +212,15 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
           if (i === stageIndex) {
             return {
               ...stage,
-              toDoTemplates: stage.toDoTemplates.filter((_, j) => j !== index),
+              toDoTemplates: stage.toDoTemplates.map((toDo, j) => {
+                if (j === index) {
+                  return {
+                    ...toDo,
+                    isDeleted: true,
+                  };
+                }
+                return toDo;
+              }),
             };
           }
           return stage;
@@ -201,7 +234,15 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
       setSelectedPlanTemplate(
         selectedPlanTemplate && {
           ...selectedPlanTemplate,
-          stageTemplates: selectedPlanTemplate.stageTemplates.filter((stage) => stage.id !== selectedStage.id),
+          stageTemplates: selectedPlanTemplate.stageTemplates.map((stage) => {
+            if (stage.id === selectedStage.id) {
+              return {
+                ...stage,
+                isDeleted: true,
+              };
+            }
+            return stage;
+          }),
         }
       );
       onClose();
@@ -229,7 +270,7 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
             {selectedPlanTemplate && (
               <div className="mb-4 flex flex-row justify-between items-center">
                 <p className="text-2xl font-semibold">Giai đoạn tiêm phòng</p>
-                <Button color="primary" endContent={<FaRegSave size={20} />} onPress={handleUpdateTemplate}>
+                <Button color="primary" endContent={<FaRegSave size={20} />} onPress={handleUpdateTemplate} isDisabled={!isAllFieldsFilled()}>
                   Lưu thay đổi
                 </Button>
               </div>
@@ -237,6 +278,7 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
             {selectedPlanTemplate ? (
               <Accordion variant="splitted">
                 {selectedPlanTemplate.stageTemplates
+                  .filter((stage) => !stage.isDeleted)
                   .sort((a, b) => a.numberOfDays - b.numberOfDays)
                   .map((stage, stageIndex: number) => {
                     return (
@@ -322,44 +364,46 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
                                 <Tooltip color="primary" content={`Các bước cần thực hiện trong giai đoạn ${stageIndex + 1}`}>
                                   <Card className="" radius="sm">
                                     <CardBody>
-                                      {stage.toDoTemplates?.map(
-                                        (
-                                          treatmentToDo: {
-                                            id: string | null;
-                                            description: string;
-                                          },
-                                          index: number
-                                        ) => {
-                                          return (
-                                            <div key={index} className="mb-2">
-                                              <div className="p-0 grid grid-cols-11 gap-2">
-                                                <Input
-                                                  className="mb-5 col-span-9 w-full"
-                                                  type="text"
-                                                  radius="sm"
-                                                  size="sm"
-                                                  label={`Bước ${index + 1}`}
-                                                  labelPlacement="inside"
-                                                  value={treatmentToDo.description}
-                                                  onChange={(e) => handleToDoChange(e, stageIndex, index)}
-                                                />
-                                                <div className="flex gap-2">
-                                                  {stage?.toDoTemplates && stage.toDoTemplates?.length > 1 && (
-                                                    <Button isIconOnly color="danger" size="sm" onClick={() => onDeleteTodoInStage(stageIndex, index)}>
-                                                      <Trash size={20} color="#ffffff" />
-                                                    </Button>
-                                                  )}
-                                                  {index === stage.toDoTemplates.length - 1 && (
-                                                    <Button isIconOnly color="primary" size="sm" onClick={() => onAddTodoInStage(stageIndex)}>
-                                                      <Plus size={20} color="#ffffff" />
-                                                    </Button>
-                                                  )}
+                                      {stage.toDoTemplates
+                                        .filter((todo) => !todo.isDeleted)
+                                        .map(
+                                          (
+                                            treatmentToDo: {
+                                              id: string | null;
+                                              description: string;
+                                            },
+                                            index: number
+                                          ) => {
+                                            return (
+                                              <div key={index} className="mb-2">
+                                                <div className="p-0 grid grid-cols-11 gap-2">
+                                                  <Input
+                                                    className="mb-5 col-span-9 w-full"
+                                                    type="text"
+                                                    radius="sm"
+                                                    size="sm"
+                                                    label={`Bước ${index + 1}`}
+                                                    labelPlacement="inside"
+                                                    value={treatmentToDo.description}
+                                                    onChange={(e) => handleToDoChange(e, stageIndex, index)}
+                                                  />
+                                                  <div className="flex gap-2">
+                                                    {stage?.toDoTemplates && stage.toDoTemplates?.length > 1 && (
+                                                      <Button isIconOnly color="danger" size="sm" onClick={() => onDeleteTodoInStage(stageIndex, index)}>
+                                                        <Trash size={20} color="#ffffff" />
+                                                      </Button>
+                                                    )}
+                                                    {index === stage.toDoTemplates.length - 1 && (
+                                                      <Button isIconOnly color="primary" size="sm" onClick={() => onAddTodoInStage(stageIndex)}>
+                                                        <Plus size={20} color="#ffffff" />
+                                                      </Button>
+                                                    )}
+                                                  </div>
                                                 </div>
                                               </div>
-                                            </div>
-                                          );
-                                        }
-                                      )}
+                                            );
+                                          }
+                                        )}
                                     </CardBody>
                                   </Card>
                                 </Tooltip>

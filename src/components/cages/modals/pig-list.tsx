@@ -1,43 +1,52 @@
-"use client";
-import React from "react";
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
   Button,
-  DropdownTrigger,
   Dropdown,
-  DropdownMenu,
   DropdownItem,
-  Chip,
-  Pagination,
-  Selection,
-  ChipProps,
-  SortDescriptor,
-  Spinner,
-  Tooltip,
-  useDisclosure,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
   Modal,
+  ModalBody,
   ModalContent,
   ModalHeader,
-  ModalBody,
+  Pagination,
+  Selection,
+  SortDescriptor,
+  Spinner,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@nextui-org/react";
-import { columns, statusOptions } from "../data";
-import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
-import { EyeIcon, Plus, Search } from "lucide-react";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
+import { Cage } from "@oursrc/lib/models/cage";
+import { Pig } from "@oursrc/lib/models/pig";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { pigService } from "@oursrc/lib/services/pigService";
-import { HerdInfo } from "@oursrc/lib/models/herd";
-import { Pig } from "@oursrc/lib/models/pig";
-import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@oursrc/components/ui/drawer";
-import DevelopmentLogList from "./development-log-list";
-import DiseaseReport from "./disease-report";
-import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "@oursrc/components/ui/sheet";
-import { TbExchange } from "react-icons/tb";
+import { EyeIcon, Search } from "lucide-react";
+import React from "react";
+import { HiChevronDown, HiDotsVertical } from "react-icons/hi";
+
+const columns = [
+  { name: "Mã heo", uid: "pigCode", sortable: true },
+  { name: "Mã chuồng", uid: "cageCode", sortable: true },
+  { name: "Giống", uid: "breed", sortable: true },
+  { name: "Đàn", uid: "herdId", sortable: true },
+  { name: "Chuồng", uid: "cageId", sortable: true },
+  { name: "Cân nặng", uid: "weight", sortable: true },
+  { name: "Chiều cao", uid: "height", sortable: true },
+  { name: "Chiều rộng", uid: "width", sortable: true },
+  { name: "Tình trạng", uid: "healthStatus", sortable: true },
+  { name: "Cập nhật lần cuối", uid: "lastUpdatedAt", sortable: true },
+];
+
+const statusOptions = [
+  { name: "Bình thường", uid: "Bình thường" },
+  { name: "Bệnh", uid: "Bệnh" },
+  { name: "Chết", uid: "Chết" },
+];
 
 const statusColorMap = [
   { healthStatus: "Bình thường", color: "primary" },
@@ -45,38 +54,22 @@ const statusColorMap = [
   { healthStatus: "Chết", color: "danger" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["breed", "cageCode", "pigCode", "weight", "height", "width", "healthStatus", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["breed", "pigCode", "weight", "height", "width", "healthStatus"];
 
-const capitalize = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
-
-export default function PigList({
-  selectedHerd,
-  setSelectedPig,
-  onOpenDetail,
-  onOpenChangeCage,
-}: {
-  selectedHerd: HerdInfo;
-  setSelectedPig: React.Dispatch<React.SetStateAction<Pig | undefined>>;
-  onOpenDetail: () => void;
-  onOpenChangeCage: () => void;
-}) {
+const PigList = ({ isOpen, onClose, cage }: { isOpen: boolean; onClose: () => void; cage?: Cage }) => {
+  const { loading, setLoading } = React.useContext(LoadingStateContext);
   const [pigList, setPigList] = React.useState<Pig[]>([]);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [filterValue, setFilterValue] = React.useState("");
-  // const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
   const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
   const [statusFilter, setStatusFilter] = React.useState<Selection>("all");
   const [totalRecords, setTotalRecords] = React.useState(0);
+  const [page, setPage] = React.useState(1);
   const [pages, setPages] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
     column: "breed",
     direction: "ascending",
   });
-
-  const [page, setPage] = React.useState(1);
 
   const hasSearchFilter = Boolean(filterValue);
 
@@ -100,10 +93,8 @@ export default function PigList({
   }, [pigList, filterValue, statusFilter]);
 
   React.useEffect(() => {
-    if (selectedHerd) {
-      fetchData();
-    }
-  }, [selectedHerd, page, rowsPerPage]);
+    fetchData();
+  }, [page, rowsPerPage]);
 
   const items = React.useMemo(() => {
     const start = (page - 1) * rowsPerPage;
@@ -124,8 +115,8 @@ export default function PigList({
 
   const fetchData = async () => {
     try {
-      setIsLoading(true);
-      const response: ResponseObjectList<Pig> = await pigService.getPigsByHerdId(selectedHerd.id, page, rowsPerPage);
+      setLoading(true);
+      const response: ResponseObjectList<Pig> = await pigService.getPigsByCageId(cage?.id || "", page, rowsPerPage);
       if (response.isSuccess) {
         setPigList(response.data.data || []);
         setTotalRecords(response.data?.totalRecords || 0);
@@ -135,12 +126,9 @@ export default function PigList({
     } catch (error) {
       console.error("Error fetching pig data:", error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
-
-  // const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  // const [selectedPig, setSelectedPig] = React.useState<Pig>();
   const renderCell = React.useCallback((pig: Pig, columnKey: React.Key) => {
     const cellValue = pig[columnKey as keyof Pig];
 
@@ -149,36 +137,6 @@ export default function PigList({
         return <p className={`text-${statusColorMap.find((status) => status.healthStatus === cellValue)?.color}`}>{cellValue}</p>;
       case "vaccinationDate":
         return new Date(cellValue as string).toLocaleDateString("vi-VN");
-      case "actions":
-        return (
-          <Dropdown>
-            <DropdownTrigger>
-              <Button isIconOnly size="sm" variant="light">
-                <HiDotsVertical className="text-default-400" />
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu>
-              <DropdownItem
-                startContent={<EyeIcon size={20} className="text-primary" />}
-                onClick={() => {
-                  setSelectedPig(pig);
-                  onOpenDetail();
-                }}
-              >
-                Xem chi tiết
-              </DropdownItem>
-              <DropdownItem
-                startContent={<TbExchange size={20} className="text-warning" />}
-                onClick={() => {
-                  setSelectedPig(pig);
-                  onOpenChangeCage();
-                }}
-              >
-                Đổi chuồng
-              </DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-        );
       default:
         return cellValue?.toString();
     }
@@ -233,7 +191,7 @@ export default function PigList({
               >
                 {statusOptions.map((status: any) => (
                   <DropdownItem key={status.uid} className="capitalize">
-                    {capitalize(status.name)}
+                    {status.name.toUpperCase()}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
@@ -254,7 +212,7 @@ export default function PigList({
               >
                 {columns.map((column) => (
                   <DropdownItem key={column.uid} className="capitalize">
-                    {capitalize(column.name)}
+                    {column.name.toUpperCase()}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
@@ -287,38 +245,47 @@ export default function PigList({
     );
   }, [items.length, page, pages, hasSearchFilter]);
   return (
-    <div>
-      <Table
-        aria-label="Example table with custom cells, pagination and sorting"
-        isHeaderSticky
-        color="primary"
-        bottomContent={bottomContent}
-        bottomContentPlacement="outside"
-        classNames={{
-          wrapper: "max-h-[750px]",
-        }}
-        // selectedKeys={selectedKeys}
-        selectionMode="single"
-        sortDescriptor={sortDescriptor}
-        topContent={topContent}
-        topContentPlacement="outside"
-        onSelectionChange={(keys) => {
-          const selectedKeysArray = Array.from(keys);
-          setSelectedPig(pigList.find((pig) => selectedKeysArray.includes(pig.id)));
-        }}
-        onSortChange={setSortDescriptor}
-      >
-        <TableHeader columns={headerColumns}>
-          {(column: any) => (
-            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
-              {column.name.toUpperCase()}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody emptyContent={"Không có kết quả"} loadingState={isLoading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
-          {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
-        </TableBody>
-      </Table>
-    </div>
+    <Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside">
+      <ModalContent>
+        <ModalHeader>
+          <p className="text-xl">Danh sách heo đang nuôi trong chuồng {cage?.code}</p>
+        </ModalHeader>
+        <ModalBody>
+          <Table
+            aria-label="Example table with custom cells, pagination and sorting"
+            isHeaderSticky
+            color="primary"
+            bottomContent={bottomContent}
+            bottomContentPlacement="outside"
+            classNames={{
+              wrapper: "max-h-[550px]",
+            }}
+            // selectedKeys={selectedKeys}
+            selectionMode="none"
+            sortDescriptor={sortDescriptor}
+            topContent={topContent}
+            topContentPlacement="outside"
+            // onSelectionChange={(keys) => {
+            //   const selectedKeysArray = Array.from(keys);
+            //   setSelectedPig(pigList.find((pig) => selectedKeysArray.includes(pig.id)));
+            // }}
+            onSortChange={setSortDescriptor}
+          >
+            <TableHeader columns={headerColumns}>
+              {(column: any) => (
+                <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
+                  {column.name.toUpperCase()}
+                </TableColumn>
+              )}
+            </TableHeader>
+            <TableBody emptyContent={"Không có kết quả"} loadingState={loading ? "loading" : "idle"} loadingContent={<Spinner />} items={sortedItems}>
+              {(item) => <TableRow key={item.id}>{(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}</TableRow>}
+            </TableBody>
+          </Table>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
-}
+};
+
+export default PigList;

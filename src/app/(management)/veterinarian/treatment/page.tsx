@@ -408,7 +408,7 @@ const Treatment = () => {
                         )}
                       </AccordionItem>
                       <AccordionItem key="2" title="Báo cáo bệnh" startContent={<HiOutlineDocumentReport className="text-emerald-500" size={25} />}>
-                      {diseaseReports.length > 0 ? (
+                        {diseaseReports.length > 0 ? (
                           diseaseReports &&
                           diseaseReports?.map((diseaseReport) => (
                             <div key={diseaseReport.id}>
@@ -582,6 +582,7 @@ const Treatment = () => {
                                         variant="solid"
                                         onPress={() => {
                                           setSelectedGuideId(guide.id);
+                                          localStorage.setItem("treatmentGuideId", guide.id || "");
                                         }}
                                         endContent={<FaRegSave size={20} />}
                                       >

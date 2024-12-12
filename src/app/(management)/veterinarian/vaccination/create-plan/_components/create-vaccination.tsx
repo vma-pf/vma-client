@@ -34,7 +34,7 @@ import { toast } from "@oursrc/hooks/use-toast";
 import { Cage } from "@oursrc/lib/models/cage";
 import { Pig } from "@oursrc/lib/models/pig";
 import { PlanTemplate } from "@oursrc/lib/models/plan-template";
-import { ResponseObjectList } from "@oursrc/lib/models/response-object";
+import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { CreateVaccinationStageProps, VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { pigService } from "@oursrc/lib/services/pigService";
 import { planTemplateService } from "@oursrc/lib/services/planTemplateService";
@@ -52,6 +52,7 @@ import { Area } from "@oursrc/lib/models/area";
 import AreaListReadOnly from "@oursrc/components/areas/area-list-read-only";
 import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 import { HerdInfo } from "@oursrc/lib/models/herd";
+import { eliminateTime } from "@oursrc/lib/utils";
 
 const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
   const router = useRouter();
@@ -118,13 +119,11 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
             lastDate = new Date(prevStage.applyStageTime);
           }
         }
-
-        lastDate.setDate(lastDate.getDate() + parseInt(lastStage.timeSpan));
-
         const firstStageDate = new Date(sortedStages[0].applyStageTime);
-        firstStageDate.setHours(0, 0, 0, 0);
+        firstStageDate.setDate(firstStageDate.getDate() - 1);
+        lastDate.setDate(lastDate.getDate() + parseInt(lastStage.timeSpan));
         setDate({
-          start: parseDate(firstStageDate.toJSON().slice(0, 10)),
+          start: parseDate(eliminateTime(firstStageDate.toISOString())),
           end: parseDate(lastDate.toJSON().slice(0, 10)),
         });
       }
@@ -439,7 +438,7 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
       };
       console.log(request);
 
-      const response = await vaccinationService.createVaccinationPlan(request);
+      const response: ResponseObject<any> = await vaccinationService.createVaccinationPlan(request);
       if (response && response.isSuccess) {
         setIsDoneAll(true);
         toast({
@@ -449,7 +448,11 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
         });
         router.push("/veterinarian/vaccination");
       } else {
-        throw new AggregateError([new Error()], response.errorMessage);
+        toast({
+          variant: "destructive",
+          title: "Tạo lịch tiêm phòng thất bại",
+          description: response.errorMessage,
+        });
       }
     } catch (error: any) {
       toast({
@@ -616,7 +619,6 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
                 radius="sm"
                 size="lg"
                 labelPlacement="outside"
-                isDisabled
                 isInvalid={date.end <= date.start ? true : false}
                 errorMessage="Vui lòng nhập đúng ngày bắt đầu - ngày kết thúc"
                 minValue={selectedHerds.length > 0 ? parseDate(selectedHerds[0]?.startDate.split("T")[0]) : today(getLocalTimeZone())}
@@ -676,7 +678,8 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
               isRequired
               isInvalid={firstStageDate ? false : true}
               errorMessage="Nhập ngày bắt đầu không được để trống"
-              minValue={today(getLocalTimeZone())}
+              minValue={selectedHerds.length > 0 ? parseDate(selectedHerds[0]?.startDate.split("T")[0]) : today(getLocalTimeZone())}
+              maxValue={selectedHerds.length > 0 ? parseDate(selectedHerds[0]?.expectedEndDate.split("T")[0]) : undefined}
               validationBehavior="native"
               value={firstStageDate}
               onChange={(event) => setFirstStageDate(event)}

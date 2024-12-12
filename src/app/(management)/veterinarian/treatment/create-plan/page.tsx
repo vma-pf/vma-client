@@ -201,7 +201,8 @@ const CreatePLan = () => {
       const lastStage = stages.reduce((prev, current) => (new Date(prev.applyStageTime) > new Date(current.applyStageTime) ? prev : current));
       const payload = {
         ...data,
-        expectedTimePeriod: new Date(new Date(lastStage.applyStageTime).setDate(new Date(lastStage.applyStageTime).getDate() + Number(lastStage.timeSpan))).toISOString(),
+        // expectedTimePeriod: new Date(new Date(lastStage.applyStageTime).setDate(new Date(lastStage.applyStageTime).getDate() + Number(lastStage.timeSpan))).toISOString(),
+        expectedTimePeriod: new Date(new Date(stages[0].applyStageTime).setDate(new Date(stages[0].applyStageTime).getDate() - 1)).toISOString(),
         treatmentStages: stages.map((stage) => ({
           ...stage,
           note: "",
