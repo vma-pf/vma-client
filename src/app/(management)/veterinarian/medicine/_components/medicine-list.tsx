@@ -38,7 +38,6 @@ const columns = [
     sortable: true,
   },
   { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
-  { name: "SỐ ĐĂNG KÝ", uid: "registerNumber", sortable: true },
   { name: "TRỌNG LƯỢNG", uid: "netWeight", sortable: true },
   { name: "CÁCH SỬ DỤNG", uid: "usage", sortable: true },
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
@@ -47,7 +46,7 @@ const columns = [
   { name: "ACTIONS", uid: "actions" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "registerNumber", "netWeight", "usage", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "netWeight", "usage", "actions"];
 
 export default function MedicineList() {
   const { toast } = useToast();

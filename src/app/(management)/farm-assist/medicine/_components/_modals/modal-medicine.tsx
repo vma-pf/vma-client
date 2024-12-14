@@ -20,7 +20,6 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
   const [isDoneAll, setIsDoneAll] = React.useState(false);
   const name = watch("name");
   const netWeight = watch("netWeight");
-  const registerNumber = watch("registerNumber");
   const usage = watch("usage");
   const unit = watch("unit");
   const mainIngredient = watch("mainIngredient");
@@ -45,16 +44,6 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
     { label: "ml", value: "ml" },
   ];
 
-  const handleRegisterNumberChange = (event: string) => {
-    let numericValue = event.replace(/[^0-9]/g, "");
-    if (numericValue[0] === "-") {
-      numericValue = numericValue.slice(1);
-    }
-    // if (parseInt(numericValue) > 10000) {
-    //   numericValue = "10000";
-    // }
-    setValue("registerNumber", numericValue || "0");
-  };
 
   const handleNetWeightChange = (event: string) => {
     let numericValue = event.replace(/[^0-9.]/g, "");
@@ -128,7 +117,6 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
   React.useEffect(() => {
     setValue("name", medicine?.name ? medicine?.name : storedMedicine.newMedicineName);
     setValue("netWeight", medicine?.netWeight ? medicine?.netWeight : "");
-    setValue("registerNumber", medicine?.registerNumber ? medicine?.registerNumber : "");
     setValue("usage", medicine?.usage ? medicine?.usage : "");
     setValue("unit", medicine?.unit ? medicine?.unit : "");
     setValue("mainIngredient", medicine?.mainIngredient ? medicine?.mainIngredient : "");
@@ -206,20 +194,6 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
                     onValueChange={(event) => handleNetWeightChange(event)}
                     isInvalid={errors.netWeight ? true : false}
                     errorMessage="Trọng lượng không được để trống"
-                  />
-                  <Input
-                    className="mb-5"
-                    type="text"
-                    radius="sm"
-                    size="lg"
-                    label="Số đăng ký"
-                    placeholder="Nhập số đăng ký"
-                    labelPlacement="outside"
-                    isRequired
-                    value={registerNumber || ""}
-                    onValueChange={(event) => handleRegisterNumberChange(event)}
-                    isInvalid={errors.registerNumber ? true : false}
-                    errorMessage="Số đăng ký không được để trống"
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-1">

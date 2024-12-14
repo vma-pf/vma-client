@@ -307,7 +307,6 @@ const NewBatch = () => {
                 setSelectedMedicine(undefined);
               } else if (value === "1") {
                 setValue("medicineName", "");
-                setValue("registerNumber", "");
                 setValue("netWeight", "");
                 setValue("unit", "");
                 setValue("mainIngredient", "");
@@ -357,21 +356,6 @@ const NewBatch = () => {
                   isInvalid={errors.medicineName ? true : false}
                   errorMessage="Tên thuốc không được để trống"
                   {...register("medicineName", { required: true })}
-                />
-                <Input
-                  className="mb-5"
-                  type="text"
-                  radius="md"
-                  size="lg"
-                  label="Số đăng ký"
-                  placeholder="Nhập số đăng ký"
-                  labelPlacement="outside"
-                  isRequired
-                  // value={registerNumber || ""}
-                  // onValueChange={(event) => handleRegisterNumberChange(event)}
-                  isInvalid={errors.registerNumber ? true : false}
-                  errorMessage="Số đăng ký không được để trống"
-                  {...register("registerNumber", { required: true, valueAsNumber: true })}
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">

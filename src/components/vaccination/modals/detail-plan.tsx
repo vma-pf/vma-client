@@ -159,10 +159,6 @@ const DetailPlan = ({
                             {medicine.medicine.mainIngredient}
                           </p>
                           <p>
-                            <strong>Số đăng ký:</strong>{" "}
-                            {medicine.medicine.registerNumber}
-                          </p>
-                          <p>
                             <strong>Cách sử dụng:</strong>{" "}
                             {medicine.medicine.usage}
                           </p>

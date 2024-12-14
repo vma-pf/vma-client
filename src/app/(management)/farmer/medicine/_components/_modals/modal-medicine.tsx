@@ -16,7 +16,6 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
   const [loading, setLoading] = React.useState<boolean | undefined>(false);
   const name = watch("name");
   const netWeight = watch("netWeight");
-  const registerNumber = watch("registerNumber");
   const usage = watch("usage");
   const unit = watch("unit");
   const mainIngredient = watch("mainIngredient");
@@ -30,17 +29,6 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
       case "delete":
         return "Xóa";
     }
-  };
-
-  const handleRegisterNumberChange = (event: string) => {
-    let numericValue = event.replace(/[^0-9]/g, "");
-    if (numericValue[0] === "-") {
-      numericValue = numericValue.slice(1);
-    }
-    // if (parseInt(numericValue) > 10000) {
-    //   numericValue = "10000";
-    // }
-    setValue("registerNumber", numericValue || "0");
   };
 
   const handleNetWeightChange = (event: string) => {
@@ -108,7 +96,6 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
   React.useEffect(() => {
     setValue("name", medicine?.name ? medicine?.name : "");
     setValue("netWeight", medicine?.netWeight ? medicine?.netWeight : "");
-    setValue("registerNumber", medicine?.registerNumber ? medicine?.registerNumber : "");
     setValue("usage", medicine?.usage ? medicine?.usage : "");
     setValue("unit", medicine?.unit ? medicine?.unit : "");
     setValue("mainIngredient", medicine?.mainIngredient ? medicine?.mainIngredient : "");
@@ -126,7 +113,7 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
           size="2xl"
           scrollBehavior="normal"
           onClose={() => {
-            if (name || netWeight || registerNumber || usage || unit || mainIngredient) {
+            if (name || netWeight || usage || unit || mainIngredient) {
               onClose();
             }
           }}
@@ -185,21 +172,6 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
                       errorMessage="Trọng lượng không được để trống"
                       {...register("netWeight", { required: true, valueAsNumber: true })}
                     />
-                    <Input
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Số đăng ký"
-                      placeholder="Nhập số đăng ký"
-                      labelPlacement="outside"
-                      isRequired
-                      value={registerNumber || ""}
-                      onValueChange={(event) => handleRegisterNumberChange(event)}
-                      isInvalid={errors.registerNumber ? true : registerNumber ? false : true}
-                      errorMessage="Số đăng ký không được để trống"
-                      {...register("registerNumber", { required: true, valueAsNumber: true })}
-                    />
                   </div>
                   <div className="grid grid-cols-1 gap-1">
                     <Textarea
@@ -241,7 +213,7 @@ const ModalMedicine = ({ isOpen, onClose, medicine, context }: { isOpen: boolean
                   <Button
                     variant="solid"
                     color="primary"
-                    isDisabled={name && netWeight && registerNumber && usage && unit && mainIngredient ? false : true}
+                    isDisabled={name && netWeight && usage && unit && mainIngredient ? false : true}
                     isLoading={loading}
                     type="submit"
                   >

@@ -24,7 +24,6 @@ const cages = [
     name: "Ten thuoc A",
     mainIngredient: "Chất gây ung thưacnsacnosans",
     quantity: 10,
-    registerNumber: 123,
     netWeight: 123,
     usage: "123123",
     lastUpdatedAt: "2024-09-09",

@@ -62,7 +62,6 @@ export default function MedicineList({
     formState: { errors },
   } = useForm();
   const unit = watch("unit");
-  const [registerNumber, setRegisterNumber] = React.useState<string>("");
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
   //   const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
@@ -113,10 +112,6 @@ export default function MedicineList({
     fetchData();
   }, [page, rowsPerPage]);
 
-  React.useEffect(() => {
-    setValue("registerNumber", registerNumber || "");
-  }, [registerNumber]);
-
   //API function
   const fetchData = async () => {
     try {
@@ -161,17 +156,6 @@ export default function MedicineList({
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const handleRegisterNumberChange = (event: string) => {
-    let numericValue = event.replace(/[^0-9]/g, "");
-    if (numericValue[0] === "-") {
-      numericValue = numericValue.slice(1);
-    }
-    // if (parseInt(numericValue) > 10000) {
-    //   numericValue = "10000";
-    // }
-    setRegisterNumber(numericValue);
   };
 
   const items = React.useMemo(() => {
@@ -398,21 +382,6 @@ export default function MedicineList({
                 isInvalid={errors.netWeight && true}
                 errorMessage="Trọng lượng không được để trống"
                 {...register("netWeight", { required: true })}
-              />
-              <Input
-                className="mb-5"
-                type="text"
-                radius="md"
-                size="lg"
-                label="Số đăng ký"
-                placeholder="Nhập số đăng ký"
-                labelPlacement="outside"
-                isRequired
-                value={registerNumber || ""}
-                onValueChange={(event) => handleRegisterNumberChange(event)}
-                isInvalid={errors.registerNumber ? true : false}
-                errorMessage="Số đăng ký không được để trống"
-                {...register("registerNumber", { required: true, valueAsNumber: true })}
               />
             </div>
             <Textarea

@@ -6,7 +6,6 @@ const columns = [
     sortable: true,
   },
   { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
-  { name: "SỐ ĐĂNG KÝ", uid: "registerNumber", sortable: true },
   { name: "TRỌNG LƯỢNG", uid: "netWeight", sortable: true },
   { name: "CÁCH SỬ DỤNG", uid: "usage", sortable: true },
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
@@ -20,7 +19,6 @@ const INITIAL_VISIBLE_COLUMNS = [
   "name",
   "mainIngredient",
   "quantity",
-  "registerNumber",
   "netWeight",
   "usage",
 ];

@@ -6,7 +6,6 @@ const columns = [
     sortable: true,
   },
   { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
-  { name: "SỐ ĐĂNG KÝ", uid: "registerNumber", sortable: true },
   { name: "TRỌNG LƯỢNG", uid: "netWeight", sortable: true },
   { name: "CÁCH SỬ DỤNG", uid: "usage", sortable: true },
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
@@ -18,7 +17,6 @@ const columns = [
 const INITIAL_VISIBLE_COLUMNS = [
   "name",
   "quantity",
-  "registerNumber",
   "netWeight",
   "usage",
   "actions"
@@ -33,7 +31,6 @@ const medicines = [
     name: "Ten thuoc A",
     mainIngredient: "Chất gây ung thưacnsacnosans",
     quantity: 10,
-    registerNumber: 123,
     netWeight: 123,
     usage: "123123",
     lastUpdatedAt: "2024-09-09",
@@ -45,7 +42,6 @@ const medicines = [
     name: "Ten thuoc A",
     mainIngredient: "Chất gây ung thưacnsacnosas",
     quantity: 10,
-    registerNumber: 123,
     netWeight: 123,
     usage: "123123",
     lastUpdatedAt: "2024-09-09",
