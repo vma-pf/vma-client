@@ -476,9 +476,9 @@ const Herd = () => {
                         }}
                       >
                         {(pig) => (
-                          <SelectItem key={pig.pigCode} value={pig.pigCode} textValue={pig.pigCode}>
-                            {pig.pigCode} (Cân nặng: {pig.weight}, Chiều cao: {pig.height}, Chiều rộng: {pig.width})
-                          </SelectItem>
+                            <SelectItem key={pig.pigCode} value={pig.pigCode} textValue={pig.pigCode}>
+                            {pig.pigCode.length > 5 ? pig.pigCode.substring(0, 5) + '...' : pig.pigCode} (Cân nặng: {pig.weight}, Chiều cao: {pig.height}, Chiều rộng: {pig.width})
+                            </SelectItem>
                         )}
                       </Select>
                     </div>
