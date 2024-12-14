@@ -1,7 +1,7 @@
 "use client";
-import { Accordion, AccordionItem, Button, Divider, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Progress, useDisclosure } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Progress, Select, SelectItem, Textarea, useDisclosure } from "@nextui-org/react";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
 import Chart from "@oursrc/components/herds/chart";
 import PigList from "./_components/pig-list";
 import { IoIosAlert } from "react-icons/io";
@@ -31,12 +31,25 @@ import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { TbReportSearch } from "react-icons/tb";
 import { FaFileDownload } from "react-icons/fa";
+import { useForm } from "react-hook-form";
+import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { SERVERURL } from "@oursrc/lib/http";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { monitorDevelopmentLogService } from "@oursrc/lib/services/monitorDevelopmentLogService";
+import { pigService } from "@oursrc/lib/services/pigService";
 
 const statusColorMap = [
   { status: "Chưa Kết Thúc", color: "bg-default" },
   { status: "Đang diễn ra", color: "bg-sky-500" },
   { status: "Đã Kết Thúc", color: "bg-primary" },
 ];
+
+export type SensorData = {
+  Uid: string;
+  Weight: number;
+  Height?: number | null;
+  Width?: number | null;
+};
 
 const Herd = () => {
   const { toast } = useToast();
@@ -51,6 +64,55 @@ const Herd = () => {
   const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
   const [statisticData, setStatisticData] = React.useState<HerdStatistic | undefined>();
   const [avgStatisticData, setAvgStatisticData] = React.useState<EndHerdStatistic | undefined>();
+  const [connection, setConnection] = useState<HubConnection | null>(null);
+  const [pigInfo, setPigInfo] = React.useState<SensorData | undefined>(undefined);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm();
+
+  const weight = watch("weight");
+  const height = watch("height");
+  const width = watch("width"); 
+  const pigCode = watch("pigCode"); 
+  const note = watch("note"); 
+
+  const handleHeightChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9.]/g, "");
+    if (numericValue[0] === "-") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseFloat(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setValue("height", numericValue);
+  };
+
+  const handleWidthChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9.]/g, "");
+    if (numericValue[0] === "-") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseFloat(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setValue("width", numericValue);
+  };
+
+  const handleWeightChange = (event: string) => {
+    let numericValue = event.replace(/[^0-9.]/g, "");
+    if (numericValue[0] === "-") {
+      numericValue = numericValue.slice(1);
+    }
+    if (parseFloat(numericValue) > 10000) {
+      numericValue = "10000";
+    }
+    setValue("weight", numericValue);
+  };
 
   const getStatistics = async () => {
     try {
@@ -115,6 +177,85 @@ const Herd = () => {
       console.log(error);
     }
   };
+
+  React.useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken")?.toString();
+    const connect = new HubConnectionBuilder()
+      .withUrl(`${SERVERURL}/hubs/create-herd-sensor-hub`, {
+        // send access token here
+        accessTokenFactory: () => accessToken || "",
+      })
+      .withAutomaticReconnect()
+      .withHubProtocol(
+        new MessagePackHubProtocol({
+          // encoder: encode,
+        })
+      )
+      .configureLogging(LogLevel.Information)
+      .build();
+    setConnection(connect);
+    connect
+      .start()
+      .then(() => {
+        console.log("Connected to Sensor Hub");
+        connect.on("ConsumeSensorData", (data: SensorData) => {
+          data && setPigInfo(data);
+        });
+        connect.on("ForceDisconnect", () => {
+          console.error('failed')
+        });
+      })
+
+      .catch((err) => console.error("Error while connecting to SignalR Hub:", err));
+
+    return () => {
+      connect.stop().then(() => {
+        console.log("Disconnected from Sensor Hub");
+      });
+    };
+  }, []);
+
+  const onSubmit = async (data: any) => {
+    try {
+      setLoading(true);
+      const pigs = await pigService.getPigsBySearch(1, 500, `pigCode(${pigCode})`, "");
+      const res: ResponseObject<any> = await monitorDevelopmentLogService.createMonitoringLog({
+        pigId: pigs.data.data[0].id,
+        weight: Number(weight || ""),
+        height: Number(height || ""),
+        width: Number(width || ""),
+        note: data.note,
+        status: 0,
+      });
+      if (res.isSuccess) {
+        toast({
+          title: res.errorMessage || "Cập nhật thành công",
+          variant: "success",
+        });
+        // onCloseEndHerd()\
+        setValue("weight", "");
+        setValue("height", "");
+        setValue("width", "");
+        setValue("pigCode", "");
+        setValue("note", "");
+      } else {
+        toast({
+          title: res.errorMessage || "Nhập thông tin không thành công",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    setValue("height", height || "");
+    setValue("width", width || "");
+    setValue("weight", weight || "");
+  }, [height, width, weight]);
 
   React.useEffect(() => {
     if (!selectedHerd) {
@@ -260,25 +401,115 @@ const Herd = () => {
           {isOpenChangeCage && selectedPig && <ChangeCage isOpen={isOpenChangeCage} onClose={onCloseChangeCage} pigInfo={selectedPig} />}
           {isOpenEndHerd && selectedHerd && (
             <Modal isOpen={isOpenEndHerd} onClose={onCloseEndHerd} size="xl">
-              <ModalContent>
-                <ModalHeader>
-                  <p className="text-xl">Kết thúc đàn {selectedHerd?.code}</p>
-                </ModalHeader>
-                <ModalBody>
-                  <div className="flex flex-col items-center">
-                    <p className="text-lg font-semibold">Bạn có chắc chắn muốn kết thúc đàn {selectedHerd?.code}?</p>
-                    <p className="text-md mt-3">Khi kết thúc đàn các thông tin tiêm phòng, điều trị, sức khỏe của heo sẽ kết thúc</p>
-                  </div>
-                </ModalBody>
-                <ModalFooter>
-                  <Button color="danger" onPress={onCloseEndHerd}>
-                    Hủy
-                  </Button>
-                  <Button color="primary" onPress={handleEndHerd} isLoading={loading}>
-                    Xác nhận
-                  </Button>
-                </ModalFooter>
-              </ModalContent>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                  }
+                }}
+              >
+                <ModalContent>
+                  <ModalHeader>
+                    <p className="text-xl">Kết thúc đàn {selectedHerd?.code}</p>
+                  </ModalHeader>
+                  <ModalBody>
+                    <div className="flex flex-col items-center">
+                      <p className="text-lg font-semibold">Bạn có chắc chắn muốn kết thúc đàn {selectedHerd?.code}?</p>
+                      <p className="text-sm mt-3">Khi kết thúc đàn các thông tin tiêm phòng, điều trị, sức khỏe của heo sẽ kết thúc</p>
+                    </div>
+                    <hr />
+                    <p className="text-lg font-semibold">Cập nhật thông tin tăng trưởng lần cuối</p>
+                    <div className="mb-5">
+                      <Input
+                        className="w-full mr-2"
+                        type="text"
+                        radius="sm" 
+                        size="lg"
+                        label="Mã heo"
+                        placeholder="Nhập mã heo"
+                        labelPlacement="outside"
+                        isRequired
+                        value={pigCode || ""}
+                        isInvalid={errors.pigCode ? true : false}
+                        errorMessage="Mã heo không được để trống"
+                        {...register("pigCode", { required: true })}
+                      />
+                    </div>
+                    <div className="mb-5 flex">
+                      <Input
+                        className="w-1/2 mr-2"
+                        type="text"
+                        radius="sm" 
+                        size="lg"
+                        label="Cân nặng"
+                        placeholder="Nhập cân nặng"
+                        labelPlacement="outside"
+                        isRequired
+                        endContent="kg"
+                        isInvalid={errors.weight ? true : false}
+                        errorMessage="Cân nặng không được để trống"
+                        value={weight || ""}
+                        onValueChange={(e) => handleWeightChange(e)}
+                      />
+                      <Input
+                        className="w-1/2"
+                        type="text"
+                        radius="sm"
+                        size="lg"
+                        label="Chiều cao" 
+                        placeholder="Nhập chiều cao"
+                        labelPlacement="outside"
+                        isRequired
+                        endContent="cm"
+                        isInvalid={errors.height ? true : false}
+                        errorMessage="Chiều cao không được để trống"
+                        value={height || ""}
+                        onValueChange={(e) => handleHeightChange(e)}
+                      />
+                    </div>
+                    <div className="mb-5 flex">
+                      <Input
+                        className="w-1/2"
+                        type="text"
+                        radius="sm"
+                        size="lg"
+                        label="Chiều rộng"
+                        placeholder="Nhập chiều rộng" 
+                        labelPlacement="outside"
+                        isRequired
+                        endContent="cm"
+                        isInvalid={errors.width ? true : false}
+                        errorMessage="Chiều rộng không được để trống"
+                        value={width || ""}
+                        onValueChange={(e) => handleWidthChange(e)}
+                      />
+                      <Textarea
+                        className="w-1/2 ml-2"
+                        type="text"
+                        radius="sm"
+                        size="lg"
+                        label="Ghi chú"
+                        placeholder="Nhập ghi chú"
+                        labelPlacement="outside"
+                        isRequired
+                        isInvalid={errors.note ? true : false}
+                        errorMessage="Ghi chú không được để trống"
+                        value={note || ""}
+                        {...register("note", { required: true })}
+                      />
+                    </div>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button color="primary" type="submit">
+                      Cập nhật thông tin
+                    </Button>
+                    <Button color="danger" onPress={handleEndHerd} isLoading={loading}>
+                      Kết thúc đàn
+                    </Button>
+                  </ModalFooter>
+                </ModalContent>
+              </form>
             </Modal>
           )}
         </div>

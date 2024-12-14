@@ -26,6 +26,14 @@ export const pigService = {
         pageSize: pageSize?.toString() || "",
       },
     }),
+  getPigsBySearch: (pageIndex: number, pageSize: number, filter: string, sort: string) =>
+    http.get<ResponseObjectList<Pig>>(endpoint + '/search', {
+      params: {
+        pageIndex: pageIndex?.toString() || "",
+        pageSize: pageSize?.toString() || "",
+        filter: filter || "",
+      },
+    }),
   getPigsByHerdId: (herdId: string, pageIndex: number, pageSize: number) =>
     http.get<ResponseObjectList<Pig>>(endpoint + `/herd/${herdId}`, {
       params: {
