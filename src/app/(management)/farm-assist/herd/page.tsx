@@ -424,7 +424,7 @@ const Herd = () => {
             <div className="mb-2 flex items-center justify-between">
               <p className="text-2xl font-bold mb-3">Danh sách heo</p>
               <SheetTrigger asChild>
-                <Button color="primary" isDisabled={!selectedPig || !selectedHerd?.isCheckUpToday} onClick={() => setIsOpen(true)}>
+                <Button color="primary" isDisabled={!selectedPig} onClick={() => setIsOpen(true)}>
                   Kiểm tra sức khỏe
                 </Button>
               </SheetTrigger>

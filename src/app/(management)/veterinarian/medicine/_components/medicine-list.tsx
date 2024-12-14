@@ -28,7 +28,6 @@ import React from "react";
 import { HiChevronDown } from "react-icons/hi";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { ResponseObjectList } from "@oursrc/lib/models/response-object";
-import DetailMedicine from "@oursrc/components/medicines/modals/detail-medicine";
 
 const columns = [
   { name: "TÊN", uid: "name", sortable: true },
@@ -43,21 +42,20 @@ const columns = [
   { name: "ĐƠN VỊ", uid: "unit", sortable: true },
   { name: "LẦN CUỐI CẬP NHẬT", uid: "lastUpdatedAt", sortable: true },
   { name: "CẬP NHẬT BỞI", uid: "lastUpdatedBy", sortable: true },
-  { name: "ACTIONS", uid: "actions" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "netWeight", "usage", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["name", "quantity", "registerNumber", "netWeight", "usage"];
 
 export default function MedicineList() {
   const { toast } = useToast();
 
   //Modal field
-  const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
+  // const { isOpen: isOpenAdd, onOpen: onOpenAdd, onClose: onCloseAdd } = useDisclosure();
   // const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
   // const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure();
-  const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
+  // const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   // const [updateId, setUpdateId] = React.useState<string>("");
-  const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | null>(null);
+  // const [selectedMedicine, setSelectedMedicine] = React.useState<Medicine | null>(null);
   const [context, setContext] = React.useState<"create" | "edit" | "detail">("create");
   const [submitDone, setSubmitDone] = React.useState<boolean>(false);
 
@@ -108,10 +106,8 @@ export default function MedicineList() {
   // }, [submitDone]);
 
   React.useEffect(() => {
-    if (!isOpenAdd) {
-      fetchData();
-    }
-  }, [page, rowsPerPage, isOpenAdd]);
+    fetchData();
+  }, [page, rowsPerPage]);
 
   //API function
   const fetchData = async () => {
@@ -226,9 +222,6 @@ export default function MedicineList() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <Button color="primary" endContent={<Plus />} onPress={onOpenAdd}>
-              Tạo mới
-            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -259,21 +252,21 @@ export default function MedicineList() {
             <p className="truncate">{cellValue}</p>
           </Tooltip>
         );
-      case "actions":
-        return (
-          <div className="flex justify-center items-center gap-2">
-            <Tooltip content="Chi tiết" color="primary">
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <EyeIcon
-                  onClick={() => {
-                    onOpenDetail();
-                    setSelectedMedicine(data);
-                  }}
-                />
-              </span>
-            </Tooltip>
-          </div>
-        );
+      // case "actions":
+      //   return (
+      //     <div className="flex justify-center items-center gap-2">
+      //       <Tooltip content="Chi tiết" color="primary">
+      //         <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+      //           <EyeIcon
+      //             onClick={() => {
+      //               onOpenDetail();
+      //               setSelectedMedicine(data);
+      //             }}
+      //           />
+      //         </span>
+      //       </Tooltip>
+      //     </div>
+      //   );
       default:
         return cellValue;
     }
@@ -322,7 +315,7 @@ export default function MedicineList() {
           )}
         </TableBody>
       </Table>
-      {isOpenDetail && selectedMedicine && <DetailMedicine isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine || undefined} />}
+      {/* {isOpenDetail && selectedMedicine && <DetailMedicine isOpen={isOpenDetail} onClose={onCloseDetail} medicine={selectedMedicine || undefined} />} */}
     </div>
   );
 }

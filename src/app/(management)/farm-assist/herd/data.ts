@@ -1,21 +1,21 @@
 const columns = [
+  { name: "Mã heo", uid: "pigCode", sortable: true },
   { name: "Giống", uid: "breed", sortable: true },
   { name: "Đàn", uid: "herdId", sortable: true },
   { name: "Chuồng", uid: "cageId", sortable: true },
+  { name: "Mã chuồng", uid: "cageCode", sortable: true },
   { name: "Cân nặng", uid: "weight", sortable: true },
   { name: "Chiều cao", uid: "height", sortable: true },
   { name: "Chiều rộng", uid: "width", sortable: true },
   { name: "Tình trạng", uid: "healthStatus", sortable: true },
   { name: "Cập nhật lần cuối", uid: "lastUpdatedAt", sortable: true },
-  { name: "Mã heo", uid: "pigCode", sortable: true },
-  { name: "Mã chuồng", uid: "cageCode", sortable: true },
   { name: "Hành động", uid: "actions" },
 ];
 
 const statusOptions = [
-  { name: "Khỏe mạnh", uid: "normal" },
-  { name: "Bệnh", uid: "sick" },
-  { name: "Chết", uid: "dead" },
+  { name: "Bình thường", uid: "Bình thường" },
+  { name: "Bệnh", uid: "Bệnh" },
+  { name: "Chết", uid: "Chết" },
 ];
 
 const pigs = [

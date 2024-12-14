@@ -1,9 +1,5 @@
 import {
-  Accordion,
-  AccordionItem,
   Button,
-  Card,
-  CardBody,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -33,23 +29,24 @@ import {
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react";
-import { EyeIcon, Search } from "lucide-react";
+import { EyeIcon, Filter, Search } from "lucide-react";
 import ReplyRequest from "./_modals/reply-request";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { MedicineRequest } from "@oursrc/lib/models/medicine-request";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
 import { HiChevronDown } from "react-icons/hi2";
-import { IoMdCheckmark, IoMdClose, IoMdCloseCircle } from "react-icons/io";
+import { IoMdCloseCircle } from "react-icons/io";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaRegThumbsDown, FaRegThumbsUp } from "react-icons/fa6";
-import { Medicine } from "@oursrc/lib/models/medicine";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { CustomSnippet } from "@oursrc/components/ui/custom-snippet";
-import { HiDotsVertical } from "react-icons/hi";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
+import FilterMedicineRequest from "@oursrc/components/medicines/filter-medicine-request";
+import { VaccinationData } from "@oursrc/lib/models/vaccination";
+import { TreatmentData } from "@oursrc/lib/models/treatment";
+import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
+import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
 
 const columns = [
   { uid: "medicineName", name: "Tên thuốc", sortable: true },
@@ -93,6 +90,8 @@ const RequestMedicineList = () => {
   const [selectedMedicine, setSelectedMedicine] = React.useState<MedicineRequest | null>(null);
   const [remainQuantity, setRemainQuantity] = React.useState(0);
   const [medicineQuantityCheck, setMedicineQuantityCheck] = React.useState(0);
+  const [selectedVaccination, setSelectedVaccination] = useState<VaccinationData | undefined>();
+  const [selectedTreatment, setSelectedTreatment] = useState<TreatmentData | undefined>();
 
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -123,6 +122,15 @@ const RequestMedicineList = () => {
     }
     // getAllMedicineRequest();
   }, [page, rowsPerPage, isOpen]);
+
+  React.useEffect(() => {
+    if (selectedVaccination) {
+      getFilteredMedicineRequest("vaccination");
+    } else if (selectedTreatment) {
+      getFilteredMedicineRequest("treatment");
+    }
+  }, [selectedVaccination, selectedTreatment]);
+
   React.useEffect(() => {
     getAllMedicineRequest();
   }, []);
@@ -162,6 +170,37 @@ const RequestMedicineList = () => {
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const getFilteredMedicineRequest = async (type: "vaccination" | "treatment") => {
+    try {
+      setLoading(true);
+      if (type === "vaccination") {
+        const response: ResponseObjectList<MedicineRequest> = await vaccinationService.getMedicineRequest(selectedVaccination?.id ?? "", page, rowsPerPage);
+        if (response.isSuccess) {
+          setMedicineList(response.data.data);
+          setRowsPerPage(response.data.pageSize);
+          setTotalPages(response.data.totalPages);
+          setTotalRecords(response.data.totalRecords);
+        } else {
+          console.log(response.errorMessage);
+        }
+      } else {
+        const response: ResponseObjectList<MedicineRequest> = await treatmentPlanService.getMedicineRequest(selectedTreatment?.id ?? "", page, rowsPerPage);
+        if (response.isSuccess) {
+          setMedicineList(response.data.data);
+          setRowsPerPage(response.data.pageSize);
+          setTotalPages(response.data.totalPages);
+          setTotalRecords(response.data.totalRecords);
+        } else {
+          console.log(response.errorMessage);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -319,6 +358,12 @@ const RequestMedicineList = () => {
                 ))}
               </DropdownMenu>
             </Dropdown>
+            <FilterMedicineRequest
+              selectedVaccination={selectedVaccination}
+              setSelectedVaccination={setSelectedVaccination}
+              selectedTreatment={selectedTreatment}
+              setSelectedTreatment={setSelectedTreatment}
+            />
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -420,7 +465,7 @@ const RequestMedicineList = () => {
       <div className="mb-3 flex justify-between gap-x-10">
         <div className="w-1/2">
           <div className="h-full p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-            <p className="text-xl mb-2 font-semibold">Thuốc mới</p>
+            <p className="text-xl mb-2 font-semibold">Yêu cầu thuốc chưa có trong kho</p>
             {filterNewMedicine().length <= 0 ? (
               <p>Không có thuốc mới</p>
             ) : (
@@ -443,7 +488,7 @@ const RequestMedicineList = () => {
                         localStorage.setItem("newMedicine", JSON.stringify({ requestId: medicine.requestId, newMedicineName: medicine.newMedicineName }));
                       }}
                     >
-                      <span>{medicine.newMedicineName}</span>
+                      <span className="text-lg font-semibold">{medicine.newMedicineName}</span>
                     </CustomSnippet>
                   </li>
                 ))}

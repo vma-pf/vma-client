@@ -55,6 +55,9 @@ import { dateConverter } from "@oursrc/lib/utils";
 import { BiDetail } from "react-icons/bi";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import TreatmentStages from "@oursrc/components/treatment/treatment-stages";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { SERVERURL } from "@oursrc/lib/http";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
@@ -226,6 +229,39 @@ const Treatment = () => {
   React.useEffect(() => {
     fetchAbnormalities();
   }, [page]);
+
+  React.useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken")?.toString();
+    const connect = new HubConnectionBuilder()
+      .withUrl(`${SERVERURL}/hubs/abnormality`, {
+        // send access token here
+        accessTokenFactory: () => accessToken || "",
+      })
+      .withAutomaticReconnect()
+      .withHubProtocol(
+        new MessagePackHubProtocol({
+          // encoder: encode,
+        })
+      )
+      .configureLogging(LogLevel.Information)
+      .build();
+    connect
+      .start()
+      .then(() => {
+        console.log("Connected to SignalR Hub");
+        connect.on("ReceiveAbnormalities", (abnormalities: Abnormality[]) => {
+          console.log("Receive Abnormalities: ", abnormalities);
+          setAbnormalities(abnormalities);
+          setPage(1);
+          setTotalPages(1);
+        });
+      })
+      .catch((err) => console.error("Error while connecting to SignalR Hub:", err));
+    return () => {
+      connect.stop();
+    };
+  }, []);
+
   return (
     <div>
       <Tabs size="lg" color="primary" variant="solid" defaultSelectedKey="1">
@@ -408,7 +444,7 @@ const Treatment = () => {
                         )}
                       </AccordionItem>
                       <AccordionItem key="2" title="Báo cáo bệnh" startContent={<HiOutlineDocumentReport className="text-emerald-500" size={25} />}>
-                      {diseaseReports.length > 0 ? (
+                        {diseaseReports.length > 0 ? (
                           diseaseReports &&
                           diseaseReports?.map((diseaseReport) => (
                             <div key={diseaseReport.id}>
@@ -582,6 +618,7 @@ const Treatment = () => {
                                         variant="solid"
                                         onPress={() => {
                                           setSelectedGuideId(guide.id);
+                                          localStorage.setItem("treatmentGuideId", guide.id || "");
                                         }}
                                         endContent={<FaRegSave size={20} />}
                                       >

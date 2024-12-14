@@ -21,9 +21,11 @@ export type StageTemplate = {
   {
     id: string | null,
     description: string,
+    isDeleted?: boolean,
   }[],
   medicineTemplates: MedicineTemplate[],
   id: string | null,
+  isDeleted?: boolean
 }
 
 export type MedicineTemplate = {

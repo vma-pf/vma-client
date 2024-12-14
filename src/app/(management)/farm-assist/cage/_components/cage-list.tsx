@@ -28,7 +28,7 @@ import { SERVERURL } from "@oursrc/lib/http";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
 import { cameraService } from "@oursrc/lib/services/cameraService";
-import { GiCage } from "react-icons/gi";
+import { GiCage, GiPig } from "react-icons/gi";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@oursrc/components/ui/sheet";
 import AddEditCage from "./_modals/add-edit-cage";
 import { Area } from "@oursrc/lib/models/area";
@@ -39,6 +39,7 @@ import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import ActivityLog from "../../../../../components/cages/modals/activty-log";
 import { HiDotsVertical } from "react-icons/hi";
 import { MdHistory } from "react-icons/md";
+import PigList from "@oursrc/components/cages/modals/pig-list";
 
 const CageList = () => {
   const videoRef = React.useRef<string | Element>("");
@@ -47,6 +48,7 @@ const CageList = () => {
   const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure();
   const { isOpen: isOpenDelete, onOpen: onOpenDelete, onClose: onCloseDelete } = useDisclosure();
   const { isOpen: isOpenLog, onOpen: onOpenLog, onClose: onCloseLog } = useDisclosure();
+  const { isOpen: isOpenPigList, onOpen: onOpenPigList, onClose: onClosePigList } = useDisclosure();
   const [isOpenCamera, setIsOpenCamera] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [cageList, setCageList] = React.useState<Cage[]>([]);
@@ -270,6 +272,17 @@ const CageList = () => {
                         >
                           Lịch sử hoạt động chuồng
                         </DropdownItem>
+                        <DropdownItem
+                          key="pig-list"
+                          variant="solid"
+                          onPress={() => {
+                            onOpenPigList();
+                            setSelectedCage(cage);
+                          }}
+                          startContent={<GiPig size={25} className="text-primary" />}
+                        >
+                          Danh sách heo trong chuồng
+                        </DropdownItem>
                       </DropdownMenu>
                     </Dropdown>
                   </div>
@@ -352,6 +365,7 @@ const CageList = () => {
       {isOpenAdd && <AddEditCage key={2} operation="add" isOpen={isOpenAdd} onClose={onCloseAdd} />}
       {isOpenDelete && <AddEditCage key={3} operation="delete" isOpen={isOpenDelete} onClose={onCloseDelete} cage={selectedCage || undefined} />}
       {isOpenLog && <ActivityLog isOpen={isOpenLog} onClose={onCloseLog} cage={selectedCage || undefined} />}
+      {isOpenPigList && <PigList isOpen={isOpenPigList} onClose={onClosePigList} cage={selectedCage || undefined} />}
     </div>
   );
 };
