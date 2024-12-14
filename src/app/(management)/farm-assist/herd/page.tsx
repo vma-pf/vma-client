@@ -66,6 +66,8 @@ const Herd = () => {
   const [avgStatisticData, setAvgStatisticData] = React.useState<EndHerdStatistic | undefined>();
   const [connection, setConnection] = useState<HubConnection | null>(null);
   const [pigInfo, setPigInfo] = React.useState<SensorData | undefined>(undefined);
+  const [pigOptions, setPigOptions] = React.useState<Pig[]>([]);
+  const [isPigLoading, setIsPigLoading] = React.useState(false);
 
   const {
     register,
@@ -167,14 +169,32 @@ const Herd = () => {
 
   const handleDownloadReport = async () => {
     try {
-      const res: ResponseObject<any> = await herdService.downloadReport(selectedHerd?.id ?? "");
-      if (res.isSuccess) {
-        console.log(res.data);
-      } else {
-        console.log(res.errorMessage);
-      }
+      const response = await fetch(`${SERVERURL}/api/herds/${selectedHerd?.id}/export-statistics`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        responseType: 'blob'
+      });
+  
+      // Get blob data from response
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `herd-report-${selectedHerd?.id}.xlsx`; // Set filename with extension
+      
+      // Trigger download
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+  
     } catch (error) {
-      console.log(error);
+      console.error('Error downloading report:', error);
     }
   };
 
@@ -214,6 +234,26 @@ const Herd = () => {
       });
     };
   }, []);
+
+  const fetchPigs = async () => {
+    try {
+      setIsPigLoading(true);
+      const response = await pigService.getPigsByHerdId(selectedHerd?.id ?? "", 1, 100); // Adjust page size as needed
+      if (response.isSuccess) {
+        setPigOptions(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching pigs:", error);
+    } finally {
+      setIsPigLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (selectedHerd?.id) {
+      fetchPigs();
+    }
+  }, [selectedHerd]);
 
   const onSubmit = async (data: any) => {
     try {
@@ -421,20 +461,26 @@ const Herd = () => {
                     <hr />
                     <p className="text-lg font-semibold">Cập nhật thông tin tăng trưởng lần cuối</p>
                     <div className="mb-5">
-                      <Input
-                        className="w-full mr-2"
-                        type="text"
-                        radius="sm" 
-                        size="lg"
+                      <Select
+                        className="w-full"
+                        items={pigOptions}
                         label="Mã heo"
-                        placeholder="Nhập mã heo"
+                        placeholder="Chọn mã heo"
                         labelPlacement="outside"
                         isRequired
-                        value={pigCode || ""}
-                        isInvalid={errors.pigCode ? true : false}
-                        errorMessage="Mã heo không được để trống"
-                        {...register("pigCode", { required: true })}
-                      />
+                        isLoading={isPigLoading}
+                        selectedKeys={pigCode ? new Set([pigCode]) : new Set()}
+                        onSelectionChange={(keys) => {
+                          const selectedKey = Array.from(keys)[0]?.toString();
+                          setValue("pigCode", selectedKey || "");
+                        }}
+                      >
+                        {(pig) => (
+                          <SelectItem key={pig.pigCode} value={pig.pigCode} textValue={pig.pigCode}>
+                            {pig.pigCode} (Cân nặng: {pig.weight}, Chiều cao: {pig.height}, Chiều rộng: {pig.width})
+                          </SelectItem>
+                        )}
+                      </Select>
                     </div>
                     <div className="mb-5 flex">
                       <Input

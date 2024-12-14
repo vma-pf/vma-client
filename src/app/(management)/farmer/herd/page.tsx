@@ -98,14 +98,32 @@ const Herd = () => {
 
   const handleDownloadReport = async () => {
     try {
-      const res: ResponseObject<any> = await herdService.downloadReport(selectedHerd?.id ?? "");
-      if (res.isSuccess) {
-        console.log(res.data);
-      } else {
-        console.log(res.errorMessage);
-      }
+      const response = await fetch(`${SERVERURL}/api/herds/${selectedHerd?.id}/export-statistics`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        responseType: 'blob'
+      });
+  
+      // Get blob data from response
+      const blob = await response.blob();
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `herd-report-${selectedHerd?.id}.xlsx`; // Set filename with extension
+      
+      // Trigger download
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+  
     } catch (error) {
-      console.log(error);
+      console.error('Error downloading report:', error);
     }
   };
 
