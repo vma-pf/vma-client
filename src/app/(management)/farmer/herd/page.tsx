@@ -26,6 +26,7 @@ import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { TbReportSearch } from "react-icons/tb";
 import { FaFileDownload } from "react-icons/fa";
+import { SERVERURL } from "@oursrc/lib/http";
 
 const statusColorMap = [
   { status: "Chưa Kết Thúc", color: "bg-default" },
@@ -102,28 +103,29 @@ const Herd = () => {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
-        responseType: 'blob'
       });
-  
+
+      // Check if the response is ok
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
       // Get blob data from response
       const blob = await response.blob();
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `herd-report-${selectedHerd?.id}.xlsx`; // Set filename with extension
-      
+
       // Trigger download
       document.body.appendChild(a);
       a.click();
-      
-      // Cleanup
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-  
+      window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading report:', error);
+      console.error("There was an error downloading the report:", error);
     }
   };
 

@@ -1,5 +1,21 @@
 "use client";
-import { Accordion, AccordionItem, Button, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Progress, Select, SelectItem, Textarea, useDisclosure } from "@nextui-org/react";
+import {
+  Accordion,
+  AccordionItem,
+  Button,
+  Divider,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Progress,
+  Select,
+  SelectItem,
+  Textarea,
+  useDisclosure,
+} from "@nextui-org/react";
 import Image from "next/image";
 import React, { useState } from "react";
 import Chart from "@oursrc/components/herds/chart";
@@ -79,9 +95,9 @@ const Herd = () => {
 
   const weight = watch("weight");
   const height = watch("height");
-  const width = watch("width"); 
-  const pigCode = watch("pigCode"); 
-  const note = watch("note"); 
+  const width = watch("width");
+  const pigCode = watch("pigCode");
+  const note = watch("note");
 
   const handleHeightChange = (event: string) => {
     let numericValue = event.replace(/[^0-9.]/g, "");
@@ -173,28 +189,29 @@ const Herd = () => {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
-        responseType: 'blob'
       });
-  
+
+      // Check if the response is ok
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
       // Get blob data from response
       const blob = await response.blob();
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `herd-report-${selectedHerd?.id}.xlsx`; // Set filename with extension
-      
+
       // Trigger download
       document.body.appendChild(a);
       a.click();
-      
-      // Cleanup
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-  
+      window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error downloading report:', error);
+      console.error("There was an error downloading the report:", error);
     }
   };
 
@@ -222,7 +239,7 @@ const Herd = () => {
           data && setPigInfo(data);
         });
         connect.on("ForceDisconnect", () => {
-          console.error('failed')
+          console.error("failed");
         });
       })
 
@@ -476,9 +493,10 @@ const Herd = () => {
                         }}
                       >
                         {(pig) => (
-                            <SelectItem key={pig.pigCode} value={pig.pigCode} textValue={pig.pigCode}>
-                            {pig.pigCode.length > 5 ? pig.pigCode.substring(0, 5) + '...' : pig.pigCode} (Cân nặng: {pig.weight}, Chiều cao: {pig.height}, Chiều rộng: {pig.width})
-                            </SelectItem>
+                          <SelectItem key={pig.pigCode} value={pig.pigCode} textValue={pig.pigCode}>
+                            {pig.pigCode.length > 5 ? pig.pigCode.substring(0, 5) + "..." : pig.pigCode} (Cân nặng: {pig.weight}, Chiều cao: {pig.height}, Chiều rộng:{" "}
+                            {pig.width})
+                          </SelectItem>
                         )}
                       </Select>
                     </div>
@@ -486,7 +504,7 @@ const Herd = () => {
                       <Input
                         className="w-1/2 mr-2"
                         type="text"
-                        radius="sm" 
+                        radius="sm"
                         size="lg"
                         label="Cân nặng"
                         placeholder="Nhập cân nặng"
@@ -503,7 +521,7 @@ const Herd = () => {
                         type="text"
                         radius="sm"
                         size="lg"
-                        label="Chiều cao" 
+                        label="Chiều cao"
                         placeholder="Nhập chiều cao"
                         labelPlacement="outside"
                         isRequired
@@ -521,7 +539,7 @@ const Herd = () => {
                         radius="sm"
                         size="lg"
                         label="Chiều rộng"
-                        placeholder="Nhập chiều rộng" 
+                        placeholder="Nhập chiều rộng"
                         labelPlacement="outside"
                         isRequired
                         endContent="cm"
