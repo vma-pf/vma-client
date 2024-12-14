@@ -51,6 +51,7 @@ import TreatmentList from "@oursrc/components/treatment/treatment-list";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { SERVERURL } from "@oursrc/lib/http";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { parseTime } from "@internationalized/date";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
@@ -105,7 +106,8 @@ const Treatment = () => {
   };
 
   const checkTime = (msg: Abnormality) => {
-    const diffTime = new Date().getTime() - new Date(msg.createdAt).getTime();
+    const utcOffset = 7 * 60 * 60 * 1000;
+    const diffTime = new Date().getTime() + utcOffset - new Date(msg.createdAt).getTime();
     const minutes = Math.floor(diffTime / (1000 * 60));
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);

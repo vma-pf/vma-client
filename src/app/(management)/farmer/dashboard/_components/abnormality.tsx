@@ -35,7 +35,8 @@ const Abnormal = () => {
   };
 
   const checkTime = (msg: Abnormality) => {
-    const diffTime = new Date().getTime() - new Date(msg.createdAt).getTime();
+    const utcOffset = 7 * 60 * 60 * 1000;
+    const diffTime = new Date().getTime() + utcOffset - new Date(msg.createdAt).getTime();
     const minutes = Math.floor(diffTime / (1000 * 60));
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);

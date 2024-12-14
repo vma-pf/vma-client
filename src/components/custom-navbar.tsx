@@ -35,6 +35,10 @@ const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; pref
     }
   }, [open]);
 
+  useEffect(() => {
+    setOpen(JSON.parse(localStorage.getItem("openNav") || "true"));
+  }, []);
+
   const handleLogout = async () => {
     try {
       setIsLoading(true);
@@ -82,7 +86,10 @@ const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; pref
               <BsFillArrowLeftCircleFill
                 size={25}
                 className={`relative ${open ? "left-28" : "left-10 rotate-180"} duration-400 bg-slate-200 dark:bg-zinc-800 rounded-full`}
-                onClick={() => setOpen(!open)}
+                onClick={() => {
+                  localStorage.setItem("openNav", JSON.stringify(!open));
+                  setOpen(!open);
+                }}
               />
               <Divider orientation="horizontal" className="w-4/5 mt-3" />
             </div>
