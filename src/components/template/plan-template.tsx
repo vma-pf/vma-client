@@ -80,8 +80,6 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
           });
           return;
         }
-
-        console.log(selectedPlanTemplate);
         const payload = {
           ...selectedPlanTemplate,
           stageTemplates: selectedPlanTemplate.stageTemplates.map((stage) => {
@@ -92,22 +90,22 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
           }),
         };
         console.log(payload);
-        // const response: ResponseObject<any> = await planTemplateService.updatePlanTemplate(selectedPlanTemplate.id, selectedPlanTemplate);
-        // if (response.isSuccess) {
-        //   toast({
-        //     title: "Cập nhật mẫu thành công",
-        //     variant: "success",
-        //   });
-        //   fetchTemplate();
-        //   setSelectedPlanTemplate(undefined);
-        //   setSelectedStage(undefined);
-        // } else {
-        //   toast({
-        //     title: response.errorMessage || "Cập nhật mẫu thất bại",
-        //     variant: "destructive",
-        //   });
-        //   console.log(response.errorMessage);
-        // }
+        const response: ResponseObject<any> = await planTemplateService.updatePlanTemplate(selectedPlanTemplate.id, selectedPlanTemplate);
+        if (response.isSuccess) {
+          toast({
+            title: "Cập nhật mẫu thành công",
+            variant: "success",
+          });
+          fetchTemplate();
+          setSelectedPlanTemplate(undefined);
+          setSelectedStage(undefined);
+        } else {
+          toast({
+            title: response.errorMessage || "Cập nhật mẫu thất bại",
+            variant: "destructive",
+          });
+          console.log(response.errorMessage);
+        }
       }
     } catch (error) {
       console.log(error);

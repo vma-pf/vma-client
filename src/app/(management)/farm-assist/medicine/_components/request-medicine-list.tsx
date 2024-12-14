@@ -1,9 +1,5 @@
 import {
-  Accordion,
-  AccordionItem,
   Button,
-  Card,
-  CardBody,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -33,9 +29,9 @@ import {
   Tooltip,
   useDisclosure,
 } from "@nextui-org/react";
-import { EyeIcon, Search } from "lucide-react";
+import { EyeIcon, Filter, Search } from "lucide-react";
 import ReplyRequest from "./_modals/reply-request";
-import React, { useState } from "react";
+import React, { Key, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { MedicineRequest } from "@oursrc/lib/models/medicine-request";
@@ -49,7 +45,13 @@ import { Medicine } from "@oursrc/lib/models/medicine";
 import { medicineService } from "@oursrc/lib/services/medicineService";
 import { CustomSnippet } from "@oursrc/components/ui/custom-snippet";
 import { HiDotsVertical } from "react-icons/hi";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
+import { TbPackageExport, TbVaccine } from "react-icons/tb";
+import { MdOutlineWarehouse } from "react-icons/md";
+import { BsFillCalendarHeartFill } from "react-icons/bs";
+import { VaccinationData } from "@oursrc/lib/models/vaccination";
+import { TreatmentData } from "@oursrc/lib/models/treatment";
+import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
+import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
 
 const columns = [
   { uid: "medicineName", name: "Tên thuốc", sortable: true },
@@ -75,6 +77,8 @@ const RequestMedicineList = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isOpenAlert, onOpen: onOpenAlert, onClose: onCloseAlert } = useDisclosure();
   const [answer, setAnswer] = useState<"accept" | "reject">();
+  const [filterBy, setFilterBy] = useState<Key>("vaccination");
+  const [isOpenFilter, setIsOpenFilter] = useState(false);
 
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
@@ -88,6 +92,8 @@ const RequestMedicineList = () => {
     column: "lastUpdatedAt",
     direction: "ascending",
   });
+  const [vaccinationList, setVaccinationList] = React.useState<VaccinationData[]>([]);
+  const [treatmentList, setTreatmentList] = React.useState<TreatmentData[]>([]);
   const [medicineList, setMedicineList] = React.useState<MedicineRequest[]>([]);
   const [allMedicineList, setAllMedicineList] = React.useState<MedicineRequest[]>([]);
   const [selectedMedicine, setSelectedMedicine] = React.useState<MedicineRequest | null>(null);
@@ -123,6 +129,17 @@ const RequestMedicineList = () => {
     }
     // getAllMedicineRequest();
   }, [page, rowsPerPage, isOpen]);
+
+  React.useEffect(() => {
+    if (filterBy === "vaccination") {
+      fetchVaccinationTreatmentData("vaccination");
+    } else if (filterBy === "treatment") {
+      fetchVaccinationTreatmentData("treatment");
+    } else {
+      console.log("all");
+    }
+  }, [filterBy]);
+
   React.useEffect(() => {
     getAllMedicineRequest();
   }, []);
@@ -159,6 +176,28 @@ const RequestMedicineList = () => {
         setAllMedicineList(response.data.data);
       } else {
         console.log(response.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchVaccinationTreatmentData = async (type: "vaccination" | "treatment") => {
+    try {
+      if (type === "vaccination") {
+        const res: ResponseObjectList<VaccinationData> = await vaccinationService.getAllVaccinationPlan(1, 1000);
+        if (res.isSuccess) {
+          setVaccinationList(res.data.data ?? []);
+        } else {
+          console.log(res.errorMessage);
+        }
+      } else {
+        const res: ResponseObjectList<TreatmentData> = await treatmentPlanService.getAll(1, 1000);
+        if (res.isSuccess) {
+          setTreatmentList(res.data.data ?? []);
+        } else {
+          console.log(res.errorMessage);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -319,6 +358,75 @@ const RequestMedicineList = () => {
                 ))}
               </DropdownMenu>
             </Dropdown>
+            <Popover
+              placement="bottom-end"
+              isOpen={isOpenFilter}
+              onOpenChange={(open) => {
+                setIsOpenFilter(open);
+              }}
+            >
+              <PopoverTrigger>
+                <Button variant="bordered" color="primary" endContent={<Filter size={20} />}>
+                  Lọc
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <div className="px-1 py-2 max-h-[400px] overflow-auto">
+                  <Tabs
+                    color="primary"
+                    variant="solid"
+                    defaultSelectedKey="vacccination"
+                    placement="start"
+                    onSelectionChange={(e) => {
+                      setFilterBy(e);
+                    }}
+                  >
+                    <Tab
+                      key="vaccination"
+                      title={
+                        <div className="flex items-center">
+                          <TbVaccine size={20} />
+                          <span className="ml-2">Lịch tiêm phòng</span>
+                        </div>
+                      }
+                    >
+                      {vaccinationList.length <= 0 ? (
+                        <p>Không có dữ liệu</p>
+                      ) : (
+                        <div>
+                          {vaccinationList.map((vaccination) => (
+                            <div key={vaccination.id} className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer">
+                              <p>{vaccination.title}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </Tab>
+                    <Tab
+                      key="treatment"
+                      title={
+                        <div className="flex items-center">
+                          <BsFillCalendarHeartFill size={20} />
+                          <span className="ml-2">Kế hoạch điều trị</span>
+                        </div>
+                      }
+                    >
+                      {treatmentList.length <= 0 ? (
+                        <p>Không có dữ liệu</p>
+                      ) : (
+                        <div>
+                          {treatmentList.map((treatment) => (
+                            <div key={treatment.id} className="rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer">
+                              <p>{treatment.title}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </Tab>
+                  </Tabs>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
         <div className="flex justify-between items-center">

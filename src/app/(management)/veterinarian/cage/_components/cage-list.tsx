@@ -32,12 +32,15 @@ import { IoIosArrowDown } from "react-icons/io";
 import { HiDotsVertical } from "react-icons/hi";
 import { MdHistory } from "react-icons/md";
 import ActivityLog from "@oursrc/components/cages/modals/activty-log";
+import PigList from "@oursrc/components/cages/modals/pig-list";
+import { GiPig } from "react-icons/gi";
 
 const CageList = () => {
   const videoRef = React.useRef<string | Element>("");
   const playerRef = React.useRef<any>(null);
   const [isOpenCamera, setIsOpenCamera] = React.useState(false);
   const { isOpen: isOpenLog, onOpen: onOpenLog, onClose: onCloseLog } = useDisclosure();
+  const { isOpen: isOpenPigList, onOpen: onOpenPigList, onClose: onClosePigList } = useDisclosure();
   const [isLoading, setIsLoading] = React.useState(false);
   const [cageList, setCageList] = React.useState<Cage[]>([]);
   const [areaList, setAreaList] = React.useState<Area[]>([]);
@@ -212,6 +215,17 @@ const CageList = () => {
                         >
                           Lịch sử hoạt động chuồng
                         </DropdownItem>
+                        <DropdownItem
+                          key="pig-list"
+                          variant="solid"
+                          onPress={() => {
+                            onOpenPigList();
+                            setSelectedCage(cage);
+                          }}
+                          startContent={<GiPig size={25} className="text-primary" />}
+                        >
+                          Danh sách heo trong chuồng
+                        </DropdownItem>
                       </DropdownMenu>
                     </Dropdown>
                   </div>
@@ -261,6 +275,7 @@ const CageList = () => {
         </SheetContent>
       </Sheet>
       {isOpenLog && <ActivityLog isOpen={isOpenLog} onClose={onCloseLog} cage={selectedCage || undefined} />}
+      {isOpenPigList && <PigList isOpen={isOpenPigList} onClose={onClosePigList} cage={selectedCage || undefined} />}
     </div>
   );
 };

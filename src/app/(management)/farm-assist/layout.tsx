@@ -16,7 +16,6 @@ const FarmerAssistantLayout = ({
 }>) => {
   const projectName = "VMA";
   const titleMap: { [key: string]: string } = {
-    "/dashboard": projectName + " - " + "Tổng quan",
     "/herd": projectName + " - " + "Quản lý đàn heo",
     "/herd/create": projectName + " - " + "Tạo đàn mới",
     "/medicine": projectName + " - " + "Quản lý danh mục thuốc",
@@ -26,11 +25,6 @@ const FarmerAssistantLayout = ({
     "/cage": projectName + " - " + "Quản lý chuồng",
   };
   const navbarItems: NavbarItem[] = [
-    {
-      path: "/dashboard",
-      title: "Tổng quan",
-      icon: <MdSpaceDashboard size={25} />,
-    },
     {
       path: "/herd",
       title: "Quản lý đàn heo",

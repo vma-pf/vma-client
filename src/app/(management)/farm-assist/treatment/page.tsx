@@ -48,6 +48,9 @@ import CommonDiseaseGridList from "../../veterinarian/treatment/_components/comm
 import CommonDiseaseList from "../../veterinarian/treatment/_components/common-disease-list";
 import { BsArrowReturnRight } from "react-icons/bs";
 import TreatmentList from "@oursrc/components/treatment/treatment-list";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { SERVERURL } from "@oursrc/lib/http";
+import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 
 const statusColorMap = [
   { status: "Đã hoàn thành", color: "text-primary" },
@@ -210,6 +213,39 @@ const Treatment = () => {
   React.useEffect(() => {
     fetchAbnormalities();
   }, [page]);
+
+  React.useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken")?.toString();
+    const connect = new HubConnectionBuilder()
+      .withUrl(`${SERVERURL}/hubs/abnormality`, {
+        // send access token here
+        accessTokenFactory: () => accessToken || "",
+      })
+      .withAutomaticReconnect()
+      .withHubProtocol(
+        new MessagePackHubProtocol({
+          // encoder: encode,
+        })
+      )
+      .configureLogging(LogLevel.Information)
+      .build();
+    connect
+      .start()
+      .then(() => {
+        console.log("Connected to SignalR Hub");
+        connect.on("ReceiveAbnormalities", (abnormalities: Abnormality[]) => {
+          console.log("Receive Abnormalities: ");
+          console.log("Receive Abnormalities: ", abnormalities);
+          setAbnormalities(abnormalities);
+          setPage(1);
+          setTotalPages(1);
+        });
+      })
+      .catch((err) => console.error("Error while connecting to SignalR Hub:", err));
+    return () => {
+      connect.stop();
+    };
+  }, []);
 
   return (
     <div>
