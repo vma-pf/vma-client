@@ -50,6 +50,11 @@ import { CustomSnippet } from "@oursrc/components/ui/custom-snippet";
 import { HiDotsVertical } from "react-icons/hi";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@oursrc/components/ui/hover-card";
 import ReplyRequest from "@oursrc/app/(management)/farm-assist/medicine/_components/_modals/reply-request";
+import { VaccinationData } from "@oursrc/lib/models/vaccination";
+import { TreatmentData } from "@oursrc/lib/models/treatment";
+import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
+import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
+import FilterMedicineRequest from "@oursrc/components/medicines/filter-medicine-request";
 
 const columns = [
   { uid: "medicineName", name: "Tên thuốc", sortable: true },
@@ -93,6 +98,8 @@ const RequestMedicineList = () => {
   const [selectedMedicine, setSelectedMedicine] = React.useState<MedicineRequest | null>(null);
   const [remainQuantity, setRemainQuantity] = React.useState(0);
   const [medicineQuantityCheck, setMedicineQuantityCheck] = React.useState(0);
+  const [selectedVaccination, setSelectedVaccination] = useState<VaccinationData | undefined>();
+  const [selectedTreatment, setSelectedTreatment] = useState<TreatmentData | undefined>();
 
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -107,7 +114,7 @@ const RequestMedicineList = () => {
     let filteredMedicines: MedicineRequest[] = [...medicineList];
 
     if (hasSearchFilter) {
-      filteredMedicines = filteredMedicines.filter((medicine) => medicine.id.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredMedicines = filteredMedicines.filter((medicine) => medicine.medicineName?.toLowerCase().includes(filterValue.toLowerCase()));
     }
     if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
       filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.status));
@@ -118,17 +125,24 @@ const RequestMedicineList = () => {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (!isOpen) {
+    if (selectedVaccination && !selectedTreatment) {
+      getFilteredMedicineRequest("vaccination");
+    } else if (selectedTreatment && !selectedVaccination) {
+      getFilteredMedicineRequest("treatment");
+    } else {
       fetchData();
     }
-    getAllMedicineRequest();
-  }, [page, rowsPerPage, isOpen]);
+    // getAllMedicineRequest();
+  }, [page, rowsPerPage, isOpen, selectedVaccination, selectedTreatment]);
+
+  React.useEffect(() => {}, []);
+
   React.useEffect(() => {
     getAllMedicineRequest();
   }, []);
 
   const filterNewMedicine = () => {
-    return medicineList
+    return allMedicineList
       .filter((medicine) => !medicine.medicineId)
       .map((medicine) => {
         return {
@@ -154,7 +168,7 @@ const RequestMedicineList = () => {
 
   const getAllMedicineRequest = async () => {
     try {
-      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(1, 500);
+      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(1, 99999);
       if (response.isSuccess) {
         setAllMedicineList(response.data.data);
       } else {
@@ -162,6 +176,37 @@ const RequestMedicineList = () => {
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const getFilteredMedicineRequest = async (type: "vaccination" | "treatment") => {
+    try {
+      setLoading(true);
+      if (type === "vaccination") {
+        const response: ResponseObjectList<MedicineRequest> = await vaccinationService.getMedicineRequest(selectedVaccination?.id ?? "", page, rowsPerPage);
+        if (response.isSuccess) {
+          setMedicineList(response.data.data);
+          setRowsPerPage(response.data.pageSize);
+          setTotalPages(response.data.totalPages);
+          setTotalRecords(response.data.totalRecords);
+        } else {
+          console.log(response.errorMessage);
+        }
+      } else {
+        const response: ResponseObjectList<MedicineRequest> = await treatmentPlanService.getMedicineRequest(selectedTreatment?.id ?? "", page, rowsPerPage);
+        if (response.isSuccess) {
+          setMedicineList(response.data.data);
+          setRowsPerPage(response.data.pageSize);
+          setTotalPages(response.data.totalPages);
+          setTotalRecords(response.data.totalRecords);
+        } else {
+          console.log(response.errorMessage);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -319,6 +364,7 @@ const RequestMedicineList = () => {
                 ))}
               </DropdownMenu>
             </Dropdown>
+            <FilterMedicineRequest setSelectedVaccination={setSelectedVaccination} setSelectedTreatment={setSelectedTreatment} />
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -417,10 +463,10 @@ const RequestMedicineList = () => {
 
   return (
     <div>
-      <div className="mb-3 flex justify-between items-center gap-x-10">
+      <div className="mb-3 flex justify-between gap-x-10">
         <div className="w-1/2">
-          <div className="p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-            <p className="text-xl mb-2 font-semibold">Thuốc mới</p>
+          <div className="h-full p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
+            <p className="text-xl mb-2 font-semibold">Yêu cầu thuốc chưa có trong kho</p>
             {filterNewMedicine().length <= 0 ? (
               <p>Không có thuốc mới</p>
             ) : (
@@ -443,7 +489,7 @@ const RequestMedicineList = () => {
                         localStorage.setItem("newMedicine", JSON.stringify({ requestId: medicine.requestId, newMedicineName: medicine.newMedicineName }));
                       }}
                     >
-                      <span>{medicine.newMedicineName}</span>
+                      <span className="text-lg font-semibold">{medicine.newMedicineName}</span>
                     </CustomSnippet>
                   </li>
                 ))}

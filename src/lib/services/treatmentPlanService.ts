@@ -4,6 +4,7 @@ const endpoint = "api/treatmentPlans";
 
 export const treatmentPlanService = {
     getAll: (pageIndex: number, pageSize: number) => http.get(endpoint, { params: { pageIndex: pageIndex?.toString() || "", pageSize: pageSize?.toString() || "" } }),
+    getAllCaching: (pageIndex: number, pageSize: number) => http.get(endpoint, { params: { pageIndex: pageIndex?.toString() || "", pageSize: pageSize?.toString() || "" }, allowCaching: true }),
     getMyTreatmentPlans: (pageIndex: number, pageSize: number) => http.get("api/my-treatment-plans", { params: { pageIndex: pageIndex?.toString() || "", pageSize: pageSize?.toString() || "" } }),
     createTreatmentPlan: (data: any) => http.post(`${endpoint}/create-all-flow`, data),
     getTreatmentPlan: (id: string) => http.get(`${endpoint}/${id}`),

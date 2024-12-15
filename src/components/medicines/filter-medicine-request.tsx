@@ -6,19 +6,15 @@ import { VaccinationData } from "@oursrc/lib/models/vaccination";
 import { treatmentPlanService } from "@oursrc/lib/services/treatmentPlanService";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { Filter } from "lucide-react";
-import React, { Key } from "react";
+import React, { Key, useEffect } from "react";
 import { BsFillCalendarHeartFill } from "react-icons/bs";
 import { TbVaccine } from "react-icons/tb";
 
 const FilterMedicineRequest = ({
-  selectedVaccination,
   setSelectedVaccination,
-  selectedTreatment,
   setSelectedTreatment,
 }: {
-  selectedVaccination: VaccinationData | undefined;
   setSelectedVaccination: React.Dispatch<React.SetStateAction<VaccinationData | undefined>>;
-  selectedTreatment: TreatmentData | undefined;
   setSelectedTreatment: React.Dispatch<React.SetStateAction<TreatmentData | undefined>>;
 }) => {
   const { loading, setLoading } = React.useContext(LoadingStateContext);
@@ -26,6 +22,8 @@ const FilterMedicineRequest = ({
   const [isOpenFilter, setIsOpenFilter] = React.useState(false);
   const [vaccinationList, setVaccinationList] = React.useState<VaccinationData[]>([]);
   const [treatmentList, setTreatmentList] = React.useState<TreatmentData[]>([]);
+  const [vaccine, setVaccine] = React.useState<VaccinationData | undefined>();
+  const [treatmentPlan, setTreatmentPlan] = React.useState<TreatmentData | undefined>();
   React.useEffect(() => {
     if (isOpenFilter) {
       if (filterBy === "vaccination") {
@@ -41,14 +39,14 @@ const FilterMedicineRequest = ({
     try {
       setLoading(true);
       if (type === "vaccination") {
-        const res: ResponseObjectList<VaccinationData> = await vaccinationService.getAllVaccinationPlan(1, 1000);
+        const res: ResponseObjectList<VaccinationData> = await vaccinationService.getAllVaccinationPlanCaching(1, 9999);
         if (res.isSuccess) {
           setVaccinationList(res.data.data.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((vaccination) => vaccination) ?? []);
         } else {
           console.log(res.errorMessage);
         }
       } else {
-        const res: ResponseObjectList<TreatmentData> = await treatmentPlanService.getAll(1, 1000);
+        const res: ResponseObjectList<TreatmentData> = await treatmentPlanService.getAllCaching(1, 9999);
         if (res.isSuccess) {
           setTreatmentList(res.data.data.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((treatment) => treatment) ?? []);
         } else {
@@ -60,6 +58,32 @@ const FilterMedicineRequest = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleVaccinationChange = (vaccination: VaccinationData) => {
+    if (vaccination?.id === vaccine?.id) {
+      setSelectedVaccination(undefined);
+      setVaccine(undefined);
+    } else {
+      setSelectedVaccination(vaccination);
+      setVaccine(vaccination);
+    }
+    setSelectedTreatment(undefined);
+    setTreatmentPlan(undefined);
+    setIsOpenFilter(false);
+  };
+
+  const handleTreatmentChange = (treatment: TreatmentData) => {
+    if (treatment?.id === treatmentPlan?.id) {
+      setSelectedTreatment(undefined);
+      setTreatmentPlan(undefined);
+    } else {
+      setSelectedTreatment(treatment);
+      setTreatmentPlan(treatment);
+    }
+    setSelectedVaccination(undefined);
+    setVaccine(undefined);
+    setIsOpenFilter(false);
   };
   return (
     <Popover
@@ -110,17 +134,12 @@ const FilterMedicineRequest = ({
                     <div
                       key={vaccination.id}
                       className={`flex justify-between rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer active:bg-gray-200 dark:active:bg-zinc-800 ${
-                        selectedVaccination?.id === vaccination.id ? "bg-emerald-200 dark:bg-emerald-500" : ""
+                        vaccine?.id === vaccination.id ? "bg-emerald-200 dark:bg-emerald-500" : ""
                       }`}
-                      onClick={() => {
-                        if (vaccination) {
-                          setSelectedVaccination(vaccination ?? undefined);
-                          setIsOpenFilter(false);
-                        }
-                      }}
+                      onClick={() => handleVaccinationChange(vaccination)}
                     >
                       <p>{vaccination.title}</p>
-                      {selectedVaccination?.id === vaccination.id && <span>✓</span>}
+                      {vaccine?.id === vaccination.id && <span>✓</span>}
                     </div>
                   ))}
                 </div>
@@ -151,17 +170,12 @@ const FilterMedicineRequest = ({
                     <div
                       key={treatment.id}
                       className={`flex justify-between rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-zinc-700 cursor-pointer active:bg-gray-200 dark:active:bg-zinc-800 ${
-                        selectedTreatment?.id === treatment.id ? "bg-emerald-200 dark:bg-emerald-500" : ""
+                        treatmentPlan?.id === treatment.id ? "bg-emerald-200 dark:bg-emerald-500" : ""
                       }`}
-                      onClick={() => {
-                        if (treatment) {
-                          setSelectedTreatment(treatment ?? undefined);
-                          setIsOpenFilter(false);
-                        }
-                      }}
+                      onClick={() => handleTreatmentChange(treatment)}
                     >
                       <p>{treatment.title}</p>
-                      {selectedTreatment?.id === treatment.id && <span>✓</span>}
+                      {treatmentPlan?.id === treatment.id && <span>✓</span>}
                     </div>
                   ))}
                 </div>
