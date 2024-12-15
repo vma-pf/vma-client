@@ -137,18 +137,21 @@ const CageList = () => {
     if (isOpenCamera) {
       const accessToken = localStorage.getItem("accessToken")?.toString();
       const connect = new HubConnectionBuilder()
-        .withUrl(`${SERVERURL}/hubs/camera`, {
-          // send access token here
-          accessTokenFactory: () => accessToken || "",
-          headers: {
-            CameraId: selectedCage?.cameraId ?? "",
+        .withUrl(
+          `${SERVERURL}/hubs/camera?cameraId=${selectedCage?.cameraId}`,
+          {
+            // send access token here
+            accessTokenFactory: () => accessToken || "",
+            headers: {
+              CameraId: selectedCage?.cameraId ?? "",
+            },
           },
-        })
+        )
         .withAutomaticReconnect()
         .withHubProtocol(
           new MessagePackHubProtocol({
             // encoder: encode,
-          })
+          }),
         )
         .configureLogging(LogLevel.Information)
         .build();
