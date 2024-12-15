@@ -117,19 +117,17 @@ const RequestMedicineList = () => {
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (!isOpen) {
+    if (selectedVaccination && !selectedTreatment) {
+      getFilteredMedicineRequest("vaccination");
+    } else if (selectedTreatment && !selectedVaccination) {
+      getFilteredMedicineRequest("treatment");
+    } else {
       fetchData();
     }
     // getAllMedicineRequest();
-  }, [page, rowsPerPage, isOpen]);
+  }, [page, rowsPerPage, isOpen, selectedVaccination, selectedTreatment]);
 
-  React.useEffect(() => {
-    if (selectedVaccination) {
-      getFilteredMedicineRequest("vaccination");
-    } else if (selectedTreatment) {
-      getFilteredMedicineRequest("treatment");
-    }
-  }, [selectedVaccination, selectedTreatment]);
+  React.useEffect(() => {}, []);
 
   React.useEffect(() => {
     getAllMedicineRequest();
@@ -358,12 +356,7 @@ const RequestMedicineList = () => {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <FilterMedicineRequest
-              selectedVaccination={selectedVaccination}
-              setSelectedVaccination={setSelectedVaccination}
-              selectedTreatment={selectedTreatment}
-              setSelectedTreatment={setSelectedTreatment}
-            />
+            <FilterMedicineRequest setSelectedVaccination={setSelectedVaccination} setSelectedTreatment={setSelectedTreatment} />
           </div>
         </div>
         <div className="flex justify-between items-center">

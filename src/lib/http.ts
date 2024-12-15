@@ -6,6 +6,7 @@ export const SERVERURL = "https://vma-server.io.vn"; // Replace with actual API 
 type CustomOptions = RequestInit & {
   baseUrl?: string | undefined;
   params?: Record<string, string> | undefined;
+  allowCaching?: boolean | undefined;
 };
 
 type EntityErrorPayload = {
@@ -63,6 +64,15 @@ const request = async <Response>(
     fullUrl += "?" + searchParams.toString();
   }
 
+  // Check if caching is allowed
+  if (options?.allowCaching) {
+    const cacheResponse = await caches.match(fullUrl);
+    if (cacheResponse) {
+      const cachePayload: Response = await cacheResponse.json();
+      return cachePayload;
+    }
+  }
+
   const response = await fetch(fullUrl, {
     ...options,
     headers: {
@@ -105,18 +115,13 @@ const request = async <Response>(
   }
 
   const payload: Response = await response.json();
-  // const data = {
-  //   status: response.status,
-  //   payload,
-  // };
 
-  // if (!response.ok) {
-  //   throw new HttpError({ status: response.status, payload });
-  // }
+  // Cache the response if caching is allowed
+  if (options?.allowCaching) {
+    const cache = await caches.open("api-cache");
+    cache.put(fullUrl, new Response(JSON.stringify(payload)));
+  }
 
-  // if (response.status === 204) {
-  //   return null;
-  // }
   return payload;
 };
 
