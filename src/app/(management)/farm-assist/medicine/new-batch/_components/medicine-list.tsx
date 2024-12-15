@@ -49,9 +49,11 @@ const statusColorMap: Record<string, ChipProps["color"]> = {
 export default function MedicineList({
   selectedMedicine,
   setSelectedMedicine,
+  batchMedicineList,
 }: {
   selectedMedicine?: Medicine;
   setSelectedMedicine: React.Dispatch<React.SetStateAction<Medicine | undefined>>;
+  batchMedicineList: Medicine[];
 }) {
   const { toast } = useToast();
   const {
@@ -293,6 +295,7 @@ export default function MedicineList({
             classNames={{
               wrapper: "max-h-[400px] w-full overflow-auto",
             }}
+            disabledKeys={batchMedicineList.length > 0 ? new Set(batchMedicineList.map((medicine) => medicine?.id ?? "")) : new Set<string>()}
             selectionMode="single"
             sortDescriptor={sortDescriptor}
             topContent={topContent}
@@ -325,7 +328,14 @@ export default function MedicineList({
             </div>
           }
         >
-          <form onSubmit={handleSubmit(createNewMedicine)}>
+          <form
+            onSubmit={handleSubmit(createNewMedicine)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+              }
+            }}
+          >
             <p className="text-xl font-semibold mb-3">Nhập thông tin thuốc mới</p>
             <div className="grid grid-cols-2 gap-2">
               <Input
@@ -367,51 +377,51 @@ export default function MedicineList({
                 )}
               </Autocomplete>
             </div>
+            <Input
+              className="mb-5"
+              type="text"
+              radius="md"
+              size="lg"
+              label="Trọng lượng"
+              placeholder="Nhập trọng lượng"
+              labelPlacement="outside"
+              isRequired
+              // value={netWeight || ""}
+              // onValueChange={(event) => handleNetWeightChange(event)}
+              isInvalid={errors.netWeight && true}
+              errorMessage="Trọng lượng không được để trống"
+              {...register("netWeight", { required: true })}
+            />
             <div className="grid grid-cols-2 gap-2">
-              <Input
+              <Textarea
                 className="mb-5"
                 type="text"
                 radius="md"
                 size="lg"
-                label="Trọng lượng"
-                placeholder="Nhập trọng lượng"
+                label="Thành phần chính"
+                placeholder="Nhập thành phần chính"
                 labelPlacement="outside"
                 isRequired
-                // value={netWeight || ""}
-                // onValueChange={(event) => handleNetWeightChange(event)}
-                isInvalid={errors.netWeight && true}
-                errorMessage="Trọng lượng không được để trống"
-                {...register("netWeight", { required: true })}
+                // value={mainIngredient || ""}
+                isInvalid={errors.mainIngredient && true}
+                errorMessage="Thành phần chính không được để trống"
+                {...register("mainIngredient", { required: true })}
+              />
+              <Textarea
+                className="mb-5"
+                type="text"
+                radius="md"
+                size="lg"
+                label="Cách sử dụng"
+                placeholder="Nhập cách sử dụng"
+                labelPlacement="outside"
+                isRequired
+                // value={usage || ""}
+                isInvalid={errors.usage && true}
+                errorMessage="Cách sử dụng không được để trống"
+                {...register("usage", { required: true })}
               />
             </div>
-            <Textarea
-              className="mb-5"
-              type="text"
-              radius="md"
-              size="lg"
-              label="Thành phần chính"
-              placeholder="Nhập thành phần chính"
-              labelPlacement="outside"
-              isRequired
-              // value={mainIngredient || ""}
-              isInvalid={errors.mainIngredient && true}
-              errorMessage="Thành phần chính không được để trống"
-              {...register("mainIngredient", { required: true })}
-            />
-            <Textarea
-              className="mb-5"
-              type="text"
-              radius="md"
-              size="lg"
-              label="Cách sử dụng"
-              placeholder="Nhập cách sử dụng"
-              labelPlacement="outside"
-              isRequired
-              // value={usage || ""}
-              isInvalid={errors.usage && true}
-              errorMessage="Cách sử dụng không được để trống"
-              {...register("usage", { required: true })}
-            />
             <Button type="submit" color="primary" variant="solid" size="md" isDisabled={Object.keys(errors).length > 0}>
               Thêm mới
             </Button>
