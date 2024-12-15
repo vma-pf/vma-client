@@ -30,7 +30,7 @@ import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-
 import { Supplier } from "@oursrc/lib/models/supplier";
 import { BatchCreateProps } from "@oursrc/lib/models/batch";
 import { v4 as uuidv4 } from "uuid";
-import { Trash, Trash2Icon } from "lucide-react";
+import { Save, Trash, Trash2Icon } from "lucide-react";
 import { invoiceService } from "@oursrc/lib/services/invoiceService";
 import { useRouter } from "next/navigation";
 import { SERVERURL } from "@oursrc/lib/http";
@@ -98,6 +98,10 @@ const NewBatch = () => {
 
   const isFormFilled = (): boolean => {
     return batchList.some((batch) => !batch.quantity || !batch.expiredAt || !batch.medicineId) || !image || Object.keys(errors).length > 0;
+  };
+
+  const isAllBatchFilled = (): boolean => {
+    return batchList.some((batch) => !batch.quantity || !batch.expiredAt || !batch.medicineId) || !image;
   };
 
   const handleSubmitForm = async (data: any) => {
@@ -245,6 +249,7 @@ const NewBatch = () => {
                     onValueChange={(event) => handleQuantityChange(event, batch)}
                     isInvalid={batch.quantity ? false : true}
                     errorMessage="Số luợng không được để trống"
+                    endContent={<p className="text-lg font-semibold">{batch.medicine?.unit ?? ""}</p>}
                   />
                   <DatePicker
                     label="Ngày hết hạn"
@@ -292,19 +297,22 @@ const NewBatch = () => {
                 )}
               </div>
               {batchList.length > 1 && <Trash2Icon className="ml-4 text-danger-500" onClick={() => setBatchList(batchList.filter((item) => item.id !== batch.id))} />}
-              <Modal size="5xl" isOpen={isOpen} onClose={onClose} scrollBehavior="inside" isDismissable={false}>
-                <ModalContent>
-                  <ModalHeader>
-                    <p className="text-xl font-semibold">Chọn thuốc</p>
-                  </ModalHeader>
-                  <ModalBody>
-                    <MedicineList
-                      selectedMedicine={batchList.find((item) => item.id === selectedBatch?.id)?.medicine || undefined}
-                      setSelectedMedicine={setSelectedMedicine}
-                    />
-                  </ModalBody>
-                </ModalContent>
-              </Modal>
+              {selectedBatch?.medicineId === batch.medicineId && (
+                <Modal size="5xl" isOpen={isOpen} onClose={onClose} scrollBehavior="inside" isDismissable={false}>
+                  <ModalContent>
+                    <ModalHeader>
+                      <p className="text-xl font-semibold">Chọn thuốc</p>
+                    </ModalHeader>
+                    <ModalBody>
+                      <MedicineList
+                        selectedMedicine={batchList.find((item) => item.id === selectedBatch?.id)?.medicine || undefined}
+                        setSelectedMedicine={setSelectedMedicine}
+                        batchMedicineList={batchList.map((item) => item.medicine as Medicine) || []}
+                      />
+                    </ModalBody>
+                  </ModalContent>
+                </Modal>
+              )}
             </div>
           ))}
           <div className="mt-3 flex justify-end">
@@ -312,134 +320,14 @@ const NewBatch = () => {
               color="primary"
               variant="solid"
               onPress={() => setBatchList([...batchList, { id: uuidv4(), medicineId: null, invoiceId: null, quantity: null, expiredAt: null }])}
+              isDisabled={isAllBatchFilled() ? true : false}
             >
               Thêm danh mục thuốc
             </Button>
           </div>
         </div>
-        {/* </div> */}
-        {/* <div className="mb-2 mt-5 flex">
-          <RadioGroup
-            onValueChange={(value: string) => {
-              setSelected(value);
-              if (value === "2") {
-                setSelectedMedicine(undefined);
-              } else if (value === "1") {
-                setValue("medicineName", "");
-                setValue("netWeight", "");
-                setValue("unit", "");
-                setValue("mainIngredient", "");
-                setValue("usage", "");
-              }
-            }}
-            value={selected}
-            label={<p className="text-2xl text-black dark:text-white font-bold">Chọn loại thuốc</p>}
-            className="w-[350px] mr-2"
-          >
-            <Radio
-              className="inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between
-          flex-row-reverse max-w-[400px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent
-          data-[selected=true]:border-primary"
-              value="1"
-            >
-              Thuốc có sẵn trong kho
-            </Radio>
-            <Radio
-              className="inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between
-          flex-row-reverse max-w-[400px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent
-          data-[selected=true]:border-primary"
-              value="2"
-            >
-              Thuốc mới
-            </Radio>
-          </RadioGroup>
-          {selected === "1" && (
-            <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-              <p className="text-xl font-semibold mb-3">Danh sách thuốc trong kho</p>
-              <MedicineList selectedMedicine={selectedMedicine || undefined} setSelectedMedicine={setSelectedMedicine} />
-            </div>
-          )}
-          {selected === "2" && (
-            <div className="p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-              <p className="text-xl font-semibold mb-3">Nhập thông tin thuốc mới</p>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  className="mb-5"
-                  type="text"
-                  radius="md"
-                  size="lg"
-                  label="Tên thuốc"
-                  placeholder="Nhập tên thuốc"
-                  labelPlacement="outside"
-                  isRequired
-                  isInvalid={errors.medicineName ? true : false}
-                  errorMessage="Tên thuốc không được để trống"
-                  {...register("medicineName", { required: true })}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  className="mb-5"
-                  type="text"
-                  radius="md"
-                  size="lg"
-                  label="Trọng lượng"
-                  placeholder="Nhập trọng lượng"
-                  labelPlacement="outside"
-                  isRequired
-                  // value={netWeight || ""}
-                  // onValueChange={(event) => handleNetWeightChange(event)}
-                  isInvalid={errors.netWeight && true}
-                  errorMessage="Trọng lượng không được để trống"
-                  {...register("netWeight", { required: true })}
-                />
-                <Input
-                  className="mb-5"
-                  type="text"
-                  radius="md"
-                  size="lg"
-                  label="Đơn vị"
-                  placeholder="Nhập đơn vị"
-                  labelPlacement="outside"
-                  isRequired
-                  // value={unit || ""}
-                  isInvalid={errors.unit && true}
-                  {...register("unit", { required: true })}
-                />
-              </div>
-              <Textarea
-                className="mb-5"
-                type="text"
-                radius="md"
-                size="lg"
-                label="Thành phần chính"
-                placeholder="Nhập thành phần chính"
-                labelPlacement="outside"
-                isRequired
-                // value={mainIngredient || ""}
-                isInvalid={errors.mainIngredient && true}
-                errorMessage="Thành phần chính không được để trống"
-                {...register("mainIngredient", { required: true })}
-              />
-              <Textarea
-                className="mb-5"
-                type="text"
-                radius="md"
-                size="lg"
-                label="Cách sử dụng"
-                placeholder="Nhập cách sử dụng"
-                labelPlacement="outside"
-                isRequired
-                // value={usage || ""}
-                isInvalid={errors.usage && true}
-                errorMessage="Cách sử dụng không được để trống"
-                {...register("usage", { required: true })}
-              />
-            </div>
-          )}
-        </div> */}
-        <div className="flex justify-end">
-          <Button color="primary" type="submit" variant="solid" size="lg" isDisabled={isFormFilled() || isDoneAll} isLoading={loading}>
+        <div className="mb-5 mt-3 flex justify-end">
+          <Button color="primary" type="submit" variant="solid" isDisabled={isFormFilled() || isDoneAll} isLoading={loading} endContent={<Save size={20} />}>
             Tạo đợt nhập thuốc mới
           </Button>
         </div>
