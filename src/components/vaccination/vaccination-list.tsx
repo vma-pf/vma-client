@@ -51,7 +51,7 @@ const VaccinationList = ({
   type: "all" | "my";
 }) => {
   const [sortDescriptor, setSortDescriptor] = React.useState<SortDescriptor>({
-    column: "title",
+    column: "name",
     direction: "ascending",
   });
   const [isLoading, setIsLoading] = React.useState(false);
@@ -83,13 +83,6 @@ const VaccinationList = ({
 
     return filteredVaccination;
   }, [vaccinationList, filterValue, statusFilter]);
-
-  const items = React.useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    return filteredItems.slice(start, end);
-  }, [filteredItems, page, rowsPerPage]);
 
   const sortedItems = useMemo(() => {
     return [...filteredItems].sort((a: VaccinationData, b: VaccinationData) => {

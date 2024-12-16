@@ -84,7 +84,6 @@ const MedicineListInStage = ({
     }
     setSelectedMedicineId("");
   };
-  console.log("stage.inventoryRequest.medicines", stage.inventoryRequest.medicines);
 
   const columns = [
     { name: "", uid: "actions" },

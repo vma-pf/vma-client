@@ -54,7 +54,7 @@ import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
 import { HerdInfo } from "@oursrc/lib/models/herd";
 import { eliminateTime } from "@oursrc/lib/utils";
 
-const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
+const CreateVaccination = ({ pigIds = [], type }: { pigIds?: string[]; type: "update" | "add" }) => {
   const router = useRouter();
   //State
   const { loading, setLoading } = React.useContext(LoadingStateContext);
@@ -438,21 +438,39 @@ const CreateVaccination = ({ pigIds = [] }: { pigIds?: string[] }) => {
       };
       console.log(request);
 
-      const response: ResponseObject<any> = await vaccinationService.createVaccinationPlan(request);
-      if (response && response.isSuccess) {
-        setIsDoneAll(true);
-        toast({
-          variant: "success",
-          title: "Tạo thành công lịch tiêm phòng",
-          description: "Đã tạo thành công lịch tiêm phòng! Xem chi tiết tại màn hình thống kê",
-        });
-        router.push("/veterinarian/vaccination");
+      if (type === "add") {
+        const response: ResponseObject<any> = await vaccinationService.createVaccinationPlan(request);
+        if (response && response.isSuccess) {
+          setIsDoneAll(true);
+          toast({
+            variant: "success",
+            title: "Tạo thành công lịch tiêm phòng",
+            description: "Đã tạo thành công lịch tiêm phòng! Xem chi tiết tại màn hình thống kê",
+          });
+          router.push("/veterinarian/vaccination");
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Tạo lịch tiêm phòng thất bại",
+            description: response.errorMessage,
+          });
+        }
       } else {
-        toast({
-          variant: "destructive",
-          title: "Tạo lịch tiêm phòng thất bại",
-          description: response.errorMessage,
-        });
+        const response: ResponseObject<any> = await vaccinationService.changeVaccinationPlan(request);
+        if (response && response.isSuccess) {
+          setIsDoneAll(true);
+          toast({
+            variant: "success",
+            title: "Cập nhật thành công lịch tiêm phòng",
+          });
+          router.push("/veterinarian/vaccination");
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Cập nhật lịch tiêm phòng thất bại",
+            description: response.errorMessage,
+          });
+        }
       }
     } catch (error: any) {
       toast({

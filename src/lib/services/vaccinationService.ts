@@ -49,6 +49,17 @@ export const vaccinationService = {
       herdId: model.herdId,
       pigIds: model.pigIds,
     }),
+  changeVaccinationPlan: (model: CreateVaccinationRequest) =>
+    http.post<ResponseObject<any>>(`api/vaccination-plans/change-vaccination-plan`, {
+      title: model.title,
+      startDate: model.startDate,
+      expectedEndDate: model.expectedEndDate,
+      actualEndDate: model.actualEndDate,
+      note: model.note,
+      createVaccinationStages: model.createVaccinationStages,
+      herdId: model.herdId,
+      pigIds: model.pigIds,
+    }),
   addInventoryToVaccinationPlan: (data: MedicineInStage[]) =>
     http.post<ResponseObject<any>>("add-inventory-to-vaccination-stage", data),
 };

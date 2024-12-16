@@ -79,7 +79,6 @@ const Herd = () => {
   const [selectedHerd, setSelectedHerd] = React.useState<HerdInfo>();
   const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
   const [statisticData, setStatisticData] = React.useState<HerdStatistic | undefined>();
-  const [avgStatisticData, setAvgStatisticData] = React.useState<EndHerdStatistic | undefined>();
   const [connection, setConnection] = useState<HubConnection | null>(null);
   const [pigInfo, setPigInfo] = React.useState<SensorData | undefined>(undefined);
   const [pigOptions, setPigOptions] = React.useState<Pig[]>([]);
@@ -140,16 +139,6 @@ const Herd = () => {
       } else {
         console.log(res.errorMessage);
       }
-      if (selectedHerd?.status === "Đã kết thúc") {
-        const response: ResponseObject<EndHerdStatistic> = await herdService.getAvgStatistics(selectedHerd?.id ?? "");
-        if (response.isSuccess) {
-          setAvgStatisticData(response.data);
-        } else {
-          console.log(response.errorMessage);
-        }
-      } else {
-        setAvgStatisticData(undefined);
-      }
     } catch (error) {
       console.log(error);
     }
@@ -180,38 +169,6 @@ const Herd = () => {
       console.log(error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDownloadReport = async () => {
-    try {
-      const response = await fetch(`${SERVERURL}/api/herds/${selectedHerd?.id}/export-statistics`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
-
-      // Check if the response is ok
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      // Get blob data from response
-      const blob = await response.blob();
-
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `herd-report-${selectedHerd?.id}.xlsx`; // Set filename with extension
-
-      // Trigger download
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("There was an error downloading the report:", error);
     }
   };
 
@@ -318,31 +275,12 @@ const Herd = () => {
     if (!selectedHerd) {
       setSelectedPig(undefined);
       setStatisticData(undefined);
-      setAvgStatisticData(undefined);
     } else {
       getStatistics();
     }
   }, [selectedHerd]);
   return (
     <div>
-      {avgStatisticData && (
-        <div className="mb-4">
-          <Accordion variant="splitted" defaultExpandedKeys={["1"]}>
-            <AccordionItem key="1" title={<p className="text-xl font-bold">Kết quả nuôi</p>} startContent={<LuFileBarChart className="text-primary" size={25} />}>
-              <AvgStatistic data={avgStatisticData} />
-              <div className="flex items-center">
-                <p className="my-2">Cân nặng trung bình ban đầu:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInStart} kg</p>
-              </div>
-              <div className="flex items-center">
-                <p className="my-2">Cân nặng trung bình cuối cùng:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInEnd} kg</p>
-              </div>
-              <Button color="primary" endContent={<FaFileDownload size={20} />} onPress={handleDownloadReport}>
-                Tải xuống báo cáo
-              </Button>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      )}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <div>
           <div className="grid grid-cols-2 gap-3">

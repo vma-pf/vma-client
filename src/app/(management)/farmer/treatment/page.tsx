@@ -333,10 +333,10 @@ const Treatment = () => {
                           <p className="text-lg mt-3 font-semibold">{dateConverter(treatmentData.startDate)}</p>
                           <p className="text-lg mt-3 font-semibold">{dateConverter(treatmentData.expectedEndDate)}</p>
                         </div>
-                        {treatmentData.actualEndDate && (
+                        {treatmentData.actualEndDate && treatmentData.status !== "Đã hoàn thành" && (
                           <div className="flex justify-between">
                             <p className="text-md mt-3">Ngày kết thúc (thực tế):</p>
-                            <p className="text-lg mt-3 font-semibold">{treatmentData.actualEndDate}</p>
+                            <p className="text-lg mt-3 font-semibold">{dateConverter(treatmentData.actualEndDate)}</p>
                           </div>
                         )}
                         <div className="flex justify-between">
