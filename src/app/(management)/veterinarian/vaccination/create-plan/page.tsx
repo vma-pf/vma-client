@@ -21,7 +21,7 @@ const CreatePlan = () => {
             </div>
           }
         >
-          <CreateVaccination />
+          <CreateVaccination type="add" />
         </Tab>
         <Tab
           key="2"
