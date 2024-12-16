@@ -153,7 +153,6 @@ const Herd = () => {
         onCloseEndHerd();
         setSelectedHerd(undefined);
         setStatisticData(undefined);
-        setAvgStatisticData(undefined);
         toast({
           title: "Kết thúc đàn thành công",
           variant: "success",
