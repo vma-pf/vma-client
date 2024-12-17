@@ -186,7 +186,7 @@ const Herd = () => {
       // Process all pig checkups sequentially
       for (let i = remainingCheckups.length - 1; i >= 0; i--) {
         const checkup = remainingCheckups[i];
-        
+
         const res = await monitorDevelopmentLogService.createMonitoringLog({
           pigId: checkup.pigId,
           weight: checkup.weight,
@@ -200,7 +200,7 @@ const Herd = () => {
           // Remove successful checkup
           remainingCheckups.splice(i, 1);
           setPigCheckups(remainingCheckups);
-          
+
           toast({
             title: "Cập nhật thành công",
             variant: "success",
@@ -218,7 +218,7 @@ const Herd = () => {
       const endHerdRes = await herdService.endHerd(selectedHerd?.id ?? "");
       if (!endHerdRes.isSuccess) {
         toast({
-          title: "Kết thúc đàn thất bại", 
+          title: "Kết thúc đàn thất bại",
           variant: "destructive",
         });
         throw new Error(endHerdRes.errorMessage || "Failed to end herd");
@@ -231,9 +231,8 @@ const Herd = () => {
       setStatisticData(undefined);
       toast({
         title: "Kết thúc đàn thành công",
-        variant: "success", 
+        variant: "success",
       });
-
     } catch (error) {
       console.error(error);
     } finally {
@@ -439,7 +438,7 @@ const Herd = () => {
         {isOpenPigDetail && selectedPig && <PigDetail isOpen={isOpenPigDetail} onClose={onClosePigDetail} pigInfo={selectedPig} />}
         {isOpenChangeCage && selectedPig && <ChangeCage isOpen={isOpenChangeCage} onClose={onCloseChangeCage} pigInfo={selectedPig} />}
         {isOpenEndHerd && selectedHerd && (
-          <Modal isOpen={isOpenEndHerd} onClose={onCloseEndHerd} size="xl">
+          <Modal isOpen={isOpenEndHerd} onClose={onCloseEndHerd} size="3xl" isDismissable={false} scrollBehavior="inside">
             <form
               onSubmit={handleSubmit(onSubmit)}
               onKeyDown={(e) => {
@@ -461,12 +460,8 @@ const Herd = () => {
                   <p className="text-lg font-semibold">Cập nhật thông tin tăng trưởng lần cuối</p>
                   <div>
                     <div className="flex justify-end mb-4">
-                      <Button
-                        color="primary" 
-                        startContent={<Plus size={20} />}
-                        onPress={handleAddCheckup}
-                      >
-                        Thêm thông tin  
+                      <Button color="primary" startContent={<Plus size={20} />} onPress={handleAddCheckup}>
+                        Thêm thông tin
                       </Button>
                     </div>
                   </div>
@@ -504,20 +499,15 @@ const Herd = () => {
                               const updatedCheckups = [...pigCheckups];
                               updatedCheckups[index] = {
                                 ...updatedCheckups[index],
-                                pigId: selectedKey || ""
+                                pigId: selectedKey || "",
                               };
                               setPigCheckups(updatedCheckups);
                             }}
                           >
                             {(pig) => (
-                              <SelectItem
-                                key={pig.id}
-                                value={pig.id}
-                                textValue={pig.pigCode}
-                                isDisabled={pigCheckups.some((checkup) => checkup.pigId === pig.id)}
-                              >
-                                {pig.pigCode.length > 5 ? pig.pigCode.substring(0, 5) + "..." : pig.pigCode}{" "}
-                                (Cân nặng: {pig.weight}, Chiều cao: {pig.height}, Chiều rộng: {pig.width})
+                              <SelectItem key={pig.id} value={pig.id} textValue={pig.pigCode} isDisabled={pigCheckups.some((checkup) => checkup.pigId === pig.id)}>
+                                {pig.pigCode.length > 5 ? pig.pigCode.substring(0, 5) + "..." : pig.pigCode} (Cân nặng: {pig.weight}, Chiều cao: {pig.height}, Chiều rộng:{" "}
+                                {pig.width})
                               </SelectItem>
                             )}
                           </Select>
@@ -542,7 +532,7 @@ const Herd = () => {
                               const updatedCheckups = [...pigCheckups];
                               updatedCheckups[index] = {
                                 ...updatedCheckups[index],
-                                weight: numValue
+                                weight: numValue,
                               };
                               setPigCheckups(updatedCheckups);
                             }}
@@ -553,7 +543,7 @@ const Herd = () => {
                             radius="sm"
                             size="lg"
                             label="Chiều cao"
-                            placeholder="Nhập chiều cao" 
+                            placeholder="Nhập chiều cao"
                             labelPlacement="outside"
                             isRequired
                             endContent="cm"
@@ -566,7 +556,7 @@ const Herd = () => {
                               const updatedCheckups = [...pigCheckups];
                               updatedCheckups[index] = {
                                 ...updatedCheckups[index],
-                                height: numValue
+                                height: numValue,
                               };
                               setPigCheckups(updatedCheckups);
                             }}
@@ -581,7 +571,7 @@ const Herd = () => {
                             label="Chiều rộng"
                             placeholder="Nhập chiều rộng"
                             labelPlacement="outside"
-                            isRequired 
+                            isRequired
                             endContent="cm"
                             isInvalid={!!errors[`checkups.${index}.width`]}
                             errorMessage="Chiều rộng không được để trống"
@@ -591,7 +581,7 @@ const Herd = () => {
                               const updatedCheckups = [...pigCheckups];
                               updatedCheckups[index] = {
                                 ...updatedCheckups[index],
-                                width: numValue
+                                width: numValue,
                               };
                               setPigCheckups(updatedCheckups);
                             }}
@@ -607,7 +597,7 @@ const Herd = () => {
                               const updatedCheckups = [...pigCheckups];
                               updatedCheckups[index] = {
                                 ...updatedCheckups[index],
-                                note: value
+                                note: value,
                               };
                               setPigCheckups(updatedCheckups);
                             }}

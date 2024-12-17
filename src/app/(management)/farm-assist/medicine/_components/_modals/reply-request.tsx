@@ -72,9 +72,9 @@ const ReplyRequest = ({
           <ModalBody>
             <p className="text-lg">
               Bạn có chắc chắn muốn {answer === "accept" ? "chấp nhận" : "từ chối"} yêu cầu thuốc{" "}
-              {selectedMedicine.newMedicineName ? selectedMedicine.newMedicineName : selectedMedicine.medicineId} không?
+              {selectedMedicine.newMedicineName ? selectedMedicine.newMedicineName : selectedMedicine.medicineName} không?
             </p>
-            {answer === "reject" && (
+            {/* {answer === "reject" && (
               <div className="mt-3">
                 <Input
                   placeholder="Nhập lý do từ chối"
@@ -87,7 +87,7 @@ const ReplyRequest = ({
                   errorMessage="Lý do từ chối không được để trống"
                 />
               </div>
-            )}
+            )} */}
           </ModalBody>
           <ModalFooter>
             <Button color={answer === "accept" ? "primary" : "danger"} onPress={handleReplyRequest} isDisabled={answer === "reject" && !reason}>
