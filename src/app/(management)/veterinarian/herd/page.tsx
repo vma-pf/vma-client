@@ -113,7 +113,7 @@ const Herd = () => {
                     <Divider orientation="horizontal" />
                     <div className="flex justify-between items-center">
                       <p className="my-2">Cân nặng trung bình:</p>
-                      <p className="my-2 font-semibold">{selectedHerd?.averageWeight}</p>
+                      <p className="my-2 font-semibold">{selectedHerd?.averageWeight + " kg"}</p>
                     </div>
                     <Divider orientation="horizontal" />
                     <p className="my-2">Mô tả:</p>

@@ -30,7 +30,7 @@ const columns = [
   { name: "Mã đàn", uid: "code", sortable: true },
   { name: "Giống", uid: "breed", sortable: true },
   // { name: "Mô tả", uid: "description", sortable: true },
-  { name: "Cân nặng trung bình", uid: "averageWeight", sortable: true },
+  { name: "Cân nặng trung bình (kg)", uid: "averageWeight", sortable: true },
   { name: "Tổng số lượng", uid: "totalNumber", sortable: true },
   { name: "Ngày bắt đầu", uid: "startDate", sortable: true },
   { name: "Ngày kết thúc (dự kiến)", uid: "expectedEndDate", sortable: true },
