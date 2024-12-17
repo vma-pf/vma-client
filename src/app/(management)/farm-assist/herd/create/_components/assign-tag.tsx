@@ -105,6 +105,16 @@ const AssignTag = () => {
     }
   };
 
+  const generatePigUid = () => {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    let uid = "";
+    for (let i = 0; i < 7; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      uid += characters[randomIndex];
+    }
+    return uid;
+  };
+
   React.useEffect(() => {
     if (!isOpen) {
       getAllPigs();
@@ -188,7 +198,7 @@ const AssignTag = () => {
               size={150}
               onClick={() => {
                 if (error) return;
-                setPigInfo({ Uid: v4(), Weight: 0 });
+                setPigInfo({ Uid: generatePigUid(), Weight: 0 });
                 onOpen();
               }}
             />

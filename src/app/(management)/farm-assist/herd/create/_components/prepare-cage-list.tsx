@@ -56,7 +56,7 @@ const PrepareCageList = ({ hasNewCages, setIsCageEmpty }: { hasNewCages: boolean
   const [cageList, setCageList] = React.useState<Cage[]>([]);
 
   const [loading, setLoading] = React.useState(false);
-  const loadingState = loading || cageList?.length === 0 ? "loading" : "idle";
+  const loadingState = loading ? "loading" : "idle";
 
   //Use Effect
   React.useEffect(() => {

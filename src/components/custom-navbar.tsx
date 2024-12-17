@@ -80,9 +80,9 @@ const CustomNavbar = ({ navbarItems, prefix }: { navbarItems: NavbarItem[]; pref
         <div className="h-full w-full flex flex-col items-center justify-between">
           <div className="w-full">
             <div className="flex flex-col items-center">
-              <Link href={prefix + "/dashboard"}>
+              {/* <Link href={prefix + "/dashboard"}> */}
                 <Image className="duration-400" src="/assets/vma-logo.png" alt="logo" width={70} height={70} />
-              </Link>
+              {/* </Link> */}
               <BsFillArrowLeftCircleFill
                 size={25}
                 className={`relative ${open ? "left-28" : "left-10 rotate-180"} duration-400 bg-slate-200 dark:bg-zinc-800 rounded-full`}
