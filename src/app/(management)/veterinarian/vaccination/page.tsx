@@ -183,7 +183,7 @@ const Vaccination = () => {
                       <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.startDate)}</p>
                       <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.expectedEndDate)}</p>
                     </div>
-                    {vaccinationData.actualEndDate && vaccinationData.status !== "Đã hoàn thành" && (
+                    {vaccinationData.actualEndDate && vaccinationData.status !== "Đang thực hiện" && (
                       <div className="flex justify-between">
                         <p className="text-md mt-3">Ngày kết thúc (thực tế):</p>
                         <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.actualEndDate)}</p>
@@ -259,7 +259,14 @@ const Vaccination = () => {
                 <div className="mt-5 mb-3 flex justify-between items-center">
                   <p className="text-xl font-semibold">Các giai đoạn tiêm phòng</p>
                   <div>
-                    <Button variant="solid" color="primary" endContent={<CiEdit size={20} />} className="mr-2" onClick={onOpenChangeVaccinationPlanModal}>
+                    <Button
+                      variant="solid"
+                      color="primary"
+                      endContent={<CiEdit size={20} />}
+                      className="mr-2"
+                      onClick={onOpenChangeVaccinationPlanModal}
+                      isDisabled={vaccinationData?.status === "Đã hoàn thành" || vaccinationData?.status === "Đã hủy"}
+                    >
                       Đổi lịch tiêm phòng
                     </Button>
                     <Dropdown>

@@ -39,6 +39,7 @@ const CageList = () => {
   const videoRef = React.useRef<string | Element>("");
   const playerRef = React.useRef<any>(null);
   const [isOpenCamera, setIsOpenCamera] = React.useState(false);
+  const [isLoadingCamera, setIsLoadingCamera] = React.useState(false);
   const { isOpen: isOpenLog, onOpen: onOpenLog, onClose: onCloseLog } = useDisclosure();
   const { isOpen: isOpenPigList, onOpen: onOpenPigList, onClose: onClosePigList } = useDisclosure();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -94,6 +95,10 @@ const CageList = () => {
               type: "application/vnd.apple.mpegurl",
             },
           ],
+          ready: () => {
+            console.log("Player ready");
+            setIsLoadingCamera(false);
+          },
         });
         setIsOpenCamera(true);
       } else {
@@ -270,7 +275,13 @@ const CageList = () => {
             <SheetTitle>Camera</SheetTitle>
           </SheetHeader>
           <div>
-            <video width={800} ref={videoRef as React.RefObject<HTMLVideoElement>} className="video-js vjs-big-play-centered" />
+            {isLoadingCamera ? (
+              <Skeleton className="rounded-lg">
+                <div className="h-96 w-full"></div>
+              </Skeleton>
+            ) : (
+              <video width={800} ref={videoRef as React.RefObject<HTMLVideoElement>} className="video-js vjs-big-play-centered" />
+            )}
           </div>
         </SheetContent>
       </Sheet>
