@@ -86,7 +86,7 @@ const VaccinationStage = ({ stage, setSelectedVaccinationId, action }: { stage: 
               isDisabled={
                 stage.isDone ||
                 stage.applyStageTime.split("T")[0] > new Date().toISOString().split("T")[0] ||
-                medicineList.some((medicine) => medicine.status === "Đã yêu cầu")
+                medicineList.some((medicine) => medicine.status === "Chờ xử lý" || medicine.status === "Đã hủy")
               }
               onPress={() => {
                 onOpenUpdate();

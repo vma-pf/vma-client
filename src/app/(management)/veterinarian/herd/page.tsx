@@ -1,5 +1,5 @@
 "use client";
-import { Accordion, AccordionItem, Button, Divider, Progress, useDisclosure } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button, Chip, ChipProps, Divider, Progress, useDisclosure } from "@nextui-org/react";
 import Image from "next/image";
 import React from "react";
 import Chart from "@oursrc/components/herds/chart";
@@ -22,9 +22,8 @@ import { calculateProgress } from "@oursrc/lib/utils/dev-utils";
 import { HerdStatistic } from "@oursrc/lib/models/statistic";
 
 const statusColorMap = [
-  { status: "Chưa Kết Thúc", color: "bg-default" },
-  { status: "Đang diễn ra", color: "bg-sky-500" },
-  { status: "Đã Kết Thúc", color: "bg-primary" },
+  { status: "Chưa kết thúc", color: "warning" },
+  { status: "Đã kết thúc", color: "primary" },
 ];
 
 const Herd = () => {
@@ -103,17 +102,14 @@ const Herd = () => {
                     <Divider orientation="horizontal" />
                     <div className="flex justify-between items-center">
                       <p className="my-2">Trạng thái:</p>
-                      <p
-                        className={`my-2 p-1 font-semibold rounded-md ${statusColorMap.find((item) => item.status === selectedHerd?.status)?.color}
-                          `}
-                      >
+                      <Chip color={statusColorMap.find((item) => item.status === selectedHerd?.status)?.color as ChipProps["color"]} variant="flat">
                         {selectedHerd?.status}
-                      </p>
+                      </Chip>
                     </div>
                     <Divider orientation="horizontal" />
                     <div className="flex justify-between items-center">
                       <p className="my-2">Cân nặng trung bình:</p>
-                      <p className="my-2 font-semibold">{selectedHerd?.averageWeight + " kg"}</p>
+                      <p className="my-2 font-semibold">{selectedHerd?.averageWeight.toFixed(2) + " kg"}</p>
                     </div>
                     <Divider orientation="horizontal" />
                     <p className="my-2">Mô tả:</p>

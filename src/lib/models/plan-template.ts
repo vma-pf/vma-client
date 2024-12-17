@@ -22,10 +22,12 @@ export type StageTemplate = {
     id: string | null,
     description: string,
     isDeleted?: boolean,
+    type?: string,
   }[],
   medicineTemplates: MedicineTemplate[],
   id: string | null,
   isDeleted?: boolean
+  type?: string,
 }
 
 export type MedicineTemplate = {

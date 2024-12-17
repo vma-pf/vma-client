@@ -65,7 +65,9 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
   };
 
   const isAllFieldsFilled = () => {
-    return selectedPlanTemplate?.stageTemplates.every((stage) => stage.title && stage.timeSpan && stage.medicineTemplates.length > 0 && stage.toDoTemplates.length > 0)
+    return selectedPlanTemplate?.stageTemplates.every(
+      (stage) => stage.title && stage.timeSpan && stage.medicineTemplates.length > 0 && stage.toDoTemplates.every((todo) => todo.description)
+    )
       ? true
       : false;
   };
@@ -83,6 +85,7 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
         const payload = {
           ...selectedPlanTemplate,
           stageTemplates: selectedPlanTemplate.stageTemplates.map((stage) => {
+            // stage.toDoTemplates.every((todo) => todo.id === null) ? delete stage?.id : null;
             return {
               ...stage,
               id: stage.toDoTemplates.every((todo) => todo.id === null) ? null : stage.id,
@@ -90,7 +93,7 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
           }),
         };
         console.log(payload);
-        const response: ResponseObject<any> = await planTemplateService.updatePlanTemplate(selectedPlanTemplate.id, selectedPlanTemplate);
+        const response: ResponseObject<any> = await planTemplateService.updatePlanTemplate(selectedPlanTemplate.id, payload);
         if (response.isSuccess) {
           toast({
             title: "Cập nhật mẫu thành công",
@@ -210,15 +213,7 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
           if (i === stageIndex) {
             return {
               ...stage,
-              toDoTemplates: stage.toDoTemplates.map((toDo, j) => {
-                if (j === index) {
-                  return {
-                    ...toDo,
-                    isDeleted: true,
-                  };
-                }
-                return toDo;
-              }),
+              toDoTemplates: stage.toDoTemplates.filter((_, j) => j !== index),
             };
           }
           return stage;
@@ -232,15 +227,7 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
       setSelectedPlanTemplate(
         selectedPlanTemplate && {
           ...selectedPlanTemplate,
-          stageTemplates: selectedPlanTemplate.stageTemplates.map((stage) => {
-            if (stage.id === selectedStage.id) {
-              return {
-                ...stage,
-                isDeleted: true,
-              };
-            }
-            return stage;
-          }),
+          stageTemplates: selectedPlanTemplate.stageTemplates.filter((stage) => stage.id !== selectedStage.id),
         }
       );
       onClose();
@@ -284,7 +271,6 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
             {selectedPlanTemplate ? (
               <Accordion variant="splitted">
                 {selectedPlanTemplate.stageTemplates
-                  .filter((stage) => !stage.isDeleted)
                   .sort((a, b) => a.numberOfDays - b.numberOfDays)
                   .map((stage, stageIndex: number) => {
                     return (
@@ -370,46 +356,44 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
                                 <Tooltip color="primary" content={`Các bước cần thực hiện trong giai đoạn ${stageIndex + 1}`}>
                                   <Card className="" radius="sm">
                                     <CardBody>
-                                      {stage.toDoTemplates
-                                        .filter((todo) => !todo.isDeleted)
-                                        .map(
-                                          (
-                                            treatmentToDo: {
-                                              id: string | null;
-                                              description: string;
-                                            },
-                                            index: number
-                                          ) => {
-                                            return (
-                                              <div key={index} className="mb-2">
-                                                <div className="p-0 grid grid-cols-11 gap-2">
-                                                  <Input
-                                                    className="mb-5 col-span-9 w-full"
-                                                    type="text"
-                                                    radius="sm"
-                                                    size="sm"
-                                                    label={`Bước ${index + 1}`}
-                                                    labelPlacement="inside"
-                                                    value={treatmentToDo.description}
-                                                    onChange={(e) => handleToDoChange(e, stageIndex, index)}
-                                                  />
-                                                  <div className="flex gap-2">
-                                                    {stage?.toDoTemplates && stage.toDoTemplates?.length > 1 && (
-                                                      <Button isIconOnly color="danger" size="sm" onClick={() => onDeleteTodoInStage(stageIndex, index)}>
-                                                        <Trash size={20} color="#ffffff" />
-                                                      </Button>
-                                                    )}
-                                                    {index === stage.toDoTemplates.length - 1 && (
-                                                      <Button isIconOnly color="primary" size="sm" onClick={() => onAddTodoInStage(stageIndex)}>
-                                                        <Plus size={20} color="#ffffff" />
-                                                      </Button>
-                                                    )}
-                                                  </div>
+                                      {stage.toDoTemplates?.map(
+                                        (
+                                          treatmentToDo: {
+                                            id: string | null;
+                                            description: string;
+                                          },
+                                          index: number
+                                        ) => {
+                                          return (
+                                            <div key={index} className="mb-2">
+                                              <div className="p-0 grid grid-cols-11 gap-2">
+                                                <Input
+                                                  className="mb-5 col-span-9 w-full"
+                                                  type="text"
+                                                  radius="sm"
+                                                  size="sm"
+                                                  label={`Bước ${index + 1}`}
+                                                  labelPlacement="inside"
+                                                  value={treatmentToDo.description}
+                                                  onChange={(e) => handleToDoChange(e, stageIndex, index)}
+                                                />
+                                                <div className="flex gap-2">
+                                                  {stage?.toDoTemplates && stage.toDoTemplates?.length > 1 && (
+                                                    <Button isIconOnly color="danger" size="sm" onClick={() => onDeleteTodoInStage(stageIndex, index)}>
+                                                      <Trash size={20} color="#ffffff" />
+                                                    </Button>
+                                                  )}
+                                                  {index === stage.toDoTemplates.length - 1 && (
+                                                    <Button isIconOnly color="primary" size="sm" onClick={() => onAddTodoInStage(stageIndex)}>
+                                                      <Plus size={20} color="#ffffff" />
+                                                    </Button>
+                                                  )}
                                                 </div>
                                               </div>
-                                            );
-                                          }
-                                        )}
+                                            </div>
+                                          );
+                                        }
+                                      )}
                                     </CardBody>
                                   </Card>
                                 </Tooltip>

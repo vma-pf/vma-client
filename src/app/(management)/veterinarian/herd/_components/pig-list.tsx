@@ -35,7 +35,7 @@ import { HerdInfo } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
 
 const statusColorMap = [
-  { healthStatus: "Sống", color: "primary" },
+  { healthStatus: "Bình thường", color: "primary" },
   { healthStatus: "Bệnh", color: "warning" },
   { healthStatus: "Chết", color: "danger" },
 ];
@@ -139,7 +139,11 @@ export default function PigList({
 
     switch (columnKey) {
       case "healthStatus":
-        return <p className={`text-${statusColorMap.find((status) => status.healthStatus === cellValue)?.color}`}>{cellValue}</p>;
+        return (
+          <Chip className="capitalize" color={statusColorMap.find((status) => status.healthStatus === cellValue)?.color as ChipProps["color"]} size="sm" variant="flat">
+            {cellValue}
+          </Chip>
+        );
       case "vaccinationDate":
         return new Date(cellValue as string).toLocaleDateString("vi-VN");
       case "actions":
@@ -223,7 +227,7 @@ export default function PigList({
             onValueChange={onSearchChange}
           />
           <div className="flex gap-3">
-            <Dropdown>
+            {/* <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
                   Tình trạng
@@ -243,7 +247,7 @@ export default function PigList({
                   </DropdownItem>
                 ))}
               </DropdownMenu>
-            </Dropdown>
+            </Dropdown> */}
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button endContent={<HiChevronDown className="text-small" />} variant="flat">

@@ -217,7 +217,7 @@ export default function PigList({
             onValueChange={onSearchChange}
           />
           <div className="flex gap-3">
-            <Dropdown>
+            {/* <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
                   Tình trạng
@@ -237,7 +237,7 @@ export default function PigList({
                   </DropdownItem>
                 ))}
               </DropdownMenu>
-            </Dropdown>
+            </Dropdown> */}
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button endContent={<HiChevronDown className="text-small" />} variant="flat">

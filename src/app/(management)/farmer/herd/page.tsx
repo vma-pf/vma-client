@@ -1,5 +1,19 @@
 "use client";
-import { Accordion, AccordionItem, Button, Divider, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Progress, useDisclosure } from "@nextui-org/react";
+import {
+  Accordion,
+  AccordionItem,
+  Button,
+  Chip,
+  ChipProps,
+  Divider,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Progress,
+  useDisclosure,
+} from "@nextui-org/react";
 import Image from "next/image";
 import React from "react";
 import Chart from "@oursrc/components/herds/chart";
@@ -29,9 +43,8 @@ import { FaFileDownload } from "react-icons/fa";
 import { SERVERURL } from "@oursrc/lib/http";
 
 const statusColorMap = [
-  { status: "Chưa Kết Thúc", color: "bg-default" },
-  { status: "Đang diễn ra", color: "bg-sky-500" },
-  { status: "Đã Kết Thúc", color: "bg-primary" },
+  { status: "Chưa kết thúc", color: "warning" },
+  { status: "Đã kết thúc", color: "primary" },
 ];
 
 const Herd = () => {
@@ -146,10 +159,10 @@ const Herd = () => {
             <AccordionItem key="1" title={<p className="text-xl font-bold">Kết quả nuôi</p>} startContent={<LuFileBarChart className="text-primary" size={25} />}>
               <AvgStatistic data={avgStatisticData} />
               <div className="flex items-center">
-                <p className="my-2">Cân nặng trung bình ban đầu:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInStart} kg</p>
+                <p className="my-2">Cân nặng trung bình ban đầu:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInStart.toFixed(2)} kg</p>
               </div>
               <div className="flex items-center">
-                <p className="my-2">Cân nặng trung bình cuối cùng:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInEnd} kg</p>
+                <p className="my-2">Cân nặng trung bình cuối cùng:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInEnd.toFixed(2)} kg</p>
               </div>
               <Button color="primary" endContent={<FaFileDownload size={20} />} onPress={handleDownloadReport}>
                 Tải xuống báo cáo
@@ -205,17 +218,14 @@ const Herd = () => {
                     <Divider orientation="horizontal" />
                     <div className="flex justify-between items-center">
                       <p className="my-2">Trạng thái:</p>
-                      <p
-                        className={`my-2 p-1 font-semibold rounded-md ${statusColorMap.find((item) => item.status === selectedHerd?.status)?.color}
-                          `}
-                      >
+                      <Chip color={statusColorMap.find((item) => item.status === selectedHerd?.status)?.color as ChipProps["color"]} variant="flat">
                         {selectedHerd?.status}
-                      </p>
+                      </Chip>
                     </div>
                     <Divider orientation="horizontal" />
                     <div className="flex justify-between items-center">
                       <p className="my-2">Cân nặng trung bình:</p>
-                      <p className="my-2 font-semibold">{selectedHerd?.averageWeight + " kg"}</p>
+                      <p className="my-2 font-semibold">{selectedHerd?.averageWeight.toFixed(2) + " kg"}</p>
                     </div>
                     <Divider orientation="horizontal" />
                     <p className="my-2">Mô tả:</p>

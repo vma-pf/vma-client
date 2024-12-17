@@ -227,7 +227,7 @@ const Vaccination = () => {
                       </div>
                       <div className="mt-3 flex justify-between">
                         <p className="text-md">Trọng lượng trung bình:</p>
-                        <p className="text-lg font-semibold">{herd.averageWeight} kg</p>
+                        <p className="text-lg font-semibold">{herd.averageWeight.toFixed(2)} kg</p>
                       </div>
                       {/* <div className="mt-3 flex justify-between">
                         <Accordion variant="splitted" defaultExpandedKeys={["1"]}>

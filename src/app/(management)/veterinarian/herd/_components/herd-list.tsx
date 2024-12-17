@@ -131,11 +131,11 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Chưa Kết Thúc":
-        return "default";
-      case "Đang Diễn Ra":
+      case "Chưa kết thúc":
         return "warning";
-      case "Đã Kết Thúc":
+      case "Đang diễn ra":
+        return "primary";
+      case "Đã kết thúc":
         return "success";
       default:
         return "default";
@@ -150,6 +150,8 @@ const HerdList = ({ setSelectedHerd }: { setSelectedHerd: React.Dispatch<React.S
       case "expectedEndDate":
       case "actualEndDate":
         return dateConverter(cellValue as string);
+      case "averageWeight":
+        return Number(cellValue).toFixed(2);
       case "status":
         return (
           <Chip className="capitalize" color={getStatusColor(cellValue as string)} size="sm" variant="flat">
