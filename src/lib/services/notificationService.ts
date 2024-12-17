@@ -23,21 +23,8 @@ export const notificationService = {
   },
   detectPigByVideo: async (model: { video: Blob }) => {
     const formData = new FormData();
-    formData.append("video", model.video);
+    formData.append("formFile", model.video);
 
-    try {
-      const response = await fetch(
-        "http://smartpigfarm.ddns.net/process_helath_classification_video",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-      if (!response.ok) throw new Error("Network response was not ok");
-      return response.json();
-    } catch (error) {
-      console.error("Error:", error);
-      throw error;
-    }
+    return http.post("api/test/process-video", formData);
   },
 };

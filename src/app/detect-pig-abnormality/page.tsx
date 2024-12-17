@@ -3,6 +3,7 @@ import { Button, Card, CardBody, Spinner } from "@nextui-org/react";
 import AttachVideo from "@oursrc/components/ui/attach-media/attach-video";
 import { toast } from "@oursrc/hooks/use-toast";
 import { notificationService } from "@oursrc/lib/services/notificationService";
+import { RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -27,7 +28,7 @@ const Home = () => {
       };
       const res = await notificationService.detectPigByVideo(request);
       if (res) {
-        setResult(res);
+        setResult(res.data);
         toast({
           variant: "success",
           title: "Xử lý quá trình phát hiện bệnh thành công",
@@ -36,7 +37,7 @@ const Home = () => {
       }
     } catch (error) {
       toast({
-        variant: "destructive", 
+        variant: "destructive",
         title: "Có lỗi xảy ra khi xử lý video! Vui lòng thử lại sau",
       });
       setSelectedFile(undefined);
@@ -62,56 +63,68 @@ const Home = () => {
               VMA-PF - PHÁT HIỆN DẤU HIỆU BẤT THƯỜNG
             </h2>
 
-            <AttachVideo
+            {!result && (<AttachVideo
               fileId="1"
               selectedFile={selectedFile}
               setSelectedFile={setSelectedFile}
-            />
+            />)}
             {result && (
-              <div className="space-y-4 mt-4 p-4 border rounded-lg">
-                <h3 className="text-xl font-semibold">Kết quả phân tích</h3>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Trạng thái</p>
-                    <p className="font-medium">{result.abnormal}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500">Thời gian</p>
-                    <p className="font-medium">{result.time}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500">Số heo khỏe mạnh</p>
-                    <p className="font-medium">{result.healthy_pig}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-500">Số heo bệnh</p>
-                    <p className="font-medium">{result.sick_pig}</p>
-                  </div>
+              <div>
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="flat"
+                    color="warning"
+                    onPress={() => setResult(undefined)}
+                  >
+                    <RotateCcw size={16} className="mr-2" />
+                  </Button>
                 </div>
+                <div className="space-y-4 mt-4 p-4 border rounded-lg">
+                  <h3 className="text-xl font-semibold">Kết quả phân tích</h3>
 
-                {result.image?.length > 0 && (
-                  <div>
-                    <p className="text-sm text-gray-500 mb-2">
-                      Hình ảnh phân tích
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                        {result.image.map((img, index) => (
-                        <div key={index} className="relative aspect-video">
-                          <Image
-                          src={img}
-                          alt={`Analysis ${index + 1}`}
-                          fill={true}
-                          className="rounded-lg object-cover"
-                          />
-                        </div>
-                        ))}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500">Trạng thái</p>
+                      <p className="font-medium">{result.abnormal}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-gray-500">Thời gian</p>
+                      <p className="font-medium">{result.time}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-gray-500">Số heo khỏe mạnh</p>
+                      <p className="font-medium">{result.healthy_pig}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-gray-500">Số heo bệnh</p>
+                      <p className="font-medium">{result.sick_pig}</p>
                     </div>
                   </div>
-                )}
+
+                  {result.image?.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-500 mb-2">
+                        Hình ảnh phân tích
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {result.image.map((img, index) => (
+                          <div key={index} className="relative aspect-video">
+                            <Image
+                              src={img}
+                              alt={`Analysis ${index + 1}`}
+                              fill={true}
+                              className="rounded-lg object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
