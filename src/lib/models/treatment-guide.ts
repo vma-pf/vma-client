@@ -12,21 +12,8 @@ export type TreatmentGuide = {
 }
 
 export type CreateTreatmentGuide = {
-  diseaseTitle: string,
-  diseaseDescription?: string,
-  diseaseSymptoms?: string,
-  treatmentTitle?: string,
-  treatmentDescription?: string,
-  diseaseType?: string,
+  title: string,
+  description: string,
   cure: string,
-}
-
-export type UpdateTreatmentGuide = {
-  diseaseTitle: string,
-  diseaseDescription?: string,
-  diseaseSymptoms?: string,
-  treatmentTitle?: string,
-  treatmentDescription?: string,
-  diseaseType?: string,
-  cure: string,
+  commonDiseaseId: string,
 }

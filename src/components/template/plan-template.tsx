@@ -254,7 +254,15 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
     <div>
       <div className="mb-3 grid grid-cols-4 gap-2">
         {planTemplate.map((template) => (
-          <Card className="col-span-1" key={template.id} isPressable onPress={() => setSelectedPlanTemplate(template)}>
+          <Card
+            className="col-span-1"
+            key={template.id}
+            isPressable
+            onPress={() => setSelectedPlanTemplate(template)}
+            classNames={{
+              base: selectedPlanTemplate?.id === template.id ? "bg-emerald-100" : "",
+            }}
+          >
             <CardBody>
               <Image className="mx-auto" src="/assets/vma-logo.png" alt="plan-template" width={50} height={50} />
               {template.name}
