@@ -39,14 +39,14 @@ const FilterMedicineRequest = ({
     try {
       setLoading(true);
       if (type === "vaccination") {
-        const res: ResponseObjectList<VaccinationData> = await vaccinationService.getAllVaccinationPlanCaching(1, 9999);
+        const res: ResponseObjectList<VaccinationData> = await vaccinationService.getAllVaccinationPlan(1, 9999);
         if (res.isSuccess) {
           setVaccinationList(res.data.data.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((vaccination) => vaccination) ?? []);
         } else {
           console.log(res.errorMessage);
         }
       } else {
-        const res: ResponseObjectList<TreatmentData> = await treatmentPlanService.getAllCaching(1, 9999);
+        const res: ResponseObjectList<TreatmentData> = await treatmentPlanService.getAll(1, 9999);
         if (res.isSuccess) {
           setTreatmentList(res.data.data.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()).map((treatment) => treatment) ?? []);
         } else {
