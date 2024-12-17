@@ -215,7 +215,7 @@ const Herd = () => {
       }
 
       // Only proceed to end herd if all checkups were successful
-      const endHerdRes = await herdService.endHerd( "");
+      const endHerdRes = await herdService.endHerd(selectedHerd?.id ?? "");
       if (!endHerdRes.isSuccess) {
         toast({
           title: "Kết thúc đàn thất bại", 
