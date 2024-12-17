@@ -355,7 +355,7 @@ const Herd = () => {
             <p className="text-2xl font-bold mb-3">Danh sách heo</p>
             {/* <SheetTrigger asChild> */}
             {selectedHerd && (
-              <Button color="primary" onClick={() => onOpenCheckup()}>
+              <Button color="primary" onClick={() => onOpenCheckup()} isDisabled={selectedHerd?.status === "Đã kết thúc"}>
                 Kiểm tra sức khỏe
               </Button>
             )}

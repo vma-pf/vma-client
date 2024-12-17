@@ -34,10 +34,16 @@ import { pigService } from "@oursrc/lib/services/pigService";
 import { HerdInfo } from "@oursrc/lib/models/herd";
 import { Pig } from "@oursrc/lib/models/pig";
 
-const statusColorMap = [
+const healthStatusColorMap = [
   { healthStatus: "Bình thường", color: "primary" },
   { healthStatus: "Bệnh", color: "warning" },
   { healthStatus: "Chết", color: "danger" },
+];
+
+const statusColorMap = [
+  { status: 0, color: "danger" },
+  { status: 1, color: "success" },
+  { status: 2, color: "warning" },
 ];
 
 const INITIAL_VISIBLE_COLUMNS = ["breed", "cageCode", "pigCode", "weight", "height", "width", "healthStatus", "actions"];
@@ -138,10 +144,24 @@ export default function PigList({
     const cellValue = pig[columnKey as keyof Pig];
 
     switch (columnKey) {
+      case "cageCode":
+      case "cageId":
+        return cellValue ? cellValue : <p className="text-danger">Heo đã không còn ở trong chuồng</p>;
       case "healthStatus":
         return (
-          <Chip className="capitalize" color={statusColorMap.find((status) => status.healthStatus === cellValue)?.color as ChipProps["color"]} size="sm" variant="flat">
+          <Chip
+            className="capitalize"
+            color={healthStatusColorMap.find((status) => status.healthStatus === cellValue)?.color as ChipProps["color"]}
+            size="sm"
+            variant="flat"
+          >
             {cellValue}
+          </Chip>
+        );
+      case "status":
+        return (
+          <Chip className="capitalize" color={statusColorMap.find((status) => status.status === cellValue)?.color as ChipProps["color"]} size="sm" variant="flat">
+            {cellValue === 0 ? "Đã chết" : cellValue === 1 ? "Còn sống" : "Đã bán"}
           </Chip>
         );
       case "vaccinationDate":

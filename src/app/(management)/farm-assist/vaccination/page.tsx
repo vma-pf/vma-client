@@ -125,7 +125,7 @@ const Vaccination = () => {
                       <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.startDate)}</p>
                       <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.expectedEndDate)}</p>
                     </div>
-                    {vaccinationData.actualEndDate && vaccinationData.status !== "Đã hoàn thành" && (
+                    {vaccinationData.actualEndDate && vaccinationData.status !== "Đang thực hiện" && (
                       <div className="flex justify-between">
                         <p className="text-md mt-3">Ngày kết thúc (thực tế):</p>
                         <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.actualEndDate)}</p>
