@@ -1,8 +1,13 @@
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
-import { Button, Divider, Input, Spinner, Textarea } from "@nextui-org/react";
+import { Button, Card, CardBody, Divider, Input, Skeleton, Spinner, Textarea } from "@nextui-org/react";
 import { toast } from "@oursrc/hooks/use-toast";
+import LoadingStateContext from "@oursrc/lib/context/loading-state-context";
+import { CommonDisease } from "@oursrc/lib/models/common-disease";
+import { ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { TreatmentGuide } from "@oursrc/lib/models/treatment-guide";
+import { commonDiseasesService } from "@oursrc/lib/services/commonDiseaseService";
 import { treatmentGuideService } from "@oursrc/lib/services/treatmentGuideService";
+import { dateTimeConverter } from "@oursrc/lib/utils";
 import React from "react";
 import { useForm } from "react-hook-form";
 
@@ -24,14 +29,13 @@ const ModalTreamentGuide = ({
     watch,
     formState: { errors },
   } = useForm();
-  const [loading, setLoading] = React.useState<boolean | undefined>(false);
+  const { loading, setLoading } = React.useContext(LoadingStateContext);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [commonDiseases, setCommonDiseases] = React.useState<CommonDisease[]>([]);
+  const [selectedCommonDisease, setSelectedCommonDisease] = React.useState<CommonDisease | null>(null);
 
-  const diseaseTitle = watch("diseaseTitle");
-  const diseaseDescription = watch("diseaseDescription");
-  const diseaseSymptoms = watch("diseaseSymptoms");
-  const treatmentTitle = watch("treatmentTitle");
-  const treatmentDescription = watch("treatmentDescription");
-  const diseaseType = watch("diseaseType");
+  const title = watch("title");
+  const description = watch("description");
   const cure = watch("cure");
 
   const getTitle = () => {
@@ -42,6 +46,22 @@ const ModalTreamentGuide = ({
         return "Cập nhật";
       case "delete":
         return "Xóa";
+    }
+  };
+
+  const fetchCommonDiseases = async () => {
+    try {
+      setIsLoading(true);
+      const res: ResponseObjectList<CommonDisease> = await commonDiseasesService.getByPagination(1, 1000);
+      if (res.isSuccess) {
+        setCommonDiseases(res.data.data);
+      } else {
+        console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,11 +91,17 @@ const ModalTreamentGuide = ({
   const handleSubmitForm = async (request: any) => {
     try {
       setLoading(true);
+      const payload = {
+        title: request.title,
+        description: request.description,
+        cure: request.cure,
+        commonDiseaseId: selectedCommonDisease?.id || "",
+      };
       const response =
         context === "create"
-          ? await treatmentGuideService.create(request)
+          ? await treatmentGuideService.create(payload)
           : context === "edit"
-          ? await treatmentGuideService.update(data?.id || "", request)
+          ? await treatmentGuideService.update(data?.id || "", payload)
           : treatmentGuideService.delete(data?.id || "");
       if (response && response.isSuccess) {
         toast({
@@ -97,180 +123,151 @@ const ModalTreamentGuide = ({
   };
 
   React.useEffect(() => {
-    setValue("diseaseTitle", data?.diseaseTitle ? data?.diseaseTitle : "");
-    setValue("diseaseDescription", data?.diseaseDescription ? data?.diseaseDescription : "");
-    setValue("diseaseSymptoms", data?.diseaseSymptoms ? data?.diseaseSymptoms : "");
-    setValue("treatmentTitle", data?.treatmentTitle ? data?.treatmentTitle : "");
-    setValue("treatmentDescription", data?.treatmentDescription ? data?.treatmentDescription : "");
-    setValue("diseaseType", data?.diseaseType ? data?.diseaseType : "");
-    setValue("cure", data?.cure ? data?.cure : "");
-  }, []);
+    setValue("title", data?.treatmentTitle ?? "");
+    setValue("description", data?.treatmentDescription ?? "");
+    setValue("cure", data?.cure ?? "");
+  }, [data, setValue]);
 
+  React.useEffect(() => {
+    fetchCommonDiseases();
+  }, []);
   return (
-    <div>
-      {loading ? (
-        <Spinner />
-      ) : (
-        <Modal
-          hideCloseButton
-          backdrop="opaque"
-          isOpen={isOpen}
-          size={context === "delete" ? "lg" : "4xl"}
-          scrollBehavior="inside"
-          onClose={() => {
-            if (diseaseTitle || diseaseDescription || diseaseSymptoms || treatmentTitle || treatmentDescription || diseaseType) {
-              onClose();
-            }
-          }}
-        >
-          <form onSubmit={handleSubmit(handleSubmitForm)}>
-            {context !== "delete" ? (
-              <ModalContent>
-                <ModalHeader className="flex flex-col gap-1">
-                  {getTitle()}
-                  <Divider orientation="horizontal" />
-                </ModalHeader>
-                <ModalBody>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Tiêu đề"
-                      placeholder="Nhập tiêu đề"
-                      labelPlacement="outside"
-                      isRequired
-                      value={treatmentTitle || ""}
-                      isInvalid={errors.treatmentTitle ? true : treatmentTitle ? false : true}
-                      errorMessage="Tiêu đề không được để trống"
-                      {...register("treatmentTitle", { required: true })}
-                    />
-                    <Input
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Mức độ"
-                      placeholder="Nhập mức độ"
-                      labelPlacement="outside"
-                      isRequired
-                      value={diseaseType || ""}
-                      isInvalid={errors.diseaseType ? true : diseaseType ? false : true}
-                      errorMessage="Mức độ không được để trống"
-                      {...register("diseaseType", { required: true })}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1">
-                    <Textarea
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Mô tả ngắn"
-                      placeholder="Nhập mô tả ngắn"
-                      labelPlacement="outside"
-                      isRequired
-                      value={treatmentDescription || ""}
-                      isInvalid={errors.treatmentDescription ? true : treatmentDescription ? false : true}
-                      errorMessage="Mô tả không được để trống"
-                      {...register("treatmentDescription", { required: true })}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Tên bệnh"
-                      placeholder="Nhập tên bệnh"
-                      labelPlacement="outside"
-                      isRequired
-                      value={diseaseTitle || ""}
-                      isInvalid={errors.diseaseTitle ? true : diseaseTitle ? false : true}
-                      errorMessage="Tên bệnh không được để trống"
-                      {...register("diseaseTitle", { required: true })}
-                    />
-                    <Input
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Triệu chứng"
-                      placeholder="Nhập triệu chứng"
-                      labelPlacement="outside"
-                      isRequired
-                      value={diseaseSymptoms || ""}
-                      isInvalid={errors.diseaseSymptoms ? true : diseaseSymptoms ? false : true}
-                      errorMessage="Triệu chứng không được để trống"
-                      {...register("diseaseSymptoms", { required: true })}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1">
-                    <Textarea
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Mô tả bệnh"
-                      placeholder="Nhập mô tả bệnh"
-                      labelPlacement="outside"
-                      isRequired
-                      value={diseaseDescription || ""}
-                      isInvalid={errors.diseaseDescription ? true : diseaseDescription ? false : true}
-                      errorMessage="Mô tả bệnh không được để trống"
-                      {...register("diseaseDescription", { required: true })}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 gap-1">
-                    <Textarea
-                      className="mb-5"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Hướng dẫn chữa bệnh"
-                      placeholder="Hướng dẫn chữa bệnh"
-                      labelPlacement="outside"
-                      isRequired
-                      value={cure || ""}
-                      isInvalid={errors.cure ? true : cure ? false : true}
-                      errorMessage="Hướng dẫn chữa bệnh không được để trống"
-                      {...register("cure", { required: true })}
-                    />
-                  </div>
-                </ModalBody>
-                <ModalFooter>
-                  <Button color="danger" onPress={onClose}>
-                    <p className="text-white">Hủy</p>
-                  </Button>
-                  <Button variant="solid" color="primary" isLoading={loading} type="submit">
-                    <p className="text-white">{getTitle()}</p>
-                  </Button>
-                </ModalFooter>
-              </ModalContent>
-            ) : (
-              <ModalContent>
-                <ModalHeader>{getTitle()}</ModalHeader>
-                <ModalBody>
-                  <p className="text-center">
-                    Bạn có chắc chắn muốn xóa <strong className="text-xl">{data?.diseaseTitle}</strong> không?
-                  </p>
-                </ModalBody>
-                <ModalFooter>
-                  <Button color="danger" variant="light" onPress={onClose}>
-                    Hủy
-                  </Button>
-                  <Button color="primary" onPress={handleDelete}>
-                    Xóa
-                  </Button>
-                </ModalFooter>
-              </ModalContent>
-            )}
-          </form>
-        </Modal>
-      )}
-    </div>
+    <Modal hideCloseButton backdrop="opaque" isOpen={isOpen} size={context === "delete" ? "lg" : "4xl"} scrollBehavior="inside" onClose={() => onClose()}>
+      <form
+        onSubmit={handleSubmit(handleSubmitForm)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+        }}
+      >
+        {context !== "delete" ? (
+          <ModalContent>
+            <ModalHeader className="flex flex-col gap-1">
+              <p className="text-xl font-semibold">{getTitle() + " hướng dẫn điều trị"}</p>
+              <Divider orientation="horizontal" />
+            </ModalHeader>
+            <ModalBody>
+              <Input
+                className="mb-5"
+                type="text"
+                radius="sm"
+                size="lg"
+                label="Tiêu đề"
+                placeholder="Nhập tiêu đề"
+                labelPlacement="outside"
+                isRequired
+                value={title || ""}
+                isInvalid={errors.title ? true : false}
+                errorMessage="Tiêu đề không được để trống"
+                {...register("title", { required: true })}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <Textarea
+                  className="mb-5"
+                  type="text"
+                  radius="sm"
+                  size="lg"
+                  label="Mô tả bệnh"
+                  placeholder="Nhập mô tả bệnh"
+                  labelPlacement="outside"
+                  isRequired
+                  value={description || ""}
+                  isInvalid={errors.description ? true : false}
+                  errorMessage="Mô tả bệnh không được để trống"
+                  {...register("description", { required: true })}
+                />
+                <Textarea
+                  className="mb-5"
+                  type="text"
+                  radius="sm"
+                  size="lg"
+                  label="Hướng dẫn chữa bệnh"
+                  placeholder="Hướng dẫn chữa bệnh"
+                  labelPlacement="outside"
+                  isRequired
+                  value={cure || ""}
+                  isInvalid={errors.cure ? true : false}
+                  errorMessage="Hướng dẫn chữa bệnh không được để trống"
+                  {...register("cure", { required: true })}
+                />
+              </div>
+              <p className="text-lg font-semibold">Danh sách bệnh thường gặp</p>
+              <div className="grid grid-cols-3 gap-3">
+                {isLoading ? (
+                  [...Array(9)].map((_, idx) => (
+                    <div key={idx} className="m-2 border-2 rounded-lg">
+                      <Skeleton className="rounded-lg">
+                        <div className="h-36 w-full"></div>
+                      </Skeleton>
+                    </div>
+                  ))
+                ) : commonDiseases.length > 0 ? (
+                  commonDiseases.map((x) => (
+                    <Card
+                      key={x.id}
+                      isPressable
+                      onPress={() => setSelectedCommonDisease(x)}
+                      classNames={{
+                        base: selectedCommonDisease?.id === x.id ? "bg-emerald-100" : "",
+                      }}
+                    >
+                      <CardBody>
+                        <p className="text-lg font-semibold">{x.title}</p>
+                        <Divider className="my-3" orientation="horizontal" />
+                        <div>
+                          <strong>Mức độ: </strong>
+                          <span>{x.diseaseType}</span>
+                        </div>
+                        <div>
+                          <strong>Tạo lúc: </strong>
+                          <span>{dateTimeConverter(x.createdAt)}</span>
+                        </div>
+                        <div>
+                          <strong>Lần cuối cập nhật: </strong>
+                          <span>{dateTimeConverter(x.lastUpdatedAt)}</span>
+                        </div>
+                        <div>
+                          <strong>Mô tả bệnh: </strong>
+                          <span>{x.description}</span>
+                        </div>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center">Không có bệnh nào</div>
+                )}
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="danger" onPress={onClose}>
+                <p className="text-white">Hủy</p>
+              </Button>
+              <Button variant="solid" color="primary" isLoading={loading} type="submit" isDisabled={Object.keys(errors).length > 0 || !selectedCommonDisease}>
+                <p className="text-white">{getTitle()}</p>
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        ) : (
+          <ModalContent>
+            <ModalHeader>{getTitle()}</ModalHeader>
+            <ModalBody>
+              <p className="text-center">
+                Bạn có chắc chắn muốn xóa <strong className="text-xl">{data?.diseaseTitle}</strong> không?
+              </p>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="danger" variant="light" onPress={onClose}>
+                Hủy
+              </Button>
+              <Button color="primary" onPress={handleDelete}>
+                Xóa
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        )}
+      </form>
+    </Modal>
   );
 };
 export default ModalTreamentGuide;

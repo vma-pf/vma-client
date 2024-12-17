@@ -134,7 +134,7 @@ const ModalCommonDisease = ({
             {context !== "delete" ? (
               <ModalContent>
                 <ModalHeader className="flex flex-col gap-1">
-                  {getTitle()}
+                  <p className="text-xl font-semibold">{getTitle() + " bệnh thường gặp"}</p>
                   <Divider orientation="horizontal" />
                 </ModalHeader>
                 <ModalBody>

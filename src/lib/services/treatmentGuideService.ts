@@ -3,7 +3,6 @@ import http from "@oursrc/lib/http";
 import { ResponseObjectList } from "../models/response-object";
 import {
   CreateTreatmentGuide,
-  UpdateTreatmentGuide,
 } from "../models/treatment-guide";
 
 const endpoint = "api/treatmentGuides";
@@ -18,22 +17,8 @@ export const treatmentGuideService = {
     }),
   getById: (id: string) => http.get(endpoint + `/${id}`),
   create: (model: CreateTreatmentGuide) =>
-    http.post(endpoint, {
-      diseaseTitle: model.diseaseTitle,
-      diseaseDescription: model.diseaseDescription,
-      diseaseSymptoms: model.diseaseSymptoms,
-      treatmentTitle: model.treatmentTitle,
-      treatmentDescription: model.treatmentDescription,
-      diseaseType: model.diseaseType,
-    }),
-  update: (id: string, model: UpdateTreatmentGuide) =>
-    http.put(endpoint + `/${id}`, {
-      diseaseTitle: model.diseaseTitle,
-      diseaseDescription: model.diseaseDescription,
-      diseaseSymptoms: model.diseaseSymptoms,
-      treatmentTitle: model.diseaseTitle,
-      treatmentDescription: model.treatmentDescription,
-      diseaseType: model.diseaseType,
-    }),
+    http.post(endpoint, model),
+  update: (id: string, model: CreateTreatmentGuide) =>
+    http.put(endpoint + `/${id}`, model),
   delete: (id: string) => http.delete(endpoint + `/${id}`),
 };
