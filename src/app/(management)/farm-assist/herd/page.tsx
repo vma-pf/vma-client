@@ -3,6 +3,8 @@ import {
   Accordion,
   AccordionItem,
   Button,
+  Card,
+  CardBody,
   Chip,
   ChipProps,
   Divider,
@@ -40,7 +42,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@our
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import { herdService } from "@oursrc/lib/services/herdService";
 import HerdDetail from "@oursrc/components/herds/modals/herd-detail";
-import { EyeIcon } from "lucide-react";
+import { EyeIcon, Plus, Trash2Icon } from "lucide-react";
 import { calculateProgress } from "@oursrc/lib/utils/dev-utils";
 import { EndHerdStatistic, HerdStatistic } from "@oursrc/lib/models/statistic";
 import { AvgStatistic } from "./_components/avg-statistic";
@@ -67,6 +69,13 @@ export type SensorData = {
   Height?: number | null;
   Width?: number | null;
 };
+interface PigCheckup {
+  pigId: string;
+  weight: number;
+  height: number;
+  width: number;
+  note: string;
+}
 
 const Herd = () => {
   const { toast } = useToast();
@@ -86,6 +95,15 @@ const Herd = () => {
   const [pigInfo, setPigInfo] = React.useState<SensorData | undefined>(undefined);
   const [pigOptions, setPigOptions] = React.useState<Pig[]>([]);
   const [isPigLoading, setIsPigLoading] = React.useState(false);
+  const [pigCheckups, setPigCheckups] = useState<PigCheckup[]>([
+    {
+      pigId: "",
+      weight: 0,
+      height: 0,
+      width: 0,
+      note: "",
+    },
+  ]);
 
   const {
     register,
@@ -163,28 +181,77 @@ const Herd = () => {
   const handleEndHerd = async () => {
     try {
       setLoading(true);
-      const res: ResponseObject<any> = await herdService.endHerd(selectedHerd?.id ?? "");
-      if (res.isSuccess) {
-        setIsEndHerd(true);
-        onCloseEndHerd();
-        setSelectedHerd(undefined);
-        setStatisticData(undefined);
-        toast({
-          title: "Kết thúc đàn thành công",
-          variant: "success",
+      let remainingCheckups = [...pigCheckups];
+
+      // Process all pig checkups sequentially
+      for (let i = remainingCheckups.length - 1; i >= 0; i--) {
+        const checkup = remainingCheckups[i];
+        
+        const res = await monitorDevelopmentLogService.createMonitoringLog({
+          pigId: checkup.pigId,
+          weight: checkup.weight,
+          height: checkup.height,
+          width: checkup.width,
+          note: checkup.note,
+          status: 0,
         });
-      } else {
-        console.log(res.errorMessage);
+
+        if (res.isSuccess) {
+          // Remove successful checkup
+          remainingCheckups.splice(i, 1);
+          setPigCheckups(remainingCheckups);
+          
+          toast({
+            title: "Cập nhật thành công",
+            variant: "success",
+          });
+        } else {
+          toast({
+            title: res.errorMessage || "Nhập thông tin không thành công",
+            variant: "destructive",
+          });
+          throw new Error(res.errorMessage || "Failed to create monitoring log");
+        }
+      }
+
+      // Only proceed to end herd if all checkups were successful
+      const endHerdRes = await herdService.endHerd( "");
+      if (!endHerdRes.isSuccess) {
         toast({
-          title: "Kết thúc đàn thất bại",
+          title: "Kết thúc đàn thất bại", 
           variant: "destructive",
         });
+        throw new Error(endHerdRes.errorMessage || "Failed to end herd");
       }
+
+      // Success - update UI state
+      setIsEndHerd(true);
+      onCloseEndHerd();
+      setSelectedHerd(undefined);
+      setStatisticData(undefined);
+      toast({
+        title: "Kết thúc đàn thành công",
+        variant: "success", 
+      });
+
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddCheckup = () => {
+    setPigCheckups([
+      ...pigCheckups,
+      {
+        pigId: "",
+        weight: 0,
+        height: 0,
+        width: 0,
+        note: "",
+      },
+    ]);
   };
 
   const fetchPigs = async () => {
@@ -392,97 +459,165 @@ const Herd = () => {
                   </div>
                   <hr />
                   <p className="text-lg font-semibold">Cập nhật thông tin tăng trưởng lần cuối</p>
-                  <div className="mb-5">
-                    <Select
-                      className="w-full"
-                      items={pigOptions}
-                      label="Mã heo"
-                      placeholder="Chọn mã heo"
-                      labelPlacement="outside"
-                      isRequired
-                      isLoading={isPigLoading}
-                      selectedKeys={pigCode ? new Set([pigCode]) : new Set()}
-                      onSelectionChange={(keys) => {
-                        const selectedKey = Array.from(keys)[0]?.toString();
-                        setValue("pigCode", selectedKey || "");
-                      }}
-                    >
-                      {(pig) => (
-                        <SelectItem key={pig.pigCode} value={pig.pigCode} textValue={pig.pigCode}>
-                          {pig.pigCode.length > 5 ? pig.pigCode.substring(0, 5) + "..." : pig.pigCode} (Cân nặng: {pig.weight}, Chiều cao: {pig.height}, Chiều rộng:{" "}
-                          {pig.width})
-                        </SelectItem>
-                      )}
-                    </Select>
+                  <div>
+                    <div className="flex justify-end mb-4">
+                      <Button
+                        color="primary" 
+                        startContent={<Plus size={20} />}
+                        onPress={handleAddCheckup}
+                      >
+                        Thêm thông tin  
+                      </Button>
+                    </div>
                   </div>
-                  <div className="mb-5 flex">
-                    <Input
-                      className="w-1/2 mr-2"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Cân nặng"
-                      placeholder="Nhập cân nặng"
-                      labelPlacement="outside"
-                      isRequired
-                      endContent="kg"
-                      isInvalid={errors.weight ? true : false}
-                      errorMessage="Cân nặng không được để trống"
-                      value={weight || ""}
-                      onValueChange={(e) => handleWeightChange(e)}
-                    />
-                    <Input
-                      className="w-1/2"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Chiều cao"
-                      placeholder="Nhập chiều cao"
-                      labelPlacement="outside"
-                      isRequired
-                      endContent="cm"
-                      isInvalid={errors.height ? true : false}
-                      errorMessage="Chiều cao không được để trống"
-                      value={height || ""}
-                      onValueChange={(e) => handleHeightChange(e)}
-                    />
-                  </div>
-                  <div className="mb-5 flex">
-                    <Input
-                      className="w-1/2"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Chiều rộng"
-                      placeholder="Nhập chiều rộng"
-                      labelPlacement="outside"
-                      isRequired
-                      endContent="cm"
-                      isInvalid={errors.width ? true : false}
-                      errorMessage="Chiều rộng không được để trống"
-                      value={width || ""}
-                      onValueChange={(e) => handleWidthChange(e)}
-                    />
-                    <Textarea
-                      className="w-1/2 ml-2"
-                      type="text"
-                      radius="sm"
-                      size="lg"
-                      label="Ghi chú"
-                      placeholder="Nhập ghi chú"
-                      labelPlacement="outside"
-                      isRequired
-                      isInvalid={errors.note ? true : false}
-                      errorMessage="Ghi chú không được để trống"
-                      value={note || ""}
-                      {...register("note", { required: true })}
-                    />
-                  </div>
+                  {pigCheckups.map((checkup, index) => (
+                    <Card key={index} className="mb-4">
+                      <CardBody>
+                        <div className="flex justify-end mb-2">
+                          {pigCheckups.length > 1 && (
+                            <Button
+                              color="danger"
+                              size="sm"
+                              isIconOnly
+                              onPress={() => {
+                                const updatedCheckups = pigCheckups.filter((_, i) => i !== index);
+                                setPigCheckups(updatedCheckups);
+                              }}
+                            >
+                              <Trash2Icon size={20} />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <Select
+                            className="w-full mb-3"
+                            items={pigOptions}
+                            label="Mã heo"
+                            placeholder="Chọn mã heo"
+                            labelPlacement="outside"
+                            isRequired
+                            isLoading={isPigLoading}
+                            selectionMode="single"
+                            selectedKeys={checkup.pigId ? new Set([checkup.pigId]) : new Set()}
+                            onSelectionChange={(keys) => {
+                              const selectedKey = Array.from(keys)[0]?.toString();
+                              const updatedCheckups = [...pigCheckups];
+                              updatedCheckups[index] = {
+                                ...updatedCheckups[index],
+                                pigId: selectedKey || ""
+                              };
+                              setPigCheckups(updatedCheckups);
+                            }}
+                          >
+                            {(pig) => (
+                              <SelectItem
+                                key={pig.id}
+                                value={pig.id}
+                                textValue={pig.pigCode}
+                                isDisabled={pigCheckups.some((checkup) => checkup.pigId === pig.id)}
+                              >
+                                {pig.pigCode.length > 5 ? pig.pigCode.substring(0, 5) + "..." : pig.pigCode}{" "}
+                                (Cân nặng: {pig.weight}, Chiều cao: {pig.height}, Chiều rộng: {pig.width})
+                              </SelectItem>
+                            )}
+                          </Select>
+                        </div>
+                        <div className="mb-5 flex">
+                          <Input
+                            className="w-1/2 mr-2"
+                            type="number"
+                            radius="sm"
+                            size="lg"
+                            label="Cân nặng"
+                            placeholder="Nhập cân nặng"
+                            labelPlacement="outside"
+                            isRequired
+                            endContent="kg"
+                            min={0}
+                            isInvalid={!!errors[`checkups.${index}.weight`]}
+                            errorMessage="Cân nặng không được để trống"
+                            value={checkup.weight.toString() || ""}
+                            onValueChange={(value) => {
+                              const numValue = Math.max(0, Number(value));
+                              const updatedCheckups = [...pigCheckups];
+                              updatedCheckups[index] = {
+                                ...updatedCheckups[index],
+                                weight: numValue
+                              };
+                              setPigCheckups(updatedCheckups);
+                            }}
+                          />
+                          <Input
+                            className="w-1/2"
+                            type="number"
+                            radius="sm"
+                            size="lg"
+                            label="Chiều cao"
+                            placeholder="Nhập chiều cao" 
+                            labelPlacement="outside"
+                            isRequired
+                            endContent="cm"
+                            min={0}
+                            isInvalid={!!errors[`checkups.${index}.height`]}
+                            errorMessage="Chiều cao không được để trống"
+                            value={checkup.height.toString() || ""}
+                            onValueChange={(value) => {
+                              const numValue = Math.max(0, Number(value));
+                              const updatedCheckups = [...pigCheckups];
+                              updatedCheckups[index] = {
+                                ...updatedCheckups[index],
+                                height: numValue
+                              };
+                              setPigCheckups(updatedCheckups);
+                            }}
+                          />
+                        </div>
+                        <div className="mb-5 flex">
+                          <Input
+                            className="w-1/2 mr-2"
+                            type="number"
+                            radius="sm"
+                            size="lg"
+                            label="Chiều rộng"
+                            placeholder="Nhập chiều rộng"
+                            labelPlacement="outside"
+                            isRequired 
+                            endContent="cm"
+                            isInvalid={!!errors[`checkups.${index}.width`]}
+                            errorMessage="Chiều rộng không được để trống"
+                            value={checkup.width.toString() || ""}
+                            onValueChange={(value) => {
+                              const numValue = Math.max(0, Number(value));
+                              const updatedCheckups = [...pigCheckups];
+                              updatedCheckups[index] = {
+                                ...updatedCheckups[index],
+                                width: numValue
+                              };
+                              setPigCheckups(updatedCheckups);
+                            }}
+                          />
+                          <Textarea
+                            className="w-1/2"
+                            radius="sm"
+                            size="lg"
+                            label="Ghi chú"
+                            placeholder="Nhập ghi chú"
+                            value={checkup.note || ""}
+                            onValueChange={(value) => {
+                              const updatedCheckups = [...pigCheckups];
+                              updatedCheckups[index] = {
+                                ...updatedCheckups[index],
+                                note: value
+                              };
+                              setPigCheckups(updatedCheckups);
+                            }}
+                          />
+                        </div>
+                      </CardBody>
+                    </Card>
+                  ))}
                 </ModalBody>
                 <ModalFooter>
-                  <Button color="primary" type="submit">
-                    Cập nhật thông tin
-                  </Button>
                   <Button color="danger" onPress={handleEndHerd} isLoading={loading}>
                     Kết thúc đàn
                   </Button>
