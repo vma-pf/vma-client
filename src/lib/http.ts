@@ -7,6 +7,7 @@ type CustomOptions = RequestInit & {
   baseUrl?: string | undefined;
   params?: Record<string, string> | undefined;
   allowCaching?: boolean | undefined;
+  cacheDuration?: number | undefined;
 };
 
 type EntityErrorPayload = {
@@ -64,12 +65,25 @@ const request = async <Response>(
     fullUrl += "?" + searchParams.toString();
   }
 
+  const CACHE_DURATION = options?.cacheDuration || 10 * 1000; // Default cache duration is 10 seconds
+
   // Check if caching is allowed
   if (options?.allowCaching) {
-    const cacheResponse = await caches.match(fullUrl);
-    if (cacheResponse) {
-      const cachePayload: Response = await cacheResponse.json();
-      return cachePayload;
+    const cache = await caches.open("api-cache");
+
+    // Get the cached response
+    const cachedResponse = await cache.match(fullUrl);
+    if (cachedResponse) {
+      const cachedData = await cachedResponse.json();
+
+      // Check if the cache has expired
+      const cacheTimestamp = cachedData?.timestamp || 0;
+      if (Date.now() - cacheTimestamp < CACHE_DURATION) {
+        return cachedData.payload; // Return cached payload if valid
+      } else {
+        // Cache is expired, delete it
+        await cache.delete(fullUrl);
+      }
     }
   }
 
@@ -91,25 +105,25 @@ const request = async <Response>(
     });
   }
 
-  // check if token is expired before 10 minutes
+  // Token refresh logic
   if (token && decodeToken(token).exp - Date.now() / 1000 < 60 * 10) {
-    const res = await fetch(
-      `${SERVERURL}/api/auth/refresh-token`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        method: "POST",
-        body: JSON.stringify({ refreshToken: localStorage.getItem("refreshToken"), accessToken: token }),
-      }
-    );
+    const res = await fetch(`${SERVERURL}/api/auth/refresh-token`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      method: "POST",
+      body: JSON.stringify({ refreshToken: localStorage.getItem("refreshToken"), accessToken: token }),
+    });
     const newToken = await res.json();
     if (newToken.isSuccess) {
       localStorage.setItem("accessToken", newToken.data.accessToken);
       await fetch("/api/auth", {
         method: "POST",
-        body: JSON.stringify({ sessionToken: newToken.data.accessToken, refreshToken: localStorage.getItem("refreshToken") }),
+        body: JSON.stringify({
+          sessionToken: newToken.data.accessToken,
+          refreshToken: localStorage.getItem("refreshToken"),
+        }),
       });
     }
   }
@@ -119,7 +133,19 @@ const request = async <Response>(
   // Cache the response if caching is allowed
   if (options?.allowCaching) {
     const cache = await caches.open("api-cache");
-    cache.put(fullUrl, new Response(JSON.stringify(payload)));
+
+    // Save the payload along with a timestamp for expiration
+    const responseToCache = new Response(
+      JSON.stringify({
+        timestamp: Date.now(), // Add a timestamp for cache expiration
+        payload,
+      }),
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    cache.put(fullUrl, responseToCache);
   }
 
   return payload;
@@ -131,7 +157,7 @@ const http = {
     url: string,
     options?: Omit<CustomOptions, "body"> | undefined
   ) {
-    return request<Response>("GET", url, options);
+    return request<Response>("GET", url, { ...options, allowCaching: true });
   },
   post<Response>(
     url: string,

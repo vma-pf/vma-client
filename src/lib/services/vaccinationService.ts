@@ -10,14 +10,6 @@ export const vaccinationService = {
         pageSize: pageSize?.toString() || "",
       },
     }),
-  getAllVaccinationPlanCaching: (page: number, pageSize: number) =>
-    http.get<ResponseObject<any>>("get-all-vaccination-plans", {
-      params: {
-        pageIndex: page?.toString() || "",
-        pageSize: pageSize?.toString() || "",
-      },
-      allowCaching: true,
-    }),
   getMyVaccinationPlan: (page: number, pageSize: number) =>
     http.get<ResponseObject<any>>("api/my-vaccination-plans", {
       params: {

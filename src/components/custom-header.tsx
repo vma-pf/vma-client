@@ -31,6 +31,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
     .split(prefix)
     .filter((x) => x)
     .toString();
+  const [username, setUsername] = useState("");
 
   const [messages, setMessages] = useState<NotificationType[]>([]);
   const [connection, setConnection] = useState<HubConnection | null>(null);
@@ -131,6 +132,8 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
   }
 
   useEffect(() => {
+    console.log(decodeToken(localStorage.getItem("accessToken") || "").unique_name ?? "");
+    setUsername(decodeToken(localStorage.getItem("accessToken") || "").unique_name ?? "");
     const accessToken = localStorage.getItem("accessToken")?.toString();
     const connect = new HubConnectionBuilder()
       .withUrl(`${SERVERURL}/hubs/notification-hub`, {
@@ -186,7 +189,7 @@ const CustomHeader = ({ titleMap, prefix }: { titleMap: { [key: string]: string 
       <p className="font-bold text-3xl">{titleMap[filteredPath] ?? ""}</p>
       <div className="flex items-center">
         {/* <p>Chào, {prefix === "/veterinarian" ? "Veterinarian" : "/farmer" ? "Farmer" : "/farm-assist" ? "Farm Assistant" : ""}</p> */}
-        <p>Chào, {roleMap[prefix]}</p>
+        <p>Chào, {username ?? ""}</p>
         <Avatar className="mx-2" src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
         <Popover
           placement="bottom"
