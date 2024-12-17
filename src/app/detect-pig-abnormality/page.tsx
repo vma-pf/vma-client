@@ -77,7 +77,7 @@ const Home = () => {
                     color="warning"
                     onPress={() => setResult(undefined)}
                   >
-                    <RotateCcw size={16} className="mr-2" />
+                    <RotateCcw size={16} />
                   </Button>
                 </div>
                 <div className="space-y-4 mt-4 p-4 border rounded-lg">
