@@ -196,6 +196,12 @@ const CommonDiseaseReportList = ({ pigId, herdId }: { pigId?: string; herdId?: s
             <Chip color={cellValue ? "success" : "warning"}>{!cellValue ? "Đang thực hiện" : "Đã thực hiện xong"}</Chip>
           </div>
         );
+      case "treatmentResult":
+        return (
+          <div className={`text-${cellValue === "Chưa khỏi bệnh" ? "danger" : cellValue === "Đã khỏi bệnh" ? "success" : "default"}`}>
+            {cellValue ?? "Chưa có kết quả"}
+          </div>
+        );
       case "createdAt":
         return <div>{dateTimeConverter(cellValue.toString())}</div>;
       default:

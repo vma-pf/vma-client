@@ -11,5 +11,6 @@ export const diseaseReportService = {
                 page: page.toString() ?? "",
                 pageSize: pageSize.toString() ?? "",
             },
-        })
+        }),
+    update: (id: string, data: boolean) => http.put(`${endpoint}/${id}/update-result?isRecovered=${data}`, {}),
 };

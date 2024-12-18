@@ -54,7 +54,7 @@ import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { parseTime } from "@internationalized/date";
 
 const statusColorMap = [
-  { status: "Đã hoàn thành", color: "text-primary" },
+  { status: "Hoàn thành", color: "text-primary" },
   { status: "Đang diễn ra", color: "text-sky-500" },
   { status: "Chưa bắt đầu", color: "text-warning" },
   { status: "Đã hủy", color: "text-danger" },
@@ -442,7 +442,9 @@ const Treatment = () => {
                               {diseaseReport.treatmentResult && (
                                 <div className="mt-3 flex justify-between">
                                   <p className="text-md">Kết quả điều trị:</p>
-                                  <p className="text-lg font-semibold">{diseaseReport.treatmentResult}</p>
+                                  <p className={`text-lg font-semibold ${diseaseReport.treatmentResult === "Chưa khỏi bệnh" ? "text-danger" : "text-primary"}`}>
+                                    {diseaseReport.treatmentResult}
+                                  </p>
                                 </div>
                               )}
                             </div>

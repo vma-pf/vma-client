@@ -234,11 +234,6 @@ const Herd = () => {
                       <Button color="primary" onPress={onOpenHerdDetail} endContent={<EyeIcon size={20} />}>
                         Xem chi tiết
                       </Button>
-                      {selectedHerd?.status !== "Đã kết thúc" && (
-                        <Button color="danger" onPress={onOpenEndHerd} endContent={<AiFillAlert size={20} />}>
-                          Kết thúc đàn
-                        </Button>
-                      )}
                     </div>
                   </div>
                 </AccordionItem>

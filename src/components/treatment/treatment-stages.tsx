@@ -48,11 +48,13 @@ const TreatmentStages = ({ stage, setSelectedTreatmentId, action }: { stage: Cre
         <Divider orientation="vertical" className="absolute left-0 translate-x-[-24.3px] z-0 top-1" />
         <div className="text-lg font-semibold">
           {dateConverter(stage.applyStageTime)}{" "}
-          {!stage.isDone && stage.applyStageTime.split("T")[0] < new Date().toISOString().split("T")[0] && (
-            <span className="ml-4 text-danger text-md">
-              *Đã quá hạn {Math.floor((new Date().getTime() - new Date(stage.applyStageTime).getTime()) / (1000 * 60 * 60 * 24))} ngày
-            </span>
-          )}
+          {!stage.isDone &&
+            stage.applyStageTime.split("T")[0] < new Date().toISOString().split("T")[0] &&
+            Math.floor((new Date().getTime() - new Date(stage.applyStageTime).getTime()) / (1000 * 60 * 60 * 24)) > 0 && (
+              <span className="ml-4 text-danger text-md">
+                *Đã quá hạn {Math.floor((new Date().getTime() - new Date(stage.applyStageTime).getTime()) / (1000 * 60 * 60 * 24))} ngày
+              </span>
+            )}
         </div>
         <div className="text-lg font-extrabold">{stage.title}</div>
         <div className="flex items-center gap-2">
@@ -90,7 +92,7 @@ const TreatmentStages = ({ stage, setSelectedTreatmentId, action }: { stage: Cre
               isDisabled={
                 stage.isDone ||
                 stage.applyStageTime.split("T")[0] > new Date().toISOString().split("T")[0] ||
-                medicineList.some((medicine) => medicine.status === "Đã yêu cầu")
+                medicineList.some((medicine) => medicine.status !== "Đã duyệt")
               }
             >
               Cập nhật kết quả

@@ -48,9 +48,10 @@ import CommonDiseaseGridList from "../../veterinarian/treatment/_components/comm
 import CommonDiseaseList from "../../veterinarian/treatment/_components/common-disease-list";
 import { BsArrowReturnRight } from "react-icons/bs";
 import TreatmentList from "@oursrc/components/treatment/treatment-list";
+import DestroyPig from "./_components/destroy-pig";
 
 const statusColorMap = [
-  { status: "Đã hoàn thành", color: "text-primary" },
+  { status: "Hoàn thành", color: "text-primary" },
   { status: "Đang diễn ra", color: "text-sky-500" },
   { status: "Chưa bắt đầu", color: "text-warning" },
   { status: "Đã hủy", color: "text-danger" },
@@ -58,6 +59,7 @@ const statusColorMap = [
 
 const Treatment = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isOpenDestroy, onOpen: onOpenDestroy, onClose: onCloseDestroy } = useDisclosure();
   const [loading, setLoading] = React.useState(false);
   const [loadMore, setLoadMore] = React.useState(true);
   const [page, setPage] = React.useState(1);
@@ -405,8 +407,21 @@ const Treatment = () => {
                               {diseaseReport.treatmentResult && (
                                 <div className="mt-3 flex justify-between">
                                   <p className="text-md">Kết quả điều trị:</p>
-                                  <p className="text-lg font-semibold">{diseaseReport.treatmentResult}</p>
+                                  <p className={`text-lg font-semibold ${diseaseReport.treatmentResult === "Chưa khỏi bệnh" ? "text-danger" : "text-primary"}`}>
+                                    {diseaseReport.treatmentResult}
+                                  </p>
                                 </div>
+                              )}
+                              {diseaseReport.treatmentResult === "Chưa khỏi bệnh" && (
+                                <Button
+                                  variant="solid"
+                                  color="danger"
+                                  onPress={() => {
+                                    onOpenDestroy();
+                                  }}
+                                >
+                                  Tiêu hủy heo
+                                </Button>
                               )}
                             </div>
                           ))
@@ -559,6 +574,7 @@ const Treatment = () => {
               </Modal>
             )}
           </div>
+          {isOpenDestroy && pigs && <DestroyPig isOpen={isOpenDestroy} onClose={onCloseDestroy} pigs={pigs} />}
         </Tab>
         <Tab
           key="2"
