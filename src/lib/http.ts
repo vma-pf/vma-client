@@ -1,7 +1,7 @@
 import { decodeToken } from "./utils";
 
-// export const SERVERURL = "https://vma-server.io.vn"; // Replace with actual API URL
-export const SERVERURL = "https://ourproject.io.vn"; // Replace with actual API URL
+export const SERVERURL = "https://vma-server.io.vn"; // Replace with actual API URL
+// export const SERVERURL = "https://ourproject.io.vn"; // Replace with actual API URL
 
 type CustomOptions = RequestInit & {
   baseUrl?: string | undefined;
