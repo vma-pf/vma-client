@@ -30,5 +30,5 @@ export const commonDiseasesService = {
       diseaseType: model.diseaseType,
       treatment: model.treatment,
     }),
-  delete: (id: string) => http.delete(endpoint + `/${id}`),
+  delete: (id: string) => http.delete(endpoint + `/${id}`, {}),
 };

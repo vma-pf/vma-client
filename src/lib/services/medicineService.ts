@@ -39,7 +39,7 @@ export const medicineService = {
       netWeight: model.netWeight,
       usage: model.usage,
     }),
-  deleteMedicine: (id: string) => http.delete(endpoint + `/${id}`),
+  deleteMedicine: (id: string) => http.delete(endpoint + `/${id}`, {}),
   importMedicineExcel: (file: File) => {
     const formData = new FormData();
     formData.append("file", file);

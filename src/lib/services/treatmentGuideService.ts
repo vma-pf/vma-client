@@ -20,5 +20,5 @@ export const treatmentGuideService = {
     http.post(endpoint, model),
   update: (id: string, model: CreateTreatmentGuide) =>
     http.put(endpoint + `/${id}`, model),
-  delete: (id: string) => http.delete(endpoint + `/${id}`),
+  delete: (id: string) => http.delete(endpoint + `/${id}`, {}),
 };

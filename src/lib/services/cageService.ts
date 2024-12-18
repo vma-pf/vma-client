@@ -22,7 +22,7 @@ export const cageService = {
     http.post(endpoint, model),
   updateCage: (model: any, id: string) =>
     http.put(endpoint + `/${id}`, model),
-  deleteCage: (id: string) => http.delete(endpoint + `/${id}`),
+  deleteCage: (id: string) => http.delete(endpoint + `/${id}`, {}),
   assignPigToCage: (cageId: string, pigId: string) => http.post(endpoint + `/pig-to-cage`, {
     cageId: cageId || "",
     pigId: pigId || "",
