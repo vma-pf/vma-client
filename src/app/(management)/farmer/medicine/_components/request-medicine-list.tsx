@@ -60,11 +60,13 @@ const columns = [
   { uid: "medicineName", name: "Tên thuốc", sortable: true },
   { uid: "quantity", name: "Số lượng", sortable: true },
   { uid: "isPurchaseNeeded", name: "Phân loại", sortable: true },
+  { uid: "inventoryRequestTitle", name: "Yêu cầu", sortable: true },
+  { uid: "createdAt", name: "Ngày tạo", sortable: true },
   { uid: "status", name: "Trạng thái", sortable: true },
-  { uid: "actions", name: "Hành động" },
+  { uid: "actions", name: "Hành động", sortable: false },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["medicineName", "quantity", "status", "isPurchaseNeeded", "actions"];
+const INITIAL_VISIBLE_COLUMNS = ["createdAt", "medicineName", "quantity", "status", "isPurchaseNeeded", "actions"];
 
 const statusOptions = ["Đã duyệt", "Đã yêu cầu", "Chờ xử lý", "Đã hủy"];
 const statusColorMap = [
@@ -416,6 +418,14 @@ const RequestMedicineList = () => {
         );
       case "isPurchaseNeeded":
         return <p className={`${data.isPurchaseNeeded ? "text-warning-500" : "text-primary"}`}>{isPurchaseNeededOptions[data.isPurchaseNeeded ? 0 : 1]}</p>;
+      case "createdAt":
+        return new Date(cellValue as string).toLocaleDateString("vi-VN");
+      case "inventoryRequestTitle":
+        return (
+          <div className="flex items-center">
+            <span>{cellValue}</span>
+          </div>
+        );
       case "status":
         return <p className={`${statusColorMap.find((status) => status.status === cellValue)?.color || "text-default-400"}`}>{cellValue}</p>;
       case "actions":

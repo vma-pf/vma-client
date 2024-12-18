@@ -37,10 +37,12 @@ const statusColorMap = [
 const columns = [
   { name: "TÊN", uid: "medicineName", sortable: true },
   { name: "SỐ LƯỢNG", uid: "quantity", sortable: true },
+  { name: "TIÊU ĐỀ YÊU CẦU", uid: "inventoryRequestTitle", sortable: true },
+  { name: "NGÀY YÊU CẦU", uid: "createdAt", sortable: true },
   { name: "TRẠNG THÁI", uid: "status" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["medicineName", "quantity", "status"];
+const INITIAL_VISIBLE_COLUMNS = ["medicineName", "quantity", "status", "createdAt"];
 
 const Medicine = () => {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -194,12 +196,22 @@ const Medicine = () => {
 
   const renderCell = React.useCallback((data: MedicineRequest, columnKey: React.Key) => {
     const cellValue = data[columnKey as keyof MedicineRequest];
-
+  
     switch (columnKey) {
       case "status":
         return (
           <div className="flex items-center">
-            <span className={`${statusColorMap.find((item) => item.status === cellValue)?.color || "text-default-400"}`}>{cellValue}</span>
+            <span className={`${statusColorMap.find((item) => item.status === cellValue)?.color || "text-default-400"}`}>
+              {cellValue}
+            </span>
+          </div>
+        );
+      case "createdAt":
+        return new Date(cellValue as string).toLocaleDateString('vi-VN');
+      case "inventoryRequestTitle":
+        return (
+          <div className="flex items-center">
+            <span>{cellValue}</span>
           </div>
         );
       default:

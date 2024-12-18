@@ -34,6 +34,7 @@ const columns = [
   { name: "Mã chuồng", uid: "cageCode", sortable: true },
   { name: "Giống", uid: "breed", sortable: true },
   { name: "Đàn", uid: "herdId", sortable: true },
+  { name: "Mã Đàn", uid: "herdCode", sortable: true },
   { name: "Chuồng", uid: "cageId", sortable: true },
   { name: "Cân nặng", uid: "weight", sortable: true },
   { name: "Chiều cao", uid: "height", sortable: true },
@@ -54,7 +55,7 @@ const statusColorMap = [
   { healthStatus: "Chết", color: "danger" },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["breed", "pigCode", "weight", "height", "width", "healthStatus"];
+const INITIAL_VISIBLE_COLUMNS = ["herdCode", "breed", "pigCode", "weight", "height", "width", "healthStatus"];
 
 const PigList = ({ isOpen, onClose, cage }: { isOpen: boolean; onClose: () => void; cage?: Cage }) => {
   const { loading, setLoading } = React.useContext(LoadingStateContext);

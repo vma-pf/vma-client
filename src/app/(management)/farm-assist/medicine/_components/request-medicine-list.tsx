@@ -34,7 +34,10 @@ import ReplyRequest from "./_modals/reply-request";
 import React, { useState } from "react";
 import { useToast } from "@oursrc/hooks/use-toast";
 import { MedicineRequest } from "@oursrc/lib/models/medicine-request";
-import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
+import {
+  ResponseObject,
+  ResponseObjectList,
+} from "@oursrc/lib/models/response-object";
 import { medicineRequestService } from "@oursrc/lib/services/medicineRequestService";
 import { HiChevronDown } from "react-icons/hi2";
 import { IoMdCloseCircle } from "react-icons/io";
@@ -52,11 +55,20 @@ const columns = [
   { uid: "medicineName", name: "Tên thuốc", sortable: true },
   { uid: "quantity", name: "Số lượng", sortable: true },
   { uid: "isPurchaseNeeded", name: "Phân loại", sortable: true },
+  { uid: "inventoryRequestTitle", name: "Yêu cầu", sortable: true },
+  { uid: "createdAt", name: "Ngày tạo", sortable: true },
   { uid: "status", name: "Trạng thái", sortable: true },
-  { uid: "actions", name: "Hành động" },
+  { uid: "actions", name: "Hành động", sortable: false },
 ];
 
-const INITIAL_VISIBLE_COLUMNS = ["medicineName", "quantity", "status", "isPurchaseNeeded", "actions"];
+const INITIAL_VISIBLE_COLUMNS = [
+  "createdAt",
+  "medicineName",
+  "quantity",
+  "status",
+  "isPurchaseNeeded",
+  "actions",
+];
 
 const statusOptions = ["Đã duyệt", "Đã yêu cầu", "Chờ xử lý", "Đã hủy"];
 const statusColorMap = [
@@ -70,14 +82,22 @@ const isPurchaseNeededOptions = ["Thuốc mới", "Đã tồn tại trong kho"];
 const RequestMedicineList = () => {
   const { toast } = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { isOpen: isOpenAlert, onOpen: onOpenAlert, onClose: onCloseAlert } = useDisclosure();
+  const {
+    isOpen: isOpenAlert,
+    onOpen: onOpenAlert,
+    onClose: onCloseAlert,
+  } = useDisclosure();
   const [answer, setAnswer] = useState<"accept" | "reject">();
 
   //Table field
   const [filterValue, setFilterValue] = React.useState("");
   // const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set([]));
-  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(new Set(INITIAL_VISIBLE_COLUMNS));
-  const [statusFilter, setStatusFilter] = React.useState<Selection>(new Set(statusOptions));
+  const [visibleColumns, setVisibleColumns] = React.useState<Selection>(
+    new Set(INITIAL_VISIBLE_COLUMNS)
+  );
+  const [statusFilter, setStatusFilter] = React.useState<Selection>(
+    new Set(statusOptions)
+  );
   const [totalRecords, setTotalRecords] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(1);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -86,12 +106,19 @@ const RequestMedicineList = () => {
     direction: "ascending",
   });
   const [medicineList, setMedicineList] = React.useState<MedicineRequest[]>([]);
-  const [allMedicineList, setAllMedicineList] = React.useState<MedicineRequest[]>([]);
-  const [selectedMedicine, setSelectedMedicine] = React.useState<MedicineRequest | null>(null);
+  const [allMedicineList, setAllMedicineList] = React.useState<
+    MedicineRequest[]
+  >([]);
+  const [selectedMedicine, setSelectedMedicine] =
+    React.useState<MedicineRequest | null>(null);
   const [remainQuantity, setRemainQuantity] = React.useState(0);
   const [medicineQuantityCheck, setMedicineQuantityCheck] = React.useState(0);
-  const [selectedVaccination, setSelectedVaccination] = useState<VaccinationData | undefined>();
-  const [selectedTreatment, setSelectedTreatment] = useState<TreatmentData | undefined>();
+  const [selectedVaccination, setSelectedVaccination] = useState<
+    VaccinationData | undefined
+  >();
+  const [selectedTreatment, setSelectedTreatment] = useState<
+    TreatmentData | undefined
+  >();
 
   const [page, setPage] = React.useState(1);
   const hasSearchFilter = Boolean(filterValue);
@@ -99,17 +126,26 @@ const RequestMedicineList = () => {
   const headerColumns = React.useMemo(() => {
     if (visibleColumns === "all") return columns;
 
-    return columns.filter((column: any) => Array.from(visibleColumns).includes(column.uid));
+    return columns.filter((column: any) =>
+      Array.from(visibleColumns).includes(column.uid)
+    );
   }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
     let filteredMedicines: MedicineRequest[] = [...medicineList];
 
     if (hasSearchFilter) {
-      filteredMedicines = filteredMedicines.filter((medicine) => medicine.medicineName?.toLowerCase().includes(filterValue.toLowerCase()));
+      filteredMedicines = filteredMedicines.filter((medicine) =>
+        medicine.medicineName?.toLowerCase().includes(filterValue.toLowerCase())
+      );
     }
-    if (statusFilter !== "all" && Array.from(statusFilter).length !== statusOptions.length) {
-      filteredMedicines = filteredMedicines.filter((medicine) => Array.from(statusFilter).includes(medicine.status));
+    if (
+      statusFilter !== "all" &&
+      Array.from(statusFilter).length !== statusOptions.length
+    ) {
+      filteredMedicines = filteredMedicines.filter((medicine) =>
+        Array.from(statusFilter).includes(medicine.status)
+      );
     }
     return filteredMedicines;
   }, [medicineList, filterValue, statusFilter]);
@@ -146,12 +182,21 @@ const RequestMedicineList = () => {
 
   const filterMedicinesInManyRequests = () => {
     // find each unique medicineId and then calculate total quantity of each medicineId
-    const uniqueMedicineIds = Array.from(new Set(allMedicineList.map((medicine) => medicine.medicineId)));
+    const uniqueMedicineIds = Array.from(
+      new Set(allMedicineList.map((medicine) => medicine.medicineId))
+    );
     const medicineInManyRequests = uniqueMedicineIds.map((medicineId) => {
       return {
-        medicineName: allMedicineList.find((medicine) => medicine.medicineId === medicineId)?.medicineName,
+        medicineName: allMedicineList.find(
+          (medicine) => medicine.medicineId === medicineId
+        )?.medicineName,
         quantity: allMedicineList
-          .filter((medicine) => medicine.medicineId === medicineId && medicine.medicineId !== null && medicine.status === "Đã yêu cầu")
+          .filter(
+            (medicine) =>
+              medicine.medicineId === medicineId &&
+              medicine.medicineId !== null &&
+              medicine.status === "Đã yêu cầu"
+          )
           .reduce((total, medicine) => total + medicine.quantity, 0),
       };
     });
@@ -160,7 +205,8 @@ const RequestMedicineList = () => {
 
   const getAllMedicineRequest = async () => {
     try {
-      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(1, 99999);
+      const response: ResponseObjectList<MedicineRequest> =
+        await medicineRequestService.getMedicineRequest(1, 99999);
       if (response.isSuccess) {
         setAllMedicineList(response.data.data);
       } else {
@@ -171,11 +217,18 @@ const RequestMedicineList = () => {
     }
   };
 
-  const getFilteredMedicineRequest = async (type: "vaccination" | "treatment") => {
+  const getFilteredMedicineRequest = async (
+    type: "vaccination" | "treatment"
+  ) => {
     try {
       setLoading(true);
       if (type === "vaccination") {
-        const response: ResponseObjectList<MedicineRequest> = await vaccinationService.getMedicineRequest(selectedVaccination?.id ?? "", page, rowsPerPage);
+        const response: ResponseObjectList<MedicineRequest> =
+          await vaccinationService.getMedicineRequest(
+            selectedVaccination?.id ?? "",
+            page,
+            rowsPerPage
+          );
         if (response.isSuccess) {
           setMedicineList(response.data.data);
           setRowsPerPage(response.data.pageSize);
@@ -185,7 +238,12 @@ const RequestMedicineList = () => {
           console.log(response.errorMessage);
         }
       } else {
-        const response: ResponseObjectList<MedicineRequest> = await treatmentPlanService.getMedicineRequest(selectedTreatment?.id ?? "", page, rowsPerPage);
+        const response: ResponseObjectList<MedicineRequest> =
+          await treatmentPlanService.getMedicineRequest(
+            selectedTreatment?.id ?? "",
+            page,
+            rowsPerPage
+          );
         if (response.isSuccess) {
           setMedicineList(response.data.data);
           setRowsPerPage(response.data.pageSize);
@@ -206,7 +264,8 @@ const RequestMedicineList = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(page, rowsPerPage);
+      const response: ResponseObjectList<MedicineRequest> =
+        await medicineRequestService.getMedicineRequest(page, rowsPerPage);
       if (response.isSuccess) {
         setMedicineList(response.data.data);
         setRowsPerPage(response.data.pageSize);
@@ -224,9 +283,12 @@ const RequestMedicineList = () => {
 
   const calculateTotalQuantity = async (medicineId: string) => {
     try {
-      const response: ResponseObjectList<MedicineRequest> = await medicineRequestService.getMedicineRequest(1, 500);
+      const response: ResponseObjectList<MedicineRequest> =
+        await medicineRequestService.getMedicineRequest(1, 500);
       if (response.isSuccess) {
-        const totalQuantity = response.data.data.filter((medicine) => medicine.medicineId === medicineId).reduce((total, medicine) => total + medicine.quantity, 0);
+        const totalQuantity = response.data.data
+          .filter((medicine) => medicine.medicineId === medicineId)
+          .reduce((total, medicine) => total + medicine.quantity, 0);
         setRemainQuantity(totalQuantity);
       } else {
         console.log(response.errorMessage);
@@ -239,7 +301,8 @@ const RequestMedicineList = () => {
 
   const checkMedicineQuantity = async (medicineId: string) => {
     try {
-      const response: ResponseObject<MedicineRequest> = await medicineService.getMedicineById(medicineId);
+      const response: ResponseObject<MedicineRequest> =
+        await medicineService.getMedicineById(medicineId);
       if (response.isSuccess) {
         setMedicineQuantityCheck(response.data.quantity);
         return response.data.quantity;
@@ -251,19 +314,29 @@ const RequestMedicineList = () => {
     }
   };
 
-  const checkRequestAuthor = async (medicineRequest: MedicineRequest, requestType: string) => {
+  const checkRequestAuthor = async (
+    medicineRequest: MedicineRequest,
+    requestType: string
+  ) => {
     try {
       setSelectedMedicine(medicineRequest);
-      const medicineCheck = (await checkMedicineQuantity(medicineRequest.medicineId || "")) ?? 0;
+      const medicineCheck =
+        (await checkMedicineQuantity(medicineRequest.medicineId || "")) ?? 0;
       console.log(medicineCheck);
       console.log(medicineRequest);
       switch (requestType) {
         case "accept":
         case "reject":
-          if (medicineRequest.medicineId && medicineCheck < medicineRequest.quantity) {
+          if (
+            medicineRequest.medicineId &&
+            medicineCheck < medicineRequest.quantity
+          ) {
             await calculateTotalQuantity(medicineRequest.medicineId);
             onOpenAlert();
-          } else if (medicineRequest.newMedicineName && !medicineRequest.medicineName) {
+          } else if (
+            medicineRequest.newMedicineName &&
+            !medicineRequest.medicineName
+          ) {
             onOpenAlert();
           } else {
             setAnswer(requestType);
@@ -288,10 +361,13 @@ const RequestMedicineList = () => {
     });
   }, [sortDescriptor, filteredItems]);
 
-  const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRowsPerPage(Number(e.target.value));
-    setPage(1);
-  }, []);
+  const onRowsPerPageChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setRowsPerPage(Number(e.target.value));
+      setPage(1);
+    },
+    []
+  );
 
   const onSearchChange = React.useCallback((value?: string) => {
     if (value) {
@@ -323,7 +399,10 @@ const RequestMedicineList = () => {
           <div className="flex gap-3">
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
-                <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
+                <Button
+                  endContent={<HiChevronDown className="text-small" />}
+                  variant="flat"
+                >
                   Hiển thị cột
                 </Button>
               </DropdownTrigger>
@@ -344,11 +423,20 @@ const RequestMedicineList = () => {
             </Dropdown>
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
-                <Button endContent={<HiChevronDown className="text-small" />} variant="flat">
+                <Button
+                  endContent={<HiChevronDown className="text-small" />}
+                  variant="flat"
+                >
                   Trạng thái
                 </Button>
               </DropdownTrigger>
-              <DropdownMenu disallowEmptySelection selectedKeys={statusFilter} selectionMode="multiple" closeOnSelect={false} onSelectionChange={setStatusFilter}>
+              <DropdownMenu
+                disallowEmptySelection
+                selectedKeys={statusFilter}
+                selectionMode="multiple"
+                closeOnSelect={false}
+                onSelectionChange={setStatusFilter}
+              >
                 {statusOptions.map((status) => (
                   <DropdownItem key={status} className="capitalize">
                     {status}
@@ -356,14 +444,22 @@ const RequestMedicineList = () => {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            <FilterMedicineRequest setSelectedVaccination={setSelectedVaccination} setSelectedTreatment={setSelectedTreatment} />
+            <FilterMedicineRequest
+              setSelectedVaccination={setSelectedVaccination}
+              setSelectedTreatment={setSelectedTreatment}
+            />
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-default-400 text-small">Tổng cộng {totalRecords} kết quả</span>
+          <span className="text-default-400 text-small">
+            Tổng cộng {totalRecords} kết quả
+          </span>
           <label className="flex items-center text-default-400 text-small">
             Số hàng mỗi trang:
-            <select className="bg-transparent outline-none text-default-400 text-small" onChange={onRowsPerPageChange}>
+            <select
+              className="bg-transparent outline-none text-default-400 text-small"
+              onChange={onRowsPerPageChange}
+            >
               <option value="5">5</option>
               <option value="10">10</option>
               <option value="15">15</option>
@@ -372,82 +468,146 @@ const RequestMedicineList = () => {
         </div>
       </div>
     );
-  }, [filterValue, statusFilter, visibleColumns, onSearchChange, onRowsPerPageChange, medicineList.length, hasSearchFilter]);
+  }, [
+    filterValue,
+    statusFilter,
+    visibleColumns,
+    onSearchChange,
+    onRowsPerPageChange,
+    medicineList.length,
+    hasSearchFilter,
+  ]);
 
-  const renderCell = React.useCallback((data: MedicineRequest, columnKey: React.Key) => {
-    const cellValue = data[columnKey as keyof MedicineRequest];
+  const renderCell = React.useCallback(
+    (data: MedicineRequest, columnKey: React.Key) => {
+      const cellValue = data[columnKey as keyof MedicineRequest];
 
-    switch (columnKey) {
-      case "medicineName":
-        return data.medicineId && data.medicineName ? (
-          <div>
-            {/* <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={200}>
+      switch (columnKey) {
+        case "medicineName":
+          return data.medicineId && data.medicineName ? (
+            <div>
+              {/* <Tooltip showArrow={true} content={cellValue} color="primary" closeDelay={200}>
               <p className="truncate">{cellValue}</p>
             </Tooltip> */}
-            <p className="">{data.medicineName}</p>
-          </div>
-        ) : (
-          <CustomSnippet
-            variant="solid"
-            color="white"
-            className="text-wrap p-0 m-0"
-            hideSymbol
-            tooltipProps={{
-              showArrow: true,
-              content: "Copy",
-              color: "primary",
-              delay: 200,
-              closeDelay: 200,
-            }}
-            onCopy={(value) => {
-              localStorage.setItem("newMedicine", JSON.stringify({ requestId: data.id, newMedicineName: data.newMedicineName }));
-            }}
-          >
-            <span className="truncate">{data.newMedicineName}</span>
-          </CustomSnippet>
-        );
-      case "isPurchaseNeeded":
-        return <p className={`${data.isPurchaseNeeded ? "text-warning-500" : "text-primary"}`}>{isPurchaseNeededOptions[data.isPurchaseNeeded ? 0 : 1]}</p>;
-      case "status":
-        return <p className={`${statusColorMap.find((status) => status.status === cellValue)?.color || "text-default-400"}`}>{cellValue}</p>;
-      case "actions":
-        return data.status === "Đã duyệt" || data.status === "Đã hủy" ? (
-          <div className="flex justify-center items-center gap-4">
-            {data.status === "Đã duyệt" ? (
-              <FaCheckCircle size={20} className="text-primary cursor-pointer" />
-            ) : (
-              <IoMdCloseCircle size={20} className="text-danger-500 cursor-pointer" />
-            )}
-          </div>
-        ) : data.status === "Đã yêu cầu" ? (
-          <div className="flex justify-center items-center gap-4">
-            <Tooltip content="Chấp nhận" color="primary" closeDelay={200}>
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <FaRegThumbsUp size={20} className="text-primary cursor-pointer" onClick={() => checkRequestAuthor(data, "accept")} />
-              </span>
-            </Tooltip>
-            <Tooltip content="Từ chối" color="danger" closeDelay={200}>
-              <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
-                <FaRegThumbsDown size={20} className="text-danger-500 cursor-pointer" onClick={() => checkRequestAuthor(data, "reject")} />
-              </span>
-            </Tooltip>
-          </div>
-        ) : (
-          <div className="flex justify-center items-center gap-4 cursor-not-allowed text-default-400">
-            <FaRegThumbsUp size={20} />
-            <FaRegThumbsDown size={20} />
-          </div>
-        );
-      default:
-        return cellValue;
-    }
-  }, []);
+              <p className="">{data.medicineName}</p>
+            </div>
+          ) : (
+            <CustomSnippet
+              variant="solid"
+              color="white"
+              className="text-wrap p-0 m-0"
+              hideSymbol
+              tooltipProps={{
+                showArrow: true,
+                content: "Copy",
+                color: "primary",
+                delay: 200,
+                closeDelay: 200,
+              }}
+              onCopy={(value) => {
+                localStorage.setItem(
+                  "newMedicine",
+                  JSON.stringify({
+                    requestId: data.id,
+                    newMedicineName: data.newMedicineName,
+                  })
+                );
+              }}
+            >
+              <span className="truncate">{data.newMedicineName}</span>
+            </CustomSnippet>
+          );
+        case "isPurchaseNeeded":
+          return (
+            <p
+              className={`${
+                data.isPurchaseNeeded ? "text-warning-500" : "text-primary"
+              }`}
+            >
+              {isPurchaseNeededOptions[data.isPurchaseNeeded ? 0 : 1]}
+            </p>
+          );
+        case "status":
+          return (
+            <p
+              className={`${
+                statusColorMap.find((status) => status.status === cellValue)
+                  ?.color || "text-default-400"
+              }`}
+            >
+              {cellValue}
+            </p>
+          );
+        case "createdAt":
+          return new Date(cellValue as string).toLocaleDateString("vi-VN");
+        case "inventoryRequestTitle":
+          return (
+            <div className="flex items-center">
+              <span>{cellValue}</span>
+            </div>
+          );
+        case "actions":
+          return data.status === "Đã duyệt" || data.status === "Đã hủy" ? (
+            <div className="flex justify-center items-center gap-4">
+              {data.status === "Đã duyệt" ? (
+                <FaCheckCircle
+                  size={20}
+                  className="text-primary cursor-pointer"
+                />
+              ) : (
+                <IoMdCloseCircle
+                  size={20}
+                  className="text-danger-500 cursor-pointer"
+                />
+              )}
+            </div>
+          ) : data.status === "Đã yêu cầu" ? (
+            <div className="flex justify-center items-center gap-4">
+              <Tooltip content="Chấp nhận" color="primary" closeDelay={200}>
+                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                  <FaRegThumbsUp
+                    size={20}
+                    className="text-primary cursor-pointer"
+                    onClick={() => checkRequestAuthor(data, "accept")}
+                  />
+                </span>
+              </Tooltip>
+              <Tooltip content="Từ chối" color="danger" closeDelay={200}>
+                <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                  <FaRegThumbsDown
+                    size={20}
+                    className="text-danger-500 cursor-pointer"
+                    onClick={() => checkRequestAuthor(data, "reject")}
+                  />
+                </span>
+              </Tooltip>
+            </div>
+          ) : (
+            <div className="flex justify-center items-center gap-4 cursor-not-allowed text-default-400">
+              <FaRegThumbsUp size={20} />
+              <FaRegThumbsDown size={20} />
+            </div>
+          );
+        default:
+          return cellValue;
+      }
+    },
+    []
+  );
 
   const bottomContent = React.useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-center items-center">
         {/* <span className="w-[30%] text-small text-default-400">{selectedKeys === "all" ? "Đã chọn tất cả" : `Đã chọn ${selectedKeys.size} kết quả`}</span> */}
-        <Pagination isCompact showControls showShadow color="primary" page={page} total={totalPages} onChange={setPage} />
+        <Pagination
+          isCompact
+          showControls
+          showShadow
+          color="primary"
+          page={page}
+          total={totalPages}
+          onChange={setPage}
+        />
         {/* <div className="hidden sm:flex w-[30%] justify-end gap-2"></div> */}
       </div>
     );
@@ -458,7 +618,9 @@ const RequestMedicineList = () => {
       <div className="mb-3 flex justify-between gap-x-10">
         <div className="w-1/2">
           <div className="h-full p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
-            <p className="text-xl mb-2 font-semibold">Yêu cầu thuốc chưa có trong kho</p>
+            <p className="text-xl mb-2 font-semibold">
+              Yêu cầu thuốc chưa có trong kho
+            </p>
             {filterNewMedicine().length <= 0 ? (
               <p>Không có thuốc mới</p>
             ) : (
@@ -478,10 +640,18 @@ const RequestMedicineList = () => {
                         closeDelay: 200,
                       }}
                       onCopy={(value) => {
-                        localStorage.setItem("newMedicine", JSON.stringify({ requestId: medicine.requestId, newMedicineName: medicine.newMedicineName }));
+                        localStorage.setItem(
+                          "newMedicine",
+                          JSON.stringify({
+                            requestId: medicine.requestId,
+                            newMedicineName: medicine.newMedicineName,
+                          })
+                        );
                       }}
                     >
-                      <span className="text-lg font-semibold">{medicine.newMedicineName}</span>
+                      <span className="text-lg font-semibold">
+                        {medicine.newMedicineName}
+                      </span>
                     </CustomSnippet>
                   </li>
                 ))}
@@ -499,7 +669,8 @@ const RequestMedicineList = () => {
                 {filterMedicinesInManyRequests().map((medicine, index) => (
                   <li key={index}>
                     <p>
-                      {medicine.medicineName} - Tổng số lượng: <strong>{medicine.quantity}</strong>
+                      {medicine.medicineName} - Tổng số lượng:{" "}
+                      <strong>{medicine.quantity}</strong>
                     </p>
                   </li>
                 ))}
@@ -529,21 +700,46 @@ const RequestMedicineList = () => {
         >
           <TableHeader columns={headerColumns}>
             {(column: any) => (
-              <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"} allowsSorting={column.sortable}>
+              <TableColumn
+                key={column.uid}
+                align={column.uid === "actions" ? "center" : "start"}
+                allowsSorting={column.sortable}
+              >
                 {column.name.toUpperCase()}
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody emptyContent={"Không có kết quả"} items={sortedItems} loadingContent={<Spinner />} loadingState={loading ? "loading" : "idle"}>
+          <TableBody
+            emptyContent={"Không có kết quả"}
+            items={sortedItems}
+            loadingContent={<Spinner />}
+            loadingState={loading ? "loading" : "idle"}
+          >
             {(item) => (
               <TableRow key={item.id} className="h-12">
-                {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+                {(columnKey) => (
+                  <TableCell>{renderCell(item, columnKey)}</TableCell>
+                )}
               </TableRow>
             )}
           </TableBody>
         </Table>
-        {isOpen && selectedMedicine && answer === "accept" && <ReplyRequest isOpen={isOpen} onClose={onClose} selectedMedicine={selectedMedicine} answer={answer} />}
-        {isOpen && selectedMedicine && answer === "reject" && <ReplyRequest isOpen={isOpen} onClose={onClose} selectedMedicine={selectedMedicine} answer={answer} />}
+        {isOpen && selectedMedicine && answer === "accept" && (
+          <ReplyRequest
+            isOpen={isOpen}
+            onClose={onClose}
+            selectedMedicine={selectedMedicine}
+            answer={answer}
+          />
+        )}
+        {isOpen && selectedMedicine && answer === "reject" && (
+          <ReplyRequest
+            isOpen={isOpen}
+            onClose={onClose}
+            selectedMedicine={selectedMedicine}
+            answer={answer}
+          />
+        )}
         {isOpenAlert && (
           <Modal isOpen={isOpenAlert} onClose={onCloseAlert} size="sm">
             <ModalContent>
@@ -553,16 +749,19 @@ const RequestMedicineList = () => {
               <ModalBody>
                 {selectedMedicine?.medicineName && (
                   <p className="text-lg">
-                    Số lượng thuốc {selectedMedicine?.medicineName} hiện tại là {selectedMedicine?.quantity}, trong kho còn lại {medicineQuantityCheck}. <br />
+                    Số lượng thuốc {selectedMedicine?.medicineName} hiện tại là{" "}
+                    {selectedMedicine?.quantity}, trong kho còn lại{" "}
+                    {medicineQuantityCheck}. <br />
                     Hãy bổ sung thêm số lượng thuốc vào kho trước khi tiếp tục.
                   </p>
                 )}
-                {selectedMedicine?.newMedicineName && !selectedMedicine?.medicineName && (
-                  <p className="text-lg">
-                    Thuốc này vẫn chưa có trong kho. <br />
-                    Hãy tạo đợt nhập thuốc mới rồi tiếp tục.
-                  </p>
-                )}
+                {selectedMedicine?.newMedicineName &&
+                  !selectedMedicine?.medicineName && (
+                    <p className="text-lg">
+                      Thuốc này vẫn chưa có trong kho. <br />
+                      Hãy tạo đợt nhập thuốc mới rồi tiếp tục.
+                    </p>
+                  )}
                 {/* {selectedMedicine?.medicineName && (
                   <p className="text-lg">
                     Tổng số lượng thuốc cần nhập cho thuốc {selectedMedicine?.newMedicineName || selectedMedicine?.medicineName} là{" "}
