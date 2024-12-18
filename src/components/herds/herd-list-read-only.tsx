@@ -244,7 +244,7 @@ const HerdListReadOnly = ({ setSelected }: any) => {
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
-          wrapper: "min-h-[500px]",
+          wrapper: "max-h-[550px]",
         }}
         selectedKeys={selectedKeys}
         selectionMode="single"

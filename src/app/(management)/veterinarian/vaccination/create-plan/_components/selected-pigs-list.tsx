@@ -167,7 +167,7 @@ const SelectedPigsList = ({ pigList = [] }: any) => {
         bottomContent={bottomContent}
         bottomContentPlacement="outside"
         classNames={{
-          wrapper: "min-h-[550px]",
+          wrapper: "max-h-[550px]",
         }}
         selectedKeys={selectedKeys}
         selectionMode="none"
