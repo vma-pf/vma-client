@@ -119,11 +119,11 @@ const CreateVaccination = ({ pigIds = [], type }: { pigIds?: string[]; type: "up
             lastDate = new Date(prevStage.applyStageTime);
           }
         }
-        const firstStageDate = new Date(sortedStages[0].applyStageTime);
-        firstStageDate.setDate(firstStageDate.getDate() - 1);
+        // const firstStageDate = new Date(sortedStages[0].applyStageTime);
+        // firstStageDate.setDate(firstStageDate.getDate() - 1);
         lastDate.setDate(lastDate.getDate() + parseInt(lastStage.timeSpan));
         setDate({
-          start: parseDate(eliminateTime(firstStageDate.toISOString())),
+          start: parseDate(eliminateTime(sortedStages[0].applyStageTime)),
           end: parseDate(lastDate.toJSON().slice(0, 10)),
         });
       }
