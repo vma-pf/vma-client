@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@oursrc/hooks/use-toast";
+import { toast, useToast } from "@oursrc/hooks/use-toast";
 import { ResponseObject, ResponseObjectList } from "@oursrc/lib/models/response-object";
 import {
   Accordion,
@@ -15,12 +15,15 @@ import {
   DropdownMenu,
   DropdownTrigger,
   Image,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   Progress,
+  Select,
+  SelectItem,
   Skeleton,
   Spinner,
   Tab,
@@ -58,9 +61,10 @@ import TreatmentStages from "@oursrc/components/treatment/treatment-stages";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { SERVERURL } from "@oursrc/lib/http";
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
+import { diseaseReportService } from "@oursrc/lib/services/diseaseReportService";
 
 const statusColorMap = [
-  { status: "Đã hoàn thành", color: "text-primary" },
+  { status: "Hoàn thành", color: "text-primary" },
   { status: "Đang diễn ra", color: "text-sky-500" },
   { status: "Chưa bắt đầu", color: "text-warning" },
   { status: "Đã hủy", color: "text-danger" },
@@ -85,6 +89,7 @@ const Treatment = () => {
   const [selectedGuideId, setSelectedGuideId] = React.useState<string>();
   const [selectedAbnormality, setSelectedAbnormality] = React.useState<Abnormality>();
   const [commonDiseases, setCommonDiseases] = React.useState<CommonDisease[]>([]);
+  const [treatmentResult, setTreatmentResult] = React.useState<string>("");
 
   const toggleShowFullText = (id: string) => {
     setShowFullText((prevState) => ({
@@ -179,6 +184,26 @@ const Treatment = () => {
         setCommonDiseases(res.data);
       } else {
         console.log(res.errorMessage);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    }
+  };
+
+  const handleUpdateDiseaseReport = async () => {
+    try {
+      const res: ResponseObject<any> = await diseaseReportService.update(diseaseReports[0].id ?? "", treatmentResult === "success" ? true : false);
+      if (res.isSuccess) {
+        toast({
+          title: "Cập nhật báo cáo bệnh thành công",
+          variant: "success",
+        });
+        setSelectedTreatmentId(new Set([treatmentData?.id || ""]));
+      } else {
+        toast({
+          title: "Cập nhật báo cáo bệnh thất bại",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -478,11 +503,33 @@ const Treatment = () => {
                                 <p className="text-md">Nguyên nhân:</p>
                                 <p className="text-lg font-semibold">{diseaseReport.cause}</p>
                               </div>
-                              {diseaseReport.treatmentResult && (
+                              {diseaseReport.treatmentResult ? (
                                 <div className="mt-3 flex justify-between">
                                   <p className="text-md">Kết quả điều trị:</p>
-                                  <p className="text-lg font-semibold">{diseaseReport.treatmentResult}</p>
+                                  <p className={`text-lg font-semibold ${diseaseReport.treatmentResult === "Chưa khỏi bệnh" ? "text-danger" : "text-primary"}`}>
+                                    {diseaseReport.treatmentResult}
+                                  </p>
                                 </div>
+                              ) : (
+                                treatmentData?.status === "Hoàn thành" && (
+                                  <div className="mt-3 flex items-end gap-2">
+                                    <Select
+                                      label="Kết quả điều trị"
+                                      placeholder="Nhập kết quả điều trị"
+                                      labelPlacement="outside"
+                                      selectedKeys={treatmentResult ? new Set([treatmentResult]) : new Set()}
+                                      onSelectionChange={(selectedKeys) => {
+                                        setTreatmentResult(selectedKeys.anchorKey ?? "");
+                                      }}
+                                    >
+                                      <SelectItem key="success">Đã khỏi</SelectItem>
+                                      <SelectItem key="failed">Chưa khỏi</SelectItem>
+                                    </Select>
+                                    <Button variant="solid" color="primary" isIconOnly onPress={handleUpdateDiseaseReport}>
+                                      <FaRegSave size={20} />
+                                    </Button>
+                                  </div>
+                                )
                               )}
                             </div>
                           ))

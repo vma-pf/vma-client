@@ -75,4 +75,5 @@ export const pigService = {
         },
       }
     ),
+  destroyPig: (pigIds: string[]) => http.delete(endpoint + `/destroy-pigs`, { pigIds: pigIds }),
 };
