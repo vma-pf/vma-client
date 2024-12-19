@@ -183,7 +183,7 @@ const Vaccination = () => {
                       <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.startDate)}</p>
                       <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.expectedEndDate)}</p>
                     </div>
-                    {vaccinationData.actualEndDate && vaccinationData.status !== "Đang thực hiện" && (
+                    {vaccinationData.actualEndDate && vaccinationData.status !== "Đang thực hiện" && vaccinationData.status !== "Chưa bắt đầu" && (
                       <div className="flex justify-between">
                         <p className="text-md mt-3">Ngày kết thúc (thực tế):</p>
                         <p className="text-lg mt-3 font-semibold">{dateConverter(vaccinationData.actualEndDate)}</p>
@@ -301,7 +301,7 @@ const Vaccination = () => {
                       ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
                       ?.map((stage) => (
                         <div key={stage.id} className="grid ml-16 relative">
-                          <VaccinationStage stage={stage} setSelectedVaccinationId={setSelectedVaccinationId} action="request" />
+                          <VaccinationStage stage={stage} setSelectedVaccinationId={setSelectedVaccinationId} action="request" vaccinationData={vaccinationData} />
                         </div>
                       ))
                   )}

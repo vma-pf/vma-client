@@ -22,13 +22,6 @@ const ReplyRequest = ({
 
   const handleReplyRequest = async () => {
     try {
-      if (answer === "reject" && !reason) {
-        toast({
-          title: "Lý do từ chối không được để trống",
-          variant: "destructive",
-        });
-        return;
-      }
       if (answer === "accept") {
         const res: ResponseObject<any> = await medicineRequestService.updateStatusApprove(selectedMedicine.id);
         if (res.isSuccess) {

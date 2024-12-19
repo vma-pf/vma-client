@@ -231,7 +231,7 @@ const Vaccination = () => {
                       ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
                       ?.map((stage) => (
                         <div key={stage.id} className="grid ml-16 relative">
-                          <VaccinationStage stage={stage} setSelectedVaccinationId={setSelectedVaccinationId} action="view" />
+                          <VaccinationStage stage={stage} setSelectedVaccinationId={setSelectedVaccinationId} action="view" vaccinationData={vaccinationData} />
                         </div>
                       ))
                   )}

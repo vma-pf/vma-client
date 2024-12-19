@@ -1,6 +1,6 @@
 import { Button, Divider, useDisclosure } from "@nextui-org/react";
 import { StageMedicine } from "@oursrc/lib/models/medicine";
-import { CreateTreatmentStageProps } from "@oursrc/lib/models/treatment";
+import { CreateTreatmentStageProps, TreatmentData } from "@oursrc/lib/models/treatment";
 import { treatmentStageService } from "@oursrc/lib/services/treatmentStageService";
 import { dateConverter } from "@oursrc/lib/utils";
 import React from "react";
@@ -11,7 +11,17 @@ import { TbMedicineSyrup } from "react-icons/tb";
 import DetailPlan from "./modals/detail-plan";
 import UpdatePlanStatus from "../../app/(management)/veterinarian/treatment/_components/_modals/update-plan-status";
 
-const TreatmentStages = ({ stage, setSelectedTreatmentId, action }: { stage: CreateTreatmentStageProps; setSelectedTreatmentId?: any; action: "view" | "request" }) => {
+const TreatmentStages = ({
+  stage,
+  setSelectedTreatmentId,
+  action,
+  treatmentData,
+}: {
+  stage: CreateTreatmentStageProps;
+  setSelectedTreatmentId?: any;
+  action: "view" | "request";
+  treatmentData: TreatmentData;
+}) => {
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
@@ -92,7 +102,8 @@ const TreatmentStages = ({ stage, setSelectedTreatmentId, action }: { stage: Cre
               isDisabled={
                 stage.isDone ||
                 stage.applyStageTime.split("T")[0] > new Date().toISOString().split("T")[0] ||
-                medicineList.some((medicine) => medicine.status !== "Đã duyệt")
+                medicineList.some((medicine) => medicine.status !== "Đã duyệt") ||
+                treatmentData.status === "Đã hủy bỏ"
               }
             >
               Cập nhật kết quả

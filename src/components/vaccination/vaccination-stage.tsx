@@ -1,6 +1,6 @@
 import { Button, Divider, useDisclosure } from "@nextui-org/react";
 import { StageMedicine } from "@oursrc/lib/models/medicine";
-import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
+import { VaccinationData, VaccinationStageProps } from "@oursrc/lib/models/vaccination";
 import { vaccinationService } from "@oursrc/lib/services/vaccinationService";
 import { dateConverter } from "@oursrc/lib/utils";
 import React from "react";
@@ -11,7 +11,17 @@ import { TbMedicineSyrup } from "react-icons/tb";
 import DetailPlan from "./modals/detail-plan";
 import UpdatePlanStatus from "../../app/(management)/veterinarian/vaccination/_components/_modals/update-plan-status";
 
-const VaccinationStage = ({ stage, setSelectedVaccinationId, action }: { stage: VaccinationStageProps; setSelectedVaccinationId?: any; action: "view" | "request" }) => {
+const VaccinationStage = ({
+  stage,
+  setSelectedVaccinationId,
+  action,
+  vaccinationData,
+}: {
+  stage: VaccinationStageProps;
+  setSelectedVaccinationId?: any;
+  action: "view" | "request";
+  vaccinationData: VaccinationData;
+}) => {
   const { isOpen: isOpenDetail, onOpen: onOpenDetail, onClose: onCloseDetail } = useDisclosure();
   const { isOpen: isOpenUpdate, onOpen: onOpenUpdate, onClose: onCloseUpdate } = useDisclosure();
   const [medicineList, setMedicineList] = React.useState<StageMedicine[]>([]);
@@ -88,7 +98,8 @@ const VaccinationStage = ({ stage, setSelectedVaccinationId, action }: { stage: 
               isDisabled={
                 stage.isDone ||
                 stage.applyStageTime.split("T")[0] > new Date().toISOString().split("T")[0] ||
-                medicineList.some((medicine) => medicine.status !== "Đã duyệt")
+                medicineList.some((medicine) => medicine.status !== "Đã duyệt") ||
+                vaccinationData.status === "Đã hủy"
               }
               onPress={() => {
                 onOpenUpdate();

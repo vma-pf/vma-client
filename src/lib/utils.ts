@@ -60,7 +60,7 @@ export const dateConverter = (date: string): string => {
   if (!date) {
     return "";
   }
-  const dateObj = new Date(date);
+  const dateObj = new Date(date.split("T")[0]);
   const year = dateObj.getFullYear();
   const month = ("0" + (dateObj.getMonth() + 1)).slice(-2);
   const day = ("0" + dateObj.getDate()).slice(-2);

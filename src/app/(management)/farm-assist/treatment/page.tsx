@@ -491,7 +491,7 @@ const Treatment = () => {
                           ?.sort((a, b) => new Date(a.applyStageTime).getTime() - new Date(b.applyStageTime).getTime())
                           ?.map((stage) => (
                             <div key={stage.id} className="grid ml-16 relative">
-                              <TreatmentStages stage={stage} setSelectedTreatmentId={setSelectedTreatmentId} action="view" />
+                              <TreatmentStages stage={stage} setSelectedTreatmentId={setSelectedTreatmentId} action="view" treatmentData={treatmentData} />
                             </div>
                           ))
                       )}
