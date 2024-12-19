@@ -185,7 +185,7 @@ const RequestMedicineList = () => {
     try {
       setLoading(true);
       if (type === "vaccination") {
-        const response: ResponseObjectList<MedicineRequest> = await vaccinationService.getMedicineRequest(selectedVaccination?.id ?? "", page, rowsPerPage);
+        const response: ResponseObjectList<MedicineRequest> = await vaccinationService.getMedicineRequestNoCache(selectedVaccination?.id ?? "", page, rowsPerPage);
         if (response.isSuccess) {
           setMedicineList(response.data.data);
           setRowsPerPage(response.data.pageSize);
@@ -195,7 +195,7 @@ const RequestMedicineList = () => {
           console.log(response.errorMessage);
         }
       } else {
-        const response: ResponseObjectList<MedicineRequest> = await treatmentPlanService.getMedicineRequest(selectedTreatment?.id ?? "", page, rowsPerPage);
+        const response: ResponseObjectList<MedicineRequest> = await treatmentPlanService.getMedicineRequestNoCache(selectedTreatment?.id ?? "", page, rowsPerPage);
         if (response.isSuccess) {
           setMedicineList(response.data.data);
           setRowsPerPage(response.data.pageSize);

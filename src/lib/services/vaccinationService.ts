@@ -26,6 +26,13 @@ export const vaccinationService = {
         pageSize: pageSize?.toString() || "",
       },
     }),
+  getMedicineRequestNoCache: (id: string, page: number, pageSize: number) => http.get<ResponseObject<any>>(`api/vaccination-plans/${id}/medicine-requests`, {
+    params: {
+      pageIndex: page?.toString() || "",
+      pageSize: pageSize?.toString() || "",
+    },
+    allowCaching: false,
+  }),
   getMedicineInStage: (id: string) =>
     http.get<ResponseObject<any>>(`vaccination-stages/${id}/medicines`),
   getHerdByVaccinationPlanId: (id: string) =>

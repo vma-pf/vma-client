@@ -1,7 +1,7 @@
 import { decodeToken } from "./utils";
 
-// export const SERVERURL = "https://vma-server.io.vn"; // Replace with actual API URL
-export const SERVERURL = "https://ourproject.io.vn"; // Replace with actual API URL
+export const SERVERURL = "https://vma-server.io.vn"; // Replace with actual API URL
+// export const SERVERURL = "https://ourproject.io.vn"; // Replace with actual API URL
 
 type CustomOptions = RequestInit & {
   baseUrl?: string | undefined;
@@ -157,7 +157,7 @@ const http = {
     url: string,
     options?: Omit<CustomOptions, "body"> | undefined
   ) {
-    return request<Response>("GET", url, { ...options, allowCaching: true });
+    return request<Response>("GET", url, { ...options, allowCaching: options?.allowCaching === false ? false : true });
   },
   post<Response>(
     url: string,

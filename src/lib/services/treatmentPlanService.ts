@@ -14,6 +14,13 @@ export const treatmentPlanService = {
             pageSize: pageSize.toString() || "",
         }
     }),
+    getMedicineRequestNoCache: (id: string, pageIndex: number, pageSize: number) => http.get(endpoint + `/${id}/medicine-requests`, {
+        params: {
+            pageIndex: pageIndex.toString() || "",
+            pageSize: pageSize.toString() || "",
+        },
+        allowCaching: false,
+    }),
     getPigList: (id: string, pageIndex: number, pageSize: number) => http.get(endpoint + `/${id}/pigs`, {
         params: {
             pageIndex: pageIndex.toString() || "",
