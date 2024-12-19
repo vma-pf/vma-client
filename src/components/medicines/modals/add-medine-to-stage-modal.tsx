@@ -8,10 +8,12 @@ const AddMedicineToStageModal = ({
   isOpen,
   onClose,
   setSelectedMedicine,
+  isUpdated,
 }: {
   isOpen: boolean;
   onClose: () => void;
   setSelectedMedicine: React.Dispatch<React.SetStateAction<any>>;
+  isUpdated?: boolean;
 }) => {
   const [currentTab, setCurrentTab] = React.useState<React.Key>("existed");
   const [selectedMed, setSelectedMed] = React.useState<any>();
@@ -89,25 +91,27 @@ const AddMedicineToStageModal = ({
                 />
                 <MedicinesListReadOnly setSelected={setSelectedMed} />
               </Tab>
-              <Tab key="new" title="Thêm mới">
-                <Input
-                  type="text"
-                  label="Số lượng liều mỗi con"
-                  className="pb-2"
-                  value={portionEachPig.toString()}
-                  onValueChange={(event) => handlePortionChange(event)}
-                />
-                <Input
-                  type="text"
-                  label="Tên thuốc"
-                  placeholder="Nhập tên thuốc"
-                  labelPlacement="outside"
-                  size="lg"
-                  className="pb-2"
-                  value={newMedicineName}
-                  onValueChange={(event) => setNewMedicineName(event)}
-                />
-              </Tab>
+              {!isUpdated && (
+                <Tab key="new" title="Thêm mới">
+                  <Input
+                    type="text"
+                    label="Số lượng liều mỗi con"
+                    className="pb-2"
+                    value={portionEachPig.toString()}
+                    onValueChange={(event) => handlePortionChange(event)}
+                  />
+                  <Input
+                    type="text"
+                    label="Tên thuốc"
+                    placeholder="Nhập tên thuốc"
+                    labelPlacement="outside"
+                    size="lg"
+                    className="pb-2"
+                    value={newMedicineName}
+                    onValueChange={(event) => setNewMedicineName(event)}
+                  />
+                </Tab>
+              )}
             </Tabs>
           </ModalBody>
           <ModalFooter>

@@ -156,7 +156,7 @@ const MedicineListInStage = ({ stage, setPlan }: { stage: StageTemplate; setPlan
           )}
         </TableBody>
       </Table>
-      <AddMedicineToStageModal isOpen={isOpen} onClose={onClose} setSelectedMedicine={setSelectedMedicine} />
+      <AddMedicineToStageModal isOpen={isOpen} onClose={onClose} setSelectedMedicine={setSelectedMedicine} isUpdated={true} />
       <Modal isOpen={isOpenConfirm} onClose={onCloseConfirm} size="md">
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">

@@ -88,8 +88,8 @@ const CommonPlanTemplate = ({ planType }: { planType: "vaccination" | "treatment
             // stage.toDoTemplates.every((todo) => todo.id === null) ? delete stage?.id : null;
             return {
               ...stage,
-              id: stage.toDoTemplates.every((todo) => todo.id === null) ? null : stage.id,
-              medicineTemplates: stage.toDoTemplates.every((todo) => todo.id === null)
+              id: stage.toDoTemplates.some((todo) => todo.id === null) ? null : stage.id,
+              medicineTemplates: stage.toDoTemplates.some((todo) => todo.id === null)
                 ? [
                     ...stage.medicineTemplates.map((medicine) => {
                       return {
