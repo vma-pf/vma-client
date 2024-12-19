@@ -13,5 +13,9 @@ export type EndHerdStatistic = {
     numberOfPigsHealthNormal: number;
     numberOfPigsHealthSick: number;
     avgWeightInStart: number;
+    avgHeightInStart: number;
+    avgWidthInStart: number;
     avgWeightInEnd: number;
+    avgHeightInEnd: number;
+    avgWidthInEnd: number;
 };
