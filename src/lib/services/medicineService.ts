@@ -13,6 +13,15 @@ export const medicineService = {
         pageSize: pageSize?.toString() || "",
       },
     }),
+  getMedicineWithFilter: (page: number, pageSize: number = 30, filter: string = '', sort:string = '') =>
+    http.get<ResponseObjectList<any>>(endpoint+'/search', {
+      params: {
+        pageIndex: page?.toString() || "",
+        pageSize: pageSize?.toString() || "",
+        filter: filter,
+        sort: sort,
+      },
+    }),
   getMedicineById: (id: string) =>
     http.get(endpoint + `/${id}`),
   getMedicineTransactions: (medicineId: string, pageIndex: number, pageSize: number) =>

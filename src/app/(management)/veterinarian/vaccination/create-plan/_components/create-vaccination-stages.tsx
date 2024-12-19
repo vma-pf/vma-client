@@ -22,6 +22,7 @@ import React from "react";
 import { v4 } from "uuid";
 import MedicineListInStage from "./medine-list-in-stage";
 import { VaccinationStageProps } from "@oursrc/lib/models/vaccination";
+import { toast } from "@oursrc/hooks/use-toast";
 
 const CreateVaccinationStages = ({
   stages,
@@ -152,12 +153,32 @@ const CreateVaccinationStages = ({
       return updatedStages;
     });
   };
+  const checkStages = (): boolean => {
+    const validateStages = stages.filter(
+      (x: VaccinationStageProps) =>
+        x.title === "" ||
+        x.timeSpan === "" ||
+        x.applyStageTime === "" ||
+        x.vaccinationToDos.some((y) => y.description === "") ||
+        x.inventoryRequest.medicines.length === 0
+    );
+    if (validateStages.length > 0) {
+      // toast({
+      //   variant: "destructive",
+      //   title: "Có giai đoạn chưa nhập đủ thông tin",
+      // });
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   return (
     <div>
       <CardBody>
         <div className="mb-2 flex flex-row justify-between">
           <p className="text-2xl font-semibold">Giai đoạn tiêm phòng</p>
-          <Button color="primary" endContent={<Plus />} onClick={onAddStage}>
+          <Button color="primary" endContent={<Plus />} isDisabled={!checkStages()} onClick={onAddStage}>
             Thêm giai đoạn
           </Button>
         </div>

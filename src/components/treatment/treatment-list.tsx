@@ -128,7 +128,7 @@ const TreatmentList = ({ setSelectedTreatment }: { setSelectedTreatment: any }) 
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
-            placeholder="Tìm kiếm theo tên thuốc..."
+            placeholder="Tìm kiếm theo tên..."
             startContent={<Search />}
             value={filterValue}
             onClear={() => onClear()}
