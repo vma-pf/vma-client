@@ -164,18 +164,34 @@ export default function MedicineList() {
     setPage(1);
   }, []);
   //call api
-  const onSearchChange = React.useCallback((value?: string) => {
-    if (value) {
-      setFilterValue(value);
-      setPage(1);
-    } else {
-      setFilterValue("");
+  const onSearchChange = React.useCallback(async (value?: string) => {
+    try {
+      if (value) {
+        setFilterValue(value);
+        const response = await medicineService.getMedicineWithFilter(page, rowsPerPage, `name(${value})`)
+        if (response.isSuccess) {
+          setMedicineList(response.data.data);
+          setRowsPerPage(response.data.pageSize);
+          setTotalPages(response.data.totalPages);
+          setTotalRecords(response.data.totalRecords);
+          setLoading(false);
+        } else {
+          throw new AggregateError(response.errorMessage);
+        }
+      } else {
+        setFilterValue("");
+      }
+    }catch(e){
+      setLoading(false);
+      toast({
+        variant: "destructive",
+        title: e instanceof AggregateError ? e.message : "Lỗi hệ thống. Vui lòng thử lại sau!",
+      });
     }
   }, []);
 
   const onClear = React.useCallback(() => {
-    setFilterValue("");
-    setPage(1);
+    fetchData();
   }, []);
 
   const topContent = React.useMemo(() => {

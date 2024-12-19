@@ -12,10 +12,12 @@ import {
   ModalFooter,
   ModalHeader,
   Progress,
+  Tab,
+  Tabs,
   useDisclosure,
 } from "@nextui-org/react";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Chart from "@oursrc/components/herds/chart";
 import { IoIosAlert } from "react-icons/io";
 import { GoDotFill } from "react-icons/go";
@@ -41,11 +43,18 @@ import { useToast } from "@oursrc/hooks/use-toast";
 import { TbReportSearch } from "react-icons/tb";
 import { FaFileDownload } from "react-icons/fa";
 import { SERVERURL } from "@oursrc/lib/http";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const statusColorMap = [
   { status: "Chưa kết thúc", color: "warning" },
   { status: "Đã kết thúc", color: "primary" },
 ];
+
+type ChartDataType = {
+  name: string;
+  start: number;
+  end: number;
+}[];
 
 const Herd = () => {
   const { toast } = useToast();
@@ -58,6 +67,7 @@ const Herd = () => {
   const [selectedPig, setSelectedPig] = React.useState<Pig | undefined>();
   const [statisticData, setStatisticData] = React.useState<HerdStatistic | undefined>();
   const [avgStatisticData, setAvgStatisticData] = React.useState<EndHerdStatistic | undefined>();
+  const [chartData, setChartData] = useState<ChartDataType>([]);
 
   const getStatistics = async () => {
     try {
@@ -142,6 +152,28 @@ const Herd = () => {
     }
   };
 
+  useEffect(() => {
+    if (avgStatisticData) {
+      setChartData([
+        {
+          name: 'Cân nặng',
+          start: avgStatisticData.avgWeightInStart,
+          end: avgStatisticData.avgWeightInEnd,
+        },
+        {
+          name: 'Chiều cao',
+          start: avgStatisticData.avgHeightInStart,
+          end: avgStatisticData.avgHeightInEnd,
+        },
+        {
+          name: 'Chiều rộng',
+          start: avgStatisticData.avgWidthInStart,
+          end: avgStatisticData.avgWidthInEnd,
+        },
+      ]);
+    }
+  }, [avgStatisticData]);
+
   React.useEffect(() => {
     if (!selectedHerd) {
       setSelectedPig(undefined);
@@ -153,24 +185,6 @@ const Herd = () => {
   }, [selectedHerd]);
   return (
     <div>
-      {avgStatisticData && (
-        <div className="mb-4">
-          <Accordion variant="splitted" defaultExpandedKeys={["1"]}>
-            <AccordionItem key="1" title={<p className="text-xl font-bold">Kết quả nuôi</p>} startContent={<LuFileBarChart className="text-primary" size={25} />}>
-              <AvgStatistic data={avgStatisticData} />
-              <div className="flex items-center">
-                <p className="my-2">Cân nặng trung bình ban đầu:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInStart.toFixed(2)} kg</p>
-              </div>
-              <div className="flex items-center">
-                <p className="my-2">Cân nặng trung bình cuối cùng:</p> <p className="my-2 ml-2 font-semibold"> {avgStatisticData.avgWeightInEnd.toFixed(2)} kg</p>
-              </div>
-              <Button color="primary" endContent={<FaFileDownload size={20} />} onPress={handleDownloadReport}>
-                Tải xuống báo cáo
-              </Button>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      )}
       <div className="grid grid-cols-2 gap-3">
         <div className="p-5 rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
           <div className="mb-2 flex items-center">
@@ -250,6 +264,37 @@ const Herd = () => {
           )}
         </div>
       </div>
+      {avgStatisticData && (
+        <div className="mb-4 mt-4">
+          <Accordion variant="splitted" defaultExpandedKeys={["1"]}>
+            <AccordionItem key="1" title={<p className="text-xl font-bold">Kết quả nuôi</p>} startContent={<LuFileBarChart className="text-primary" size={25} />}>
+              <Tabs>
+                <Tab key="chart" title="Biểu đồ">
+                  {avgStatisticData && chartData && (
+                  <ResponsiveContainer width="100%" height={400}>
+                    <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="start" name="Ban đầu" fill="#0070F0" />
+                    <Bar dataKey="end" name="Cuối cùng" fill="#17C964" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                  )}
+                </Tab>
+                <Tab key="statistics" title="Thống kê">
+                  <AvgStatistic data={avgStatisticData} />
+                </Tab>
+              </Tabs>
+              <Button color="primary" endContent={<FaFileDownload size={20} />} onPress={handleDownloadReport}>
+                Tải xuống báo cáo
+              </Button>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      )}
       <div className="my-5 p-5 w-full rounded-2xl bg-white dark:bg-zinc-800 shadow-lg">
         <p className="text-2xl font-bold mb-3">Danh sách heo</p>
         {selectedHerd ? (
