@@ -438,17 +438,23 @@ const Herd = () => {
         {isOpenPigDetail && selectedPig && <PigDetail isOpen={isOpenPigDetail} onClose={onClosePigDetail} pigInfo={selectedPig} />}
         {isOpenChangeCage && selectedPig && <ChangeCage isOpen={isOpenChangeCage} onClose={onCloseChangeCage} pigInfo={selectedPig} />}
         {isOpenEndHerd && selectedHerd && (
-          <Modal isOpen={isOpenEndHerd} onClose={() => {
-            onCloseEndHerd();
-            setPigCheckups([{
-              pigId: "",
-              weight: 0,
-              height: 0, 
-              width: 0,
-              note: ""
-            }]);
-          }}  
-          size="3xl" isDismissable={false} scrollBehavior="inside">
+          <Modal
+            isOpen={isOpenEndHerd}
+            onClose={() => {
+              onCloseEndHerd();
+              setPigCheckups([
+                {
+                  pigId: "",
+                  weight: 0,
+                  height: 0,
+                  width: 0,
+                  note: "",
+                },
+              ]);
+            }}
+            size="3xl"
+            isDismissable={false}
+          >
             <form
               onSubmit={handleSubmit(onSubmit)}
               onKeyDown={(e) => {
